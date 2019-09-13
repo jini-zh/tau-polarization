@@ -346,7 +346,7 @@ void TreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
  	bool tauFound = AddTau(iEvent,iSetup);
 	bool genTauFound = FindGenTau(iEvent, iSetup);
-	if(!tauFound&&!genTauFound) { //cout << "T" << endl;
+	if(!tauFound||!genTauFound) { //cout << "T" << endl;
 		return;
 	}
 	//cout << "Tau found" << endl;
