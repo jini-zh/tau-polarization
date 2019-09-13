@@ -30,26 +30,16 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 
-#include "HLTrigger/HLTanalyzers/interface/HLTEgamma.h"
-#include "HLTrigger/HLTanalyzers/interface/HLTInfo.h"
-#include "HLTrigger/HLTanalyzers/interface/HLTJets.h"
-#include "HLTrigger/HLTanalyzers/interface/HLTBJet.h"
-#include "HLTrigger/HLTanalyzers/interface/HLTMCtruth.h"
-#include "HLTrigger/HLTanalyzers/interface/HLTMuon.h"
-#include "HLTrigger/HLTanalyzers/interface/HLTAlCa.h"
-#include "HLTrigger/HLTanalyzers/interface/HLTTrack.h"
-#include "HLTrigger/HLTanalyzers/interface/EventHeader.h"
-
-
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/HLTReco/interface/TriggerEvent.h"
 #include "DataFormats/HLTReco/interface/TriggerObject.h"
 #include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
-
+#include "DataFormats/METReco/interface/PFMETCollection.h"
+#include "DataFormats/METReco/interface/PFMET.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
-
 #include "DataFormats/TauReco/interface/PFTauDiscriminator.h"
+#include "DataFormats/JetReco/interface/PFJetCollection.h"
 
 #include "FWCore/Common/interface/TriggerNames.h"
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
