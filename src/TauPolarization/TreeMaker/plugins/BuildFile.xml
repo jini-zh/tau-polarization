@@ -1,6 +1,3 @@
-<export>
-</export>
-<library   name="TauPolarizationTreeMaker_plugins" file="*.cc">
 <use   name="DataFormats/Common"/>
 <use   name="DataFormats/JetReco"/>
 <use   name="DataFormats/Math"/>
@@ -34,5 +31,4 @@
 <use   name="RecoVertex/AdaptiveVertexFit"/>
 <use   name="CommonTools/TriggerUtils"/>
 <use   name="root"/>
-<flags   CXXFLAGS="-Wno-unused-variable -Wno-error=unused-but-set-variable" />
-</library>
+<flags EDM_PLUGIN="1" CXXFLAGS="-Wno-unused-variable -Wno-error=unused-but-set-variable" />
