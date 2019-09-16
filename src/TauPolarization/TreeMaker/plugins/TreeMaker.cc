@@ -531,50 +531,14 @@ bool TreeMaker::TriggerOK(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
 //-----------------------------------------------------------------------------------------
 
-bool TreeMaker::AddTau(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
-
-	//tau collection
-	using namespace reco;
-
-	bool tauFound = false;
-	nTau = 0;
-	nTauC = 0;
+bool TreeMaker::AddTau(const edm::Event& event, const edm::EventSetup&) {
 	tau_found = 0;
-	tau_pt = null;
-	tau_eta = null;
-	tau_phi = null;
-	tau_dm = null;
-	tau_dz = null;
-	tau_q = null;
-	tau_m = null;
-	tau_absIso = null;
-	tau_looseCombinedIso = null;
-	tau_mediumCombinedIso = null;
-	tau_tightCombinedIso = null;
-	tau_looseMvaIso = null;
-	tau_mediumMvaIso = null;
-	tau_tightMvaIso = null;
-	tau_looseMuonRejection = null;
-	tau_tightMuonRejection = null;
-	tau_looseElectronRejection = null;
-	tau_tightElectronRejection = null;
-	dR = null;
+	nTauC     = 0;
 
-	piChar_pt = null;
-	piChar_eta = null;
-	piChar_phi = null;
-	piChar_q = null;
-	piChar_m = null;
-	piZero_pt = null;
-	piZero_eta = null;
-	piZero_phi = null;
-	piZero_m = null;
+	edm::Handle<reco::PFTauCollection> taus;
+	event.getByToken(TauCollectionToken_, taus);
+	if (!taus.isValid() || taus->size() == 0) return false;
 
-	nPi0 = null;
-
-	edm::Handle<reco::PFTauCollection> Taus;
-	iEvent.getByToken(TauCollectionToken_, Taus);
-	
 	edm::Handle<reco::PFTauDiscriminator> absIso;
 	edm::Handle<reco::PFTauDiscriminator> looseCombinedIso;
 	edm::Handle<reco::PFTauDiscriminator> mediumCombinedIso;
@@ -587,132 +551,96 @@ bool TreeMaker::AddTau(const edm::Event& iEvent, const edm::EventSetup& iSetup) 
 	edm::Handle<reco::PFTauDiscriminator> looseElectronRejection;
 	edm::Handle<reco::PFTauDiscriminator> tightElectronRejection;
 
-	iEvent.getByToken(Token_absIso, absIso);
-	iEvent.getByToken(Token_looseCombinedIso, looseCombinedIso);
-	iEvent.getByToken(Token_mediumCombinedIso, mediumCombinedIso);
-	iEvent.getByToken(Token_tightCombinedIso, tightCombinedIso);
-	iEvent.getByToken(Token_looseMvaIso, looseMvaIso);
-	iEvent.getByToken(Token_mediumMvaIso, mediumMvaIso);
-	iEvent.getByToken(Token_tightMvaIso, tightMvaIso);
-	iEvent.getByToken(Token_looseMuonRejection, looseMuonRejection);
-	iEvent.getByToken(Token_tightMuonRejection, tightMuonRejection);
-	iEvent.getByToken(Token_looseElectronRejection, looseElectronRejection);
-	iEvent.getByToken(Token_tightElectronRejection, tightElectronRejection);
-	
+	event.getByToken(Token_absIso, absIso);
+	event.getByToken(Token_looseCombinedIso, looseCombinedIso);
+	event.getByToken(Token_mediumCombinedIso, mediumCombinedIso);
+	event.getByToken(Token_tightCombinedIso, tightCombinedIso);
+	event.getByToken(Token_looseMvaIso, looseMvaIso);
+	event.getByToken(Token_mediumMvaIso, mediumMvaIso);
+	event.getByToken(Token_tightMvaIso, tightMvaIso);
+	event.getByToken(Token_looseMuonRejection, looseMuonRejection);
+	event.getByToken(Token_tightMuonRejection, tightMuonRejection);
+	event.getByToken(Token_looseElectronRejection, looseElectronRejection);
+	event.getByToken(Token_tightElectronRejection, tightElectronRejection);
 
-	if(Taus.isValid()) {
-		nTau = Taus->size();
-		double minIso = 1e+10;
-		double ptMax = 0;
-		for(unsigned i = 0 ; i < Taus->size() ; i++) {
-		  
-			double _tau_pt = (*Taus)[i].pt();
-			double _tau_eta = (*Taus)[i].eta();
-			double _tau_phi = (*Taus)[i].phi();
-			double _tau_m = (*Taus)[i].mass();
-			double _tau_q = (*Taus)[i].charge();
-			double _tau_dm = (*Taus)[i].decayMode();
+	// search for the tau candidate with the minimum isolation and the
+	// maximum transverse momentum
+	size_t index  = taus->size();;
+	for (size_t i = 0; i < taus->size(); ++i) {
+#define cut(condition) if (!(condition)) continue;
+		auto& tau = (*taus)[i];
+		cut(tau.pt() > tauPtMin); // tau transverse momentum
+		cut(TMath::Abs(tau.eta()) < tauEtaMax); // tau pseudorapidity
 
-			double xx = pv_position.x() - (*Taus)[i].vx();
-			double yy = pv_position.y() - (*Taus)[i].vy();
-			double zz = pv_position.z() - (*Taus)[i].vz();
-			double _tau_dz = sqrt(xx*xx+yy*yy+zz*zz);
-				
-			double _tau_absIso = absIso->value(i);
-			double _tau_looseCombinedIso = looseCombinedIso->value(i);
-			double _tau_mediumCombinedIso = mediumCombinedIso->value(i);
-			double _tau_tightCombinedIso = tightCombinedIso->value(i);
-			double _tau_looseMvaIso = looseMvaIso->value(i);
-			double _tau_mediumMvaIso = mediumMvaIso->value(i);
-			double _tau_tightMvaIso = tightMvaIso->value(i);
-			double _tau_looseMuonRejection = looseMuonRejection->value(i);
-			double _tau_tightMuonRejection = tightMuonRejection->value(i);
-			double _tau_looseElectronRejection = looseElectronRejection->value(i);
-			double _tau_tightElectronRejection = tightElectronRejection->value(i);
+		auto& chargedHadrons = tau.signalPFChargedHadrCands();
+		cut(chargedHadrons.size() == 1); // single charged hadron (pi+)
+		auto& pi0s = tau.signalPiZeroCandidates();
+		cut(pi0s.size() > 0); // at least one pi0
 
-			double _piChar_pt = null;
-			double _piChar_eta = null;
-			double _piChar_phi = null;
-			double _piChar_q = null;
-			double _piChar_m = null;
+		auto& pi0 = pi0s.front();
+		auto& pi1 = *chargedHadrons.front();
 
-			double _piZero_pt = null;
-			double _piZero_eta = null;
-			double _piZero_phi = null;
-			double _piZero_m = null;
+		cut(pi1.pt() > piPtMin); // pi+ transverse momentum
 
-			double _nPi0 = null;
-			
-			bool tauFlag_dm = false;
-			//if((_tau_dm==1)&&((*Taus)[i].signalPFChargedHadrCands().size()==1)&&((*Taus)[i].signalPiZeroCandidates().size()==1)) {
-			if(((*Taus)[i].signalPFChargedHadrCands().size()==1)&&((*Taus)[i].signalPiZeroCandidates().size()>0)) {
-				_piChar_pt = (*Taus)[i].signalPFChargedHadrCands()[0]->pt();
-				_piChar_eta = (*Taus)[i].signalPFChargedHadrCands()[0]->eta();
-				_piChar_phi = (*Taus)[i].signalPFChargedHadrCands()[0]->phi();
-				_piChar_q = (*Taus)[i].signalPFChargedHadrCands()[0]->charge();
-				_piChar_m = (*Taus)[i].signalPFChargedHadrCands()[0]->mass();
+		++nTauC;
+		allTauPt->Fill(tau.pt());
 
-				_piZero_pt = (*Taus)[i].signalPiZeroCandidates()[0].pt();
-				_piZero_eta = (*Taus)[i].signalPiZeroCandidates()[0].eta();
-				_piZero_phi = (*Taus)[i].signalPiZeroCandidates()[0].phi();
-				_piZero_m = (*Taus)[i].signalPiZeroCandidates()[0].mass();
-        	
-        		_nPi0 = (*Taus)[i].signalPiZeroCandidates().size();
+		cut((pv_position - tau.vertex()).R() < tauDzMax); // tau vertex displacement
 
-        		tauFlag_dm = true;
-			}
-			
-			if((_tau_pt > tauPtMin)&&(_piChar_pt > piPtMin)&&(TMath::Abs(_tau_eta)<tauEtaMax)){
-		    nTauC++;
-		    allTauPt->Fill(_tau_pt);
-		  }
-			bool tauFlag = (_tau_pt > tauPtMin)&&(_piChar_pt > piPtMin)&&(TMath::Abs(_tau_eta)<tauEtaMax)&&(TMath::Abs(_tau_dz)<tauDzMax)&&((_tau_absIso<minIso)||((_tau_absIso==minIso)&&(_tau_pt>ptMax)));
-			
-			if(tauFlag&&tauFlag_dm) {
-				tau_found = 1;
-				tau_pt = _tau_pt;
-	        	tau_eta = _tau_eta;
-	        	tau_phi = _tau_phi;
-	        	tau_dm = _tau_dm;
-	        	tau_dz = _tau_dz;
-	        	tau_q = _tau_q;
-	        	tau_m = _tau_m;
-	        	tau_absIso = _tau_absIso;
-	        	tau_looseCombinedIso = _tau_looseCombinedIso;
-	        	tau_mediumCombinedIso = _tau_mediumCombinedIso;
-	        	tau_tightCombinedIso = _tau_tightCombinedIso;
-	        	tau_looseMvaIso = _tau_looseMvaIso;
-	        	tau_mediumMvaIso = _tau_mediumMvaIso;
-	        	tau_tightMvaIso = _tau_tightMvaIso;
-	        	tau_looseMuonRejection = _tau_looseMuonRejection;
-	        	tau_tightMuonRejection = _tau_tightMuonRejection;
-	        	tau_looseElectronRejection = _tau_looseElectronRejection;
-	        	tau_tightElectronRejection = _tau_tightElectronRejection;
-				  
-	        	piChar_pt = _piChar_pt;
-				piChar_eta = _piChar_eta;
-				piChar_phi = _piChar_phi;
-				piChar_q = _piChar_q;
-				piChar_m = _piChar_m;
-
-				piZero_pt = _piZero_pt;
-				piZero_eta = _piZero_eta;
-				piZero_phi = _piZero_phi;
-				piZero_m = _piZero_m;
-
-				nPi0 = _nPi0;
-
-				minIso = tau_absIso;
-				ptMax = _tau_pt;
-
-				tauFound = true;
-			}
+		if (index < taus->size()) {
+			double iso = absIso->value(i);
+			double minIso = absIso->value(index);
+			cut(
+			      iso < minIso
+			      || iso == minIso && tau.pt() > (*taus)[index].pt()
+			)
 		}
-	}
 
-	return tauFound;
+		index = i;
+#undef cut
+	};
 
-}
+	if (index == taus->size()) return false;
+
+	auto& tau = (*taus)[index];
+	auto& pi0 = tau.signalPiZeroCandidates().front();
+	auto& pi1 = *tau.signalPFChargedHadrCands().front();
+	tau_pt                     = tau.pt();
+	tau_eta                    = tau.eta();
+	tau_phi                    = tau.phi();
+	tau_dm                     = tau.decayMode();
+	tau_dz                     = (pv_position - tau.vertex()).R();
+	tau_q                      = tau.charge();
+	tau_m                      = tau.mass();
+	tau_absIso                 = absIso->value(index);
+	tau_looseCombinedIso       = looseCombinedIso->value(index);
+	tau_mediumCombinedIso      = mediumCombinedIso->value(index);
+	tau_tightCombinedIso       = tightCombinedIso->value(index);
+	tau_looseMvaIso            = looseMvaIso->value(index);
+	tau_mediumMvaIso           = mediumMvaIso->value(index);
+	tau_tightMvaIso            = tightMvaIso->value(index);
+	tau_looseMuonRejection     = looseMuonRejection->value(index);
+	tau_tightMuonRejection     = tightMuonRejection->value(index);
+	tau_looseElectronRejection = looseElectronRejection->value(index);
+	tau_tightElectronRejection = tightElectronRejection->value(index);
+
+	piZero_pt  = pi0.pt();
+	piZero_eta = pi0.eta();
+	piZero_phi = pi0.phi();
+	piZero_m   = pi0.mass();
+
+	piChar_pt  = pi1.pt();
+	piChar_eta = pi1.eta();
+	piChar_phi = pi1.phi();
+	piChar_q   = pi1.charge();
+	piChar_m   = pi1.mass();
+
+	nPi0      = tau.signalPiZeroCandidates().size();
+	nTau      = taus->size();
+	tau_found = 1;
+
+	return true;
+};
 
 bool TreeMaker::FindGenTau(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	bool tauFound = false;

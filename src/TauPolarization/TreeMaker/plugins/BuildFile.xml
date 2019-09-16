@@ -31,4 +31,4 @@
 <use   name="RecoVertex/AdaptiveVertexFit"/>
 <use   name="CommonTools/TriggerUtils"/>
 <use   name="root"/>
-<flags EDM_PLUGIN="1" CXXFLAGS="-Wno-unused-variable -Wno-error=unused-but-set-variable" />
+<flags EDM_PLUGIN="1" CXXFLAGS="-Wno-unused-variable -Wno-error=unused-but-set-variable -Wno-parentheses" />
