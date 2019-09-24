@@ -708,35 +708,20 @@ bool TreeMaker::FindGenTau(const edm::Event& event, const edm::EventSetup&) {
 	return true;
 };
 
-bool TreeMaker::CheckMuon(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
-	
-	using namespace reco;
-	bool muonFound = false;
-	edm::Handle<reco::MuonCollection> Muons;
-	iEvent.getByToken(MuonCollectionToken_, Muons);
-
-	if(Muons.isValid()) {
-		for(unsigned i = 0 ; i < Muons->size() ; i++) {
-			if ((*Muons)[i].pt()>15) muonFound = true;
-		}
-	}
-	return muonFound;
+bool TreeMaker::CheckMuon(const edm::Event& event, const edm::EventSetup&) {
+	edm::Handle<reco::MuonCollection> muons;
+	event.getByToken(MuonCollectionToken_, muons);
+	if (!muons.isValid()) return false;
+	for (auto& muon: *muons) if (muon.pt() > 15) return true;
+	return false;
 }
 
-
-bool TreeMaker::CheckElectron(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
-	
-	using namespace reco;
-	bool electronFound = false;
-	edm::Handle<reco::GsfElectronCollection> Electrons;
-	iEvent.getByToken(ElectronCollectionToken_, Electrons);
-
-	if(Electrons.isValid()) {
-		for(unsigned i = 0 ; i < Electrons->size() ; i++) {
-			if ((*Electrons)[i].pt()>15) electronFound = true;
-		}
-	}
-	return electronFound;
+bool TreeMaker::CheckElectron(const edm::Event& event, const edm::EventSetup&) {
+	edm::Handle<reco::GsfElectronCollection> electrons;
+	event.getByToken(ElectronCollectionToken_, electrons);
+	if (!electrons.isValid()) return false;
+	for (auto& electron: *electrons) if (electron.pt() > 15) return true;
+	return false;
 }
 
 bool TreeMaker::AddMET(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
