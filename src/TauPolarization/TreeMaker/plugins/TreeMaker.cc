@@ -62,6 +62,15 @@
 #include "Math/LorentzVector.h"
 #include "Math/Point3D.h"
 
+static inline double sqr(double x) {
+	return x * x;
+}
+
+static double dphi(double phi1, double phi2) {
+	double result = TMath::Abs(phi1 - phi2);
+	if (result < TMath::Pi()) return result;
+	return 2 * TMath::Pi() - result;
+}
 
 //
 // class declaration
@@ -98,17 +107,6 @@ private:
 		return TMath::ACos(cosDPhi);
 	}
 
-
-	double deltaR(double Eta1, double Phi1, double Eta2, double Phi2) {
-		double Px1 = TMath::Cos(Phi1);
-		double Py1 = TMath::Sin(Phi1);
-		double Px2 = TMath::Cos(Phi2);
-		double Py2 = TMath::Sin(Phi2);
-		double dPhi = dPhiFrom2P(Px1,Py1,Px2,Py2);
-		double dEta = Eta1 - Eta2;
-		double d_R = TMath::Sqrt(dPhi*dPhi+dEta*dEta);
-		return d_R;
-	}
 
 	virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
 	//virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
@@ -642,73 +640,73 @@ bool TreeMaker::AddTau(const edm::Event& event, const edm::EventSetup&) {
 	return true;
 };
 
-bool TreeMaker::FindGenTau(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
-	bool tauFound = false;
-	gentau_found = 0;
-	genTauFromW = null;
+bool TreeMaker::FindGenTau(const edm::Event& event, const edm::EventSetup&) {
+	gentau_found  = 0;
+	genTauFromW   = null;
 	genTauMother = null;
-	edm::Handle<reco::GenParticleCollection> GP;
-	iEvent.getByToken(GenParticleToken_, GP);
-	double dRmin = 10;
-	
-	if(GP.isValid()) {
-		for(unsigned i = 0 ; i < GP->size() ; i++) {
-			if (abs((*GP)[i].pdgId())==15) {
-				if((*GP)[i].numberOfDaughters()==3) {
-					if(
-	        			((abs((*GP)[i].daughter(1)->pdgId())==111)||(abs((*GP)[i].daughter(1)->pdgId())==211))&&
-	        			((abs((*GP)[i].daughter(2)->pdgId())==111)||(abs((*GP)[i].daughter(2)->pdgId())==211))&&
-	        			(abs((*GP)[i].daughter(1)->pdgId())+abs((*GP)[i].daughter(2)->pdgId())==322)
-	        		) {
-	      	
-	      			//std::cout<<"::::::::"<<(*GP)[i].daughter(0)->pdgId()<<" "<<(*GP)[i].daughter(1)->pdgId()<<" "<<(*GP)[i].daughter(2)->pdgId()<<" "<<abs((*GP)[i].daughter(1)->pdgId())+abs((*GP)[i].daughter(2)->pdgId())<<std::endl;
 
-						double gentau_pt = (*GP)[i].pt();
-						double gentau_phi = (*GP)[i].phi();
-						double gentau_eta = (*GP)[i].eta();
-						double xxx = pv_position.x() - (*GP)[i].vx();
-						double yyy = pv_position.y() - (*GP)[i].vy();
-						double zzz = pv_position.z() - (*GP)[i].vz();
-						double gentau_dz = sqrt(xxx*xxx+yyy*yyy+zzz*zzz);
-						double _dR;
-						if(tau_found) {
-							_dR = deltaR(gentau_eta,gentau_phi,tau_eta,tau_phi);
-						} else {
-							_dR = null;
-						}
-						bool genTauFlag = (gentau_pt > tauPtMin)&&(TMath::Abs(gentau_eta)<tauEtaMax)&&(TMath::Abs(gentau_dz)<tauDzMax)&&(_dR<dRmin);
-						bool genDFlag1 = (abs((*GP)[i].daughter(1)->pdgId())==211)&&((*GP)[i].daughter(1)->pt() > piPtMin);
-						bool genDFlag2 = (abs((*GP)[i].daughter(2)->pdgId())==211)&&((*GP)[i].daughter(2)->pt() > piPtMin);
-						if(genTauFlag&&(genDFlag1 || genDFlag2)) {
-							dR = _dR;
-							gentau_found = 1;
-							genTauMother = (*GP)[i].mother()->pdgId();
-							if(abs((*GP)[i].mother()->pdgId())==24) {
-								genTauFromW = 1;
-								genTauMother = (*GP)[i].mother()->pdgId();
-							} else {
-								if((abs((*GP)[i].mother()->pdgId())==15)&&(abs((*GP)[i].mother()->mother()->pdgId())==24)){
-									genTauFromW = 1;
-									genTauMother = (*GP)[i].mother()->mother()->pdgId();
-								} else {
-									if((abs((*GP)[i].mother()->mother()->pdgId())==15)&&(abs((*GP)[i].mother()->mother()->mother()->pdgId())==24)){
-										genTauFromW = 1;
-										genTauMother = (*GP)[i].mother()->mother()->mother()->pdgId();
-									} else {
-										genTauFromW = 0;
-									}
-								}
-							}
-							tauFound = true;
-						}
-					}
-				}
-			}
-		}
-	}
-	return tauFound;
-}
+	edm::Handle<reco::GenParticleCollection> genParticles;
+	event.getByToken(GenParticleToken_, genParticles);
+	if (!genParticles.isValid()) return false;
 
+	const int pdg_tau = 15;
+	const int pdg_pi0 = 111;
+	const int pdg_pi1 = 211;
+	const int pdg_W   = 24;
+
+	const reco::Candidate* tau = nullptr;
+	double dRmin = null;
+	for (auto& particle: *genParticles) {
+		// look for the tau -> pi+ pi0 neutrino decay most oriented towards
+		// the reconstructed tau (if present)
+#define cut(condition) if (!(condition)) continue;
+		cut(abs(particle.pdgId()) == pdg_tau);
+		cut(particle.numberOfDaughters() == 3);
+
+		const reco::Candidate* pi0 = nullptr;
+		const reco::Candidate* pi1 = nullptr;
+		for (int i = 0; i < 3; ++i) {
+			const reco::Candidate* daughter = particle.daughter(i);
+			int id = abs(daughter->pdgId());
+			if (id == pdg_pi0)
+				pi0 = daughter;
+			else if (id == pdg_pi1)
+				pi1 = daughter;
+		};
+		cut(pi0 && pi1);
+
+		cut(particle.pt() > tauPtMin);
+		cut(TMath::Abs(particle.eta()) < tauEtaMax);
+		cut((pv_position - particle.vertex()).R() < tauDzMax);
+		cut(pi1->pt() > piPtMin);
+
+		double dR_ = null;
+		if (tau_found) {
+			dR_ = TMath::Sqrt(
+					  sqr(dphi(particle.phi(), tau_phi))
+					+ sqr(particle.eta() - tau_eta)
+			);
+			if (!tau || dR_ < dRmin) {
+				tau = &particle;
+				dRmin = dR_;
+			};
+		};
+#undef cut
+	};
+	if (!tau) return false;
+
+	dR           = dRmin;
+	gentau_found = 1;
+	genTauFromW  = 0;
+	for (auto p = tau->mother(); p; p = p->mother()) {
+		genTauMother = p->pdgId();
+		if (abs(p->pdgId()) == pdg_W) {
+			genTauFromW = 1;
+			break;
+		};
+	};
+	return true;
+};
 
 bool TreeMaker::CheckMuon(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	
