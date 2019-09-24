@@ -1,20 +1,22 @@
-#include <type_traits>
-
+#include <functional>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 #include <vector>
-#include <functional>
 
+#include <cmath>
 #include <cstddef>
 #include <cstring>
 
-#include <TKey.h>
-#include <TLeaf.h>
 #include <TBranch.h>
-#include <TTree.h>
 #include <TFile.h>
 #include <TH1.h>
+#include <TKey.h>
+#include <TLeaf.h>
+#include <TLeafD.h>
+#include <TTree.h>
 
 class UnknownType: public std::exception {
   public:
@@ -171,6 +173,32 @@ bool equal_structure(TLeaf& a, TLeaf& b) {
   return true;
 };
 
+bool equal_data(TLeafD& a, TLeafD& b) {
+  if (a.GetLen() != b.GetLen())
+    return bail() << "Different arrays sizes in leaf " << a.GetName() << ": "
+      << a.GetLen() << " != " << b.GetLen() << '\n';
+
+  if (std::memcmp(a.GetValuePointer(), b.GetValuePointer(), a.GetLen() * a.GetLenType()) != 0)
+    for (Int_t i = 0; i < a.GetLen(); ++i)
+      if (a.GetValue(i) != b.GetValue(i)) {
+        double x = a.GetValue(i);
+        double y = b.GetValue(i);
+        double d = std::abs(x / y - 1);
+//        if (x != y && x != 0 && d > 10 * std::numeric_limits<double>::epsilon())
+        if (x != y && x != 0 && d > 1e-10)
+        {
+          bail log;
+          log << x << " != " << y;
+          if (d < 1e-7 || true) log << " (" << d << ")";
+          if (a.GetLen() > 0) log << " at position " << i;
+          log << "\n  in leaf " << a.GetName() << '\n';
+          return false;
+        };
+      };
+
+  return true;
+};
+
 bool equal_data(TLeaf& a, TLeaf& b) {
   if (a.GetLen() != b.GetLen())
     return bail() << "Different arrays sizes in leaf " << a.GetName() << ": "
@@ -182,7 +210,7 @@ bool equal_data(TLeaf& a, TLeaf& b) {
         bail log;
         log << a.GetValue(i) << " != " << b.GetValue(i);
         if (a.GetLen() > 0) log << " at position " << i;
-        log << "\n  in leaf " << a.GetName() << '\n';
+        log << "\n  in leaf " << a.GetName() << " (" << a.ClassName() << ")\n";
         return false;
       };
 
@@ -247,6 +275,7 @@ bool equal(TDirectoryFile& a, TDirectoryFile& b) {
   macro(TKey) \
   macro(TTree) \
   macro(TBranch) \
+  macro(TLeafD) \
   macro(TLeaf) \
   macro(TH1)
 
