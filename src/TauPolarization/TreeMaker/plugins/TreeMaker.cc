@@ -99,15 +99,6 @@ private:
 	void CountTracks  (const edm::Event&);
 	bool JetPtSum     (const edm::Event&);
 
-	double dPhiFrom2P(double Px1, double Py1, double Px2, double Py2) {
-		double prod = Px1*Px2 + Py1*Py2;
-		double mod1 = TMath::Sqrt(Px1*Px1+Py1*Py1);
-		double mod2 = TMath::Sqrt(Px2*Px2+Py2*Py2);
-		double cosDPhi = prod/(mod1*mod2);
-		return TMath::ACos(cosDPhi);
-	}
-
-
 	virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
 	//virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
 	//virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
@@ -311,77 +302,35 @@ TreeMaker::~TreeMaker() {
 // member functions
 //
 
-// ------------ method called for each event  ------------
-void TreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
-	using namespace edm;
-	t_Run   = iEvent.id().run();
-	t_Event = iEvent.id().event();
-	
-	bool triggerOK = TriggerOK(iEvent);
-	if(!triggerOK) {
-		return;
-	}
+void TreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
+	t_Run   = event.id().run();
+	t_Event = event.id().event();
 
-	bool vertexFound = AddVertex(iEvent);
-	if (!vertexFound) { //cout << "V" << endl;
-		return;
-	}
-	 
-	bool muonsFound = CheckMuon(iEvent);
-	if (muonsFound) { //cout << "M" << endl;
-		return;
-	}
+	if (!TriggerOK(event))    return;
+	if (!AddVertex(event))    return;
+	if (CheckMuon(event))     return;
+	if (CheckElectron(event)) return;
+	if (!AddMET(event))	  return;
+	if (!AddTau(event))	  return;
+	if (!FindGenTau(event))   return;
+	CountTracks(event);
+	if (!JetPtSum(event))     return;
 
-	bool electronFound = CheckElectron(iEvent);
-	if (electronFound) { //cout << "E" << endl;
-		return;
-	}
-	 
-	bool metFound = AddMET(iEvent);
-	if (!metFound) { //cout << "met" << endl;
-		return;
-	}
+	TLorentzVector pi0, pi1;
+	pi0.SetPtEtaPhiM(piZero_pt, piZero_eta, piZero_phi, piZero_m);
+	pi1.SetPtEtaPhiM(piChar_pt, piChar_eta, piChar_phi, piChar_m);
 
- 	bool tauFound = AddTau(iEvent);
-	bool genTauFound = FindGenTau(iEvent);
-	if(!tauFound||!genTauFound) { //cout << "T" << endl;
-		return;
-	}
-	//cout << "Tau found" << endl;
-	CountTracks(iEvent);
+	pipiMass = (pi0 + pi1).M();
+//	upsilon  = (pi1.E() - pi0.E()) / tau_pt;
+	upsilon  = 2 * piChar_pt / tau_pt - 1;
+	RHT10    = tau_pt / jetPtSum10;
+	RHT15    = tau_pt / jetPtSum15;
+	RHT20    = tau_pt / jetPtSum20;
+	dPhi	 = dphi(tau_phi, met_phi);
+	m_t      = sqrt(2 * tau_pt * met * (1 - cos(dPhi)));
 
-	bool jetsFound = JetPtSum(iEvent);
-	if(!jetsFound) { //cout << "J" << endl;
-		return;
-	}
-
-	TLorentzVector tauLV, piChLV, pi0LV;
-	tauLV.SetPtEtaPhiM(tau_pt,tau_eta,tau_phi,tau_m);
-	piChLV.SetPtEtaPhiM(piChar_pt,piChar_eta,piChar_phi,piChar_m);
-	pi0LV.SetPtEtaPhiM(piZero_pt,piZero_eta,piZero_phi,piZero_m);
-
-
-   	if(tau_pt>null) {
-   		pipiMass = (piChLV+pi0LV).M();
-   		//upsilon = (piChLV.E() - pi0LV.E())/tau_pt;
-   		upsilon = 2*piChar_pt/tau_pt - 1;
-	   	RHT10 = tau_pt/jetPtSum10;
-	   	RHT15 = tau_pt/jetPtSum15;
-	   	RHT20 = tau_pt/jetPtSum20;
-   		dPhi = dPhiFrom2P(tauLV.Px(),tauLV.Py(),cos(met_phi),sin(met_phi));
-		m_t = sqrt(2*tau_pt*met*(1-cos(dPhiFrom2P(tauLV.Px(),tauLV.Py(),cos(met_phi),sin(met_phi)))));
-   	} else {
-   		pipiMass = null;
-		upsilon = null;
-		RHT10 = null;
-		RHT15 = null;
-		RHT20 = null;
-		dPhi = null;
-		m_t = null;
-   	}
-
-  	tree->Fill();
-}
+	tree->Fill();
+};
 
 
 // ------------ method called once each job just before starting event loop  ------------
