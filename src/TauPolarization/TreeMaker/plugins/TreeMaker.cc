@@ -746,41 +746,28 @@ bool TreeMaker::AddVertex(const edm::Event& event, const edm::EventSetup&) {
 	return true;
 };
 
+bool TreeMaker::JetPtSum(const edm::Event& event, const edm::EventSetup&) {
+	jetPtSum10 = 0;
+	jetPtSum15 = 0;
+	jetPtSum20 = 0;
+	nJets20    = 0;
+
+	edm::Handle<reco::PFJetCollection> jets;
+	event.getByToken(JetCollectionToken_, jets);
+	if (!jets.isValid()) return false;
+
+	for (auto& jet: *jets) {
+		if (TMath::Abs(jet.eta()) > 3) continue;
+		if (jet.pt() > 10) jetPtSum10 += jet.pt();
+		if (jet.pt() > 15) jetPtSum15 += jet.pt();
+		if (jet.pt() > 20) {
+			jetPtSum20 += jet.pt();
+			++nJets20;
 		}
 	}
 
-bool TreeMaker::JetPtSum(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
-	bool jetsFound = false;
-	double sum10 = 0;
-	double sum15 = 0;
-	double sum20 = 0;
-	int nJets = 0;
-	edm::Handle<reco::PFJetCollection> Jets;
-	iEvent.getByToken(JetCollectionToken_, Jets);
-
-	if(Jets.isValid()) {
-		for(unsigned i = 0 ; i < Jets->size() ; i++) {
-			if(	((*Jets)[i].pt()>10)	&&	(abs((*Jets)[i].eta())<3)	){
-				sum10 = sum10 + (*Jets)[i].pt();
-			}
-			if(	((*Jets)[i].pt()>15)	&&	(abs((*Jets)[i].eta())<3)	){
-				sum15 = sum15 + (*Jets)[i].pt();
-			}
-			if(	((*Jets)[i].pt()>20)	&&	(abs((*Jets)[i].eta())<3)	){
-				sum20 = sum20 + (*Jets)[i].pt();
-				nJets++;
-			}
-		}
-		jetPtSum10 = sum10;
-		jetPtSum15 = sum15;
-		jetPtSum20 = sum20;
-		nJets20 = nJets;
-		if(sum10*sum15*sum20!=0){
-			jetsFound = true;
-		}
-	}
-	return jetsFound;
-}
+	return nJets20 > 0;
+};
 
 void TreeMaker::CountTracks(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   nTrks = 0;
