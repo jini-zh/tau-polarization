@@ -724,39 +724,30 @@ bool TreeMaker::CheckElectron(const edm::Event& event, const edm::EventSetup&) {
 	return false;
 }
 
-bool TreeMaker::AddMET(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+bool TreeMaker::AddMET(const edm::Event& event, const edm::EventSetup&) {
+	edm::Handle<reco::PFMETCollection> mets;
+	event.getByToken(MetCollectionToken_, mets);
+	if (!mets.isValid() || !mets->size()) return false;
 
-	bool foundMET = false;
-	edm::Handle<reco::PFMETCollection> recoMet;
-	iEvent.getByToken(MetCollectionToken_, recoMet);
-
-	if(recoMet->size() > 0) {
-		met = (*recoMet)[0].pt();
-		met_phi = (*recoMet)[0].phi();
-		foundMET = true;
-	}
-	return foundMET;
+	auto& MET = mets->front();
+	met = MET.pt();
+	met_phi = MET.phi();
+	return true;
 }
 
+bool TreeMaker::AddVertex(const edm::Event& event, const edm::EventSetup&) {
+	edm::Handle<reco::VertexCollection> vertices;
+	event.getByToken(PVToken_, vertices);
+	if (!vertices.isValid()) return false;
 
-bool TreeMaker::AddVertex(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+	nVtx = vertices->size();
+	if (nVtx == 0) return false;
+	pv_position = vertices->front().position();
+	return true;
+};
 
-	bool vertexfound = false;
-	nVtx = 0;
-	pv_position = math::XYZPoint(0.,0.,0.);
-	edm::Handle<reco::VertexCollection> Vertex;
-	iEvent.getByToken(PVToken_, Vertex);
-	
-	if(Vertex.isValid()) {
-	  nVtx = Vertex->size();
-		if (Vertex->size()>0) {
-			pv_position = (*Vertex)[0].position();
-			vertexfound = true;
 		}
 	}
-	return vertexfound;
-}
-
 
 bool TreeMaker::JetPtSum(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	bool jetsFound = false;
