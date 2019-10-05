@@ -89,15 +89,15 @@ private:
 	virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
 	virtual void endJob() override;
 	
-	bool TriggerOK(const edm::Event& iEvent, const edm::EventSetup& iSetup);
-	bool AddTau(const edm::Event& iEvent, const edm::EventSetup& iSetup);
-	bool FindGenTau(const edm::Event& iEvent, const edm::EventSetup& iSetup);
-	bool CheckMuon(const edm::Event& iEvent, const edm::EventSetup& iSetup);
-	bool CheckElectron(const edm::Event& iEvent, const edm::EventSetup& iSetup);
-	bool AddMET(const edm::Event& iEvent, const edm::EventSetup& iSetup);
-	bool AddVertex(const edm::Event& iEvent, const edm::EventSetup& iSetup);
-	void CountTracks(const edm::Event& iEvent, const edm::EventSetup& iSetup);
-	bool JetPtSum(const edm::Event& iEvent, const edm::EventSetup& iSetup);
+	bool TriggerOK    (const edm::Event&);
+	bool AddTau       (const edm::Event&);
+	bool FindGenTau   (const edm::Event&);
+	bool CheckMuon    (const edm::Event&);
+	bool CheckElectron(const edm::Event&);
+	bool AddMET       (const edm::Event&);
+	bool AddVertex    (const edm::Event&);
+	void CountTracks  (const edm::Event&);
+	bool JetPtSum     (const edm::Event&);
 
 	double dPhiFrom2P(double Px1, double Py1, double Px2, double Py2) {
 		double prod = Px1*Px2 + Py1*Py2;
@@ -317,40 +317,40 @@ void TreeMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	t_Run   = iEvent.id().run();
 	t_Event = iEvent.id().event();
 	
-	bool triggerOK = TriggerOK(iEvent,iSetup);
+	bool triggerOK = TriggerOK(iEvent);
 	if(!triggerOK) {
 		return;
 	}
 
-	bool vertexFound = AddVertex(iEvent,iSetup);
+	bool vertexFound = AddVertex(iEvent);
 	if (!vertexFound) { //cout << "V" << endl;
 		return;
 	}
 	 
-	bool muonsFound = CheckMuon(iEvent, iSetup);
+	bool muonsFound = CheckMuon(iEvent);
 	if (muonsFound) { //cout << "M" << endl;
 		return;
 	}
 
-	bool electronFound = CheckElectron(iEvent, iSetup);
+	bool electronFound = CheckElectron(iEvent);
 	if (electronFound) { //cout << "E" << endl;
 		return;
 	}
 	 
-	bool metFound = AddMET(iEvent,iSetup);
+	bool metFound = AddMET(iEvent);
 	if (!metFound) { //cout << "met" << endl;
 		return;
 	}
 
- 	bool tauFound = AddTau(iEvent,iSetup);
-	bool genTauFound = FindGenTau(iEvent, iSetup);
+ 	bool tauFound = AddTau(iEvent);
+	bool genTauFound = FindGenTau(iEvent);
 	if(!tauFound||!genTauFound) { //cout << "T" << endl;
 		return;
 	}
 	//cout << "Tau found" << endl;
-	CountTracks(iEvent, iSetup);
+	CountTracks(iEvent);
 
-	bool jetsFound = JetPtSum(iEvent, iSetup);
+	bool jetsFound = JetPtSum(iEvent);
 	if(!jetsFound) { //cout << "J" << endl;
 		return;
 	}
@@ -493,7 +493,7 @@ TreeMaker::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const
 */
 
 //---------------------------------TRIGGER-------------------------------------------------
-bool TreeMaker::TriggerOK(const edm::Event& iEvent, const edm::EventSetup& iSetup){
+bool TreeMaker::TriggerOK(const edm::Event& iEvent){
 	bool triggerOK = false;
 	if (isMC) {
 		triggerOK = true; // ignore HLT for single pion MC
@@ -529,7 +529,7 @@ bool TreeMaker::TriggerOK(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
 //-----------------------------------------------------------------------------------------
 
-bool TreeMaker::AddTau(const edm::Event& event, const edm::EventSetup&) {
+bool TreeMaker::AddTau(const edm::Event& event) {
 	tau_found = 0;
 	nTauC     = 0;
 
@@ -640,7 +640,7 @@ bool TreeMaker::AddTau(const edm::Event& event, const edm::EventSetup&) {
 	return true;
 };
 
-bool TreeMaker::FindGenTau(const edm::Event& event, const edm::EventSetup&) {
+bool TreeMaker::FindGenTau(const edm::Event& event) {
 	gentau_found  = 0;
 	genTauFromW   = null;
 	genTauMother = null;
@@ -708,7 +708,7 @@ bool TreeMaker::FindGenTau(const edm::Event& event, const edm::EventSetup&) {
 	return true;
 };
 
-bool TreeMaker::CheckMuon(const edm::Event& event, const edm::EventSetup&) {
+bool TreeMaker::CheckMuon(const edm::Event& event) {
 	edm::Handle<reco::MuonCollection> muons;
 	event.getByToken(MuonCollectionToken_, muons);
 	if (!muons.isValid()) return false;
@@ -716,7 +716,7 @@ bool TreeMaker::CheckMuon(const edm::Event& event, const edm::EventSetup&) {
 	return false;
 }
 
-bool TreeMaker::CheckElectron(const edm::Event& event, const edm::EventSetup&) {
+bool TreeMaker::CheckElectron(const edm::Event& event) {
 	edm::Handle<reco::GsfElectronCollection> electrons;
 	event.getByToken(ElectronCollectionToken_, electrons);
 	if (!electrons.isValid()) return false;
@@ -724,7 +724,7 @@ bool TreeMaker::CheckElectron(const edm::Event& event, const edm::EventSetup&) {
 	return false;
 }
 
-bool TreeMaker::AddMET(const edm::Event& event, const edm::EventSetup&) {
+bool TreeMaker::AddMET(const edm::Event& event) {
 	edm::Handle<reco::PFMETCollection> mets;
 	event.getByToken(MetCollectionToken_, mets);
 	if (!mets.isValid() || !mets->size()) return false;
@@ -735,7 +735,7 @@ bool TreeMaker::AddMET(const edm::Event& event, const edm::EventSetup&) {
 	return true;
 }
 
-bool TreeMaker::AddVertex(const edm::Event& event, const edm::EventSetup&) {
+bool TreeMaker::AddVertex(const edm::Event& event) {
 	edm::Handle<reco::VertexCollection> vertices;
 	event.getByToken(PVToken_, vertices);
 	if (!vertices.isValid()) return false;
@@ -746,7 +746,7 @@ bool TreeMaker::AddVertex(const edm::Event& event, const edm::EventSetup&) {
 	return true;
 };
 
-bool TreeMaker::JetPtSum(const edm::Event& event, const edm::EventSetup&) {
+bool TreeMaker::JetPtSum(const edm::Event& event) {
 	jetPtSum10 = 0;
 	jetPtSum15 = 0;
 	jetPtSum20 = 0;
@@ -769,14 +769,13 @@ bool TreeMaker::JetPtSum(const edm::Event& event, const edm::EventSetup&) {
 	return nJets20 > 0;
 };
 
-void TreeMaker::CountTracks(const edm::Event& iEvent, const edm::EventSetup& iSetup){
-  nTrks = 0;
-	edm::Handle<reco::TrackCollection> Tracks;
-	iEvent.getByToken(TrackToken_, Tracks);
-	if(Tracks.isValid()) {
-	  nTrks = Tracks->size();
-	}
-}
+void TreeMaker::CountTracks(const edm::Event& event) {
+	nTrks = 0;
+	edm::Handle<reco::TrackCollection> tracks;
+	event.getByToken(TrackToken_, tracks);
+	if (!tracks.isValid()) return;
+	nTrks = tracks->size();
+};
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void TreeMaker::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
