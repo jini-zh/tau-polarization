@@ -1,8 +1,15 @@
 import re
+import argparse
 
 import XRootD.client
 
 import FWCore.ParameterSet.Config as cms
+
+argparser = argparse.ArgumentParser()
+argparser.add_argument('pset')
+argparser.add_argument('files', nargs='+')
+args = argparser.parse_args()
+
 # Define the CMSSW process
 process = cms.Process("TreeMaker")
 
@@ -34,9 +41,39 @@ process.maxEvents = cms.untracked.PSet(
 )
 # Define the input source
 
-source = '/data/phedex/user/ezhemchu/crab/WToTauNu_13TeV/WToTauNu_13TeV/crab_WToTauNu_13TeV/190830_120718/0000'
-status, dirlist = XRootD.client.FileSystem('cms-phedex.lxfarm.mephi.ru').dirlist(source)
-files = [ 'root://cms-phedex.lxfarm.mephi.ru' + source + '/' + f.name for f in dirlist if re.search(r'GEN-SIM-RAW-RECO_\d+\.root$', f.name) ]
+files = []
+for f in args.files:
+  if re.match('file:', f):
+    files.append(f)
+    continue
+
+  m = re.match('root://([^/]+)/(.*)/', f)
+  if m:
+    host = m.group(1)
+    path = [ '' ]
+    for directory in re.group(2).split('/'):
+      if directory == '': continue
+      rd = re.compile(d + '$')
+      newpath = []
+      for p in path:
+        status, dirlist = XRootD.client.FileSystem(host).dirlist(p)
+        for x in dirlist:
+          if rd.match(x):
+            newpath.append(x)
+      if len(newpath) == 0:
+        if len(path) == 1:
+          raise Exception('Path root://%s/%s/%s does not exist' % host % path[0] % directory)
+        else:
+          msg = 'None of the pathes\n'
+          for p in path:
+            msg += 'root://%s/%s/%s\n' % host % p % directory
+          msg += 'exist'
+          raise Exception(msg)
+      path = newpath
+    files += path
+    continue
+
+  files.append('file:' + f)
 
 process.source = cms.Source("PoolSource",
                             fileNames = cms.untracked.vstring(*files),
