@@ -312,7 +312,7 @@ void TreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
 	if (CheckElectron(event)) return;
 	if (!AddMET(event))	  return;
 	if (!AddTau(event))	  return;
-	if (!FindGenTau(event))   return;
+	FindGenTau(event);
 	CountTracks(event);
 	if (!JetPtSum(event))     return;
 
@@ -592,7 +592,8 @@ bool TreeMaker::AddTau(const edm::Event& event) {
 bool TreeMaker::FindGenTau(const edm::Event& event) {
 	gentau_found  = 0;
 	genTauFromW   = null;
-	genTauMother = null;
+	genTauMother  = null;
+	dR            = null;
 
 	edm::Handle<reco::GenParticleCollection> genParticles;
 	event.getByToken(GenParticleToken_, genParticles);
