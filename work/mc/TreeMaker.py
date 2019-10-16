@@ -36,7 +36,7 @@ process.maxEvents = cms.untracked.PSet(
 
 source = '/data/phedex/user/ezhemchu/crab/WToTauNu_13TeV/WToTauNu_13TeV/crab_WToTauNu_13TeV/190830_120718/0000'
 status, dirlist = XRootD.client.FileSystem('cms-phedex.lxfarm.mephi.ru').dirlist(source)
-files = [ source + '/' + f.name for f in dirlist if re.search('\.root$', f.name) ]
+files = [ 'root://cms-phedex.lxfarm.mephi.ru' + source + '/' + f.name for f in dirlist if re.search(r'GEN-SIM-RAW-RECO_\d+\.root$', f.name) ]
 
 process.source = cms.Source("PoolSource",
                             fileNames = cms.untracked.vstring(*files),
