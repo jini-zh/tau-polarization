@@ -178,6 +178,7 @@ private:
 	double dR;
 	double genTauFromW;
 	int genTauMother;
+	double W_pt;
 
 	double piChar_pt;
 	double piChar_eta;
@@ -379,6 +380,7 @@ void TreeMaker::beginJob() {
 	tree->Branch("gentau_found",&gentau_found, "gentau_found/D");
 	tree->Branch("dR", &dR, "dR/D");
 	tree->Branch("genTauFromW", &genTauFromW, "genTauFromW/D");
+	tree->Branch("W_pt", &W_pt, "W_pt/D");
 
 	tree->Branch("genTauMother", &genTauMother, "genTauMother/I");
 	
@@ -594,6 +596,7 @@ bool TreeMaker::FindGenTau(const edm::Event& event) {
 	genTauFromW   = null;
 	genTauMother  = null;
 	dR            = null;
+	W_pt          = null;
 
 	edm::Handle<reco::GenParticleCollection> genParticles;
 	event.getByToken(GenParticleToken_, genParticles);
@@ -652,6 +655,7 @@ bool TreeMaker::FindGenTau(const edm::Event& event) {
 		genTauMother = p->pdgId();
 		if (abs(p->pdgId()) == pdg_W) {
 			genTauFromW = 1;
+			W_pt        = p->pt();
 			break;
 		};
 	};
