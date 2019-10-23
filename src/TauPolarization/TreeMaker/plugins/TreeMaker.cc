@@ -98,6 +98,7 @@ private:
 	bool AddVertex    (const edm::Event&);
 	void CountTracks  (const edm::Event&);
 	bool JetPtSum     (const edm::Event&);
+	void AddWT        (const edm::Event&);
 
 	virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
 	//virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
@@ -136,6 +137,13 @@ private:
 	edm::EDGetTokenT<reco::PFTauDiscriminator> Token_tightMuonRejection;
 	edm::EDGetTokenT<reco::PFTauDiscriminator> Token_looseElectronRejection;
 	edm::EDGetTokenT<reco::PFTauDiscriminator> Token_tightElectronRejection;
+
+	edm::EDGetTokenT<double> TauSpinnerWTToken_;
+	edm::EDGetTokenT<double> TauSpinnerWTFlipToken_;
+	edm::EDGetTokenT<double> TauSpinnerWThminusToken_;
+	edm::EDGetTokenT<double> TauSpinnerWThplusToken_;
+	edm::EDGetTokenT<bool>   TauSpinnerWTisValidToken_;
+	edm::EDGetTokenT<int>    TauSpinnerMotherToken_;
 	
 	
 	TTree * tree;
@@ -207,6 +215,13 @@ private:
 	
 	math::XYZPoint pv_position;
 
+	double WT;
+	double WTFlip;
+	double WThminus;
+	double WThplus;
+	bool WTisValid;
+	int  TauSpinnerMother;
+
 	//////////////////////////////////////////////////////
 	bool isMC;
 	double tauPtMin;
@@ -214,6 +229,7 @@ private:
 	double tauEtaMax;
 	double tauDzMax;
 	double null;
+	bool monitoring;
 
 	int iT;
 };
@@ -234,6 +250,7 @@ TreeMaker::TreeMaker(const edm::ParameterSet& iConfig) {
 	iT =0;
 
 	isMC						= iConfig.getParameter<bool>("isMC");
+	monitoring					= iConfig.getParameter<bool>("monitoring");
 	tauPtMin 					= iConfig.getParameter<double>("tauPtMin");
 	piPtMin 					= iConfig.getParameter<double>("piPtMin");
 	tauEtaMax 					= iConfig.getParameter<double>("tauEtaMax");
@@ -289,6 +306,13 @@ TreeMaker::TreeMaker(const edm::ParameterSet& iConfig) {
 	Token_looseElectronRejection	= consumes<reco::PFTauDiscriminator>(edm::InputTag(looseElectronRejectionDiscriminator));
 	Token_tightElectronRejection	= consumes<reco::PFTauDiscriminator>(edm::InputTag(tightElectronRejectionDiscriminator));
 
+	TauSpinnerWTToken_        = consumes<double>(iConfig.getParameter<edm::InputTag>("WTCollection"));
+	TauSpinnerWTFlipToken_    = consumes<double>(iConfig.getParameter<edm::InputTag>("WTFlipCollection"));
+	TauSpinnerWThminusToken_  = consumes<double>(iConfig.getParameter<edm::InputTag>("WThminusCollection"));
+	TauSpinnerWThplusToken_   = consumes<double>(iConfig.getParameter<edm::InputTag>("WThplusCollection"));
+	TauSpinnerWTisValidToken_ = consumes<bool>(iConfig.getParameter<edm::InputTag>("WTisValidCollection"));
+	TauSpinnerMotherToken_    = consumes<int>(iConfig.getParameter<edm::InputTag>("MotherCollection"));
+
 }
 
 
@@ -307,15 +331,38 @@ void TreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
 	t_Run   = event.id().run();
 	t_Event = event.id().event();
 
-	if (!TriggerOK(event))    return;
-	if (!AddVertex(event))    return;
-	if (CheckMuon(event))     return;
-	if (CheckElectron(event)) return;
-	if (!AddMET(event))	  return;
-	if (!AddTau(event))	  return;
+	if (!TriggerOK(event)) {
+		if (monitoring) std::cout << "Trigger" << std::endl;
+		return;
+	}
+	if (!AddVertex(event)) {
+		if (monitoring) std::cout << "Vertex" << std::endl;
+		return;
+	}
+	if (CheckMuon(event)) {
+		if (monitoring) std::cout << "Muon" << std::endl;
+		return;
+	}
+	if (CheckElectron(event)) {
+		if (monitoring) std::cout << "Electron" << std::endl;
+		return;
+	}
+	if (!AddMET(event)) {
+		if (monitoring) std::cout << "MET" << std::endl;
+		return;
+	}
+	if (!AddTau(event)) {
+		if (monitoring) std::cout << "Tau" << std::endl;
+		return;
+	}
 	FindGenTau(event);
 	CountTracks(event);
-	if (!JetPtSum(event))     return;
+	if (!JetPtSum(event)) {
+		if (monitoring) std::cout << "Jet" << std::endl;
+		return;
+	}
+
+	AddWT(event);
 
 	TLorentzVector pi0, pi1;
 	pi0.SetPtEtaPhiM(piZero_pt, piZero_eta, piZero_phi, piZero_m);
@@ -404,6 +451,13 @@ void TreeMaker::beginJob() {
 	tree->Branch("nTauC",&nTauC,"nTauC/I");
 
 	tree->Branch("nPi0",&nPi0,"nPi0/I");
+
+	tree->Branch("WT", &WT, "WT/D");
+	tree->Branch("WTFlip", &WTFlip, "WTFlip/D");
+	tree->Branch("WThminus", &WThminus, "WThminus/D");
+	tree->Branch("WThplus", &WThplus, "WThplus/D");
+	tree->Branch("TauSpinnerMother", &TauSpinnerMother, "TauSpinnerMother/I");
+	//tree->Branch("WTisValid", &WTisValid, "WTisValid/D")
 	// add more branches
 	
 	allTauPt = FS->make<TH1F>("allTauPt","allTauPt",300,0,300);
@@ -729,6 +783,43 @@ void TreeMaker::CountTracks(const edm::Event& event) {
 	event.getByToken(TrackToken_, tracks);
 	if (!tracks.isValid()) return;
 	nTrks = tracks->size();
+};
+
+void TreeMaker::AddWT(const edm::Event& iEvent) {
+
+	edm::Handle<double> WTHandle;
+	iEvent.getByToken(TauSpinnerWTToken_, WTHandle);
+	edm::Handle<double> WTFlipHandle;
+	iEvent.getByToken(TauSpinnerWTFlipToken_, WTFlipHandle);
+	edm::Handle<double> WThminusHandle;
+	iEvent.getByToken(TauSpinnerWThminusToken_, WThminusHandle);
+	edm::Handle<double> WThplusHandle;
+	iEvent.getByToken(TauSpinnerWThplusToken_, WThplusHandle);
+	edm::Handle<bool>   WTisValidHandle;
+	iEvent.getByToken(TauSpinnerWTisValidToken_, WTisValidHandle);
+	edm::Handle<int>   TauMotherHandle;
+	iEvent.getByToken(TauSpinnerMotherToken_, TauMotherHandle);
+
+	if (!WTisValidHandle.isValid()) {
+		if (monitoring) std::cout << "WTisValidHandle is not valid" << std::endl;
+		return;
+	}
+	WTisValid = *WTisValidHandle;
+	if (WTisValid) {
+		WT        = *WTHandle;
+		WTFlip    = *WTFlipHandle;
+		WThminus  = *WThminusHandle;
+		WThplus   = *WThplusHandle;
+		TauSpinnerMother = *TauMotherHandle;
+	} else {
+		if (monitoring) std::cout << "WT Collections are no valid" << std::endl;
+		WT        = null;
+		WTFlip    = null;
+		WThminus  = null;
+		WThplus   = null;
+		TauSpinnerMother = null;
+	}
+
 };
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------

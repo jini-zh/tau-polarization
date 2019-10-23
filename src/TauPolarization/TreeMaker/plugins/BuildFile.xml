@@ -31,4 +31,7 @@
 <use   name="RecoVertex/AdaptiveVertexFit"/>
 <use   name="CommonTools/TriggerUtils"/>
 <use   name="root"/>
-<flags EDM_PLUGIN="1" CXXFLAGS="-Wno-unused-variable -Wno-error=unused-but-set-variable -Wno-parentheses" />
+<use   name="Tau/TreeMaker"/>
+<flags   EDM_PLUGIN="1"/>
+<library   name="TreeMaker" file="TreeMaker.cc"> </library>
+
