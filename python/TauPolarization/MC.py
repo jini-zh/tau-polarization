@@ -93,3 +93,10 @@ def WRToTauNu_191023():
 #  return files_re('WRToTauNu_13TeV', '191021_135640') \
 #       + files_re('WRToTauNu_13TeV', '191021_140726') \
 #       + files_re('WRToTauNu_13TeV', '191023_114855')
+
+# W -> tau nu
+# tau decays only into hadrons
+# tau is made unpolarized with Tauola
+# 47k events
+def WToTauNu_hadr_nopolar_191031():
+  return files_re('WToTauNu_hadr_nopolar_Tauola', '191031_182731')
