@@ -1,0 +1,115 @@
+#!/bin/bash
+
+usage() {
+  cat <<END
+This program generates CRAB input files for a Monte Carlo simulation
+Usage: ${0##*/} generator -n nevents -j jobs -t jobtime
+Where
+  generator: same generator as was given to driver.sh
+  nevents:   number of events per job
+  jobs:      number of jobs
+  jobtime:   maximal job runtime (minutes)
+END
+}
+
+die() {
+  echo "${0##*/}: $1" >&2
+  exit 1
+}
+
+argv="`getopt -o hn:j:t: -l help,nevents:,jobs:,jobtim: -- "$@"`" || exit $?
+eval "set -- $argv"
+while [[ $1 != -- ]]; do
+  case $1 in
+    -h|--help)    usage;        exit;;
+    -n|--nevents) nevents="$2"; shift 2;;
+    -j|--jobs)    jobs="$2";    shift 2;;
+    -t|--jobtime) jobtime="$2"; shift 2;;
+  esac
+done
+shift
+
+if (($# < 1)); then
+  die 'generator is a required argument'
+fi
+
+for arg in nevents jobs jobtime; do
+  if [[ -z ${!arg} ]]; then
+    die "$arg is a required argument"
+  fi
+done
+
+generator=$1
+
+base="${0%%/*}"
+
+for f in GEN-SIM{,-RAW{,-RECO}}; do
+  if ! [[ -e "${generator}_${f}.py" ]]; then
+    die "${generator}_${f}.py not found. Did you run driver.sh?"
+  fi
+done
+
+if [[ -z "$base" ]]; then
+  die 'cannot find directory with extra scripts'
+fi
+
+if ! [[ -e "$base/fwjr-merge" ]]; then
+  echo "$base/fwjr-merge: no such file"
+fi
+
+set -e
+
+echo 'Generating crab.py'
+cat > crab.py <<END
+from CRABClient.UserUtilities import config, getUsernameFromSiteDB
+
+config = config()
+
+config.General.requestName       = '$generator'
+config.General.workArea          = 'crab'
+config.General.transferOutputs   = True
+config.General.transferLogs      = True
+
+config.Data.outputPrimaryDataset = '$generator'
+config.Data.splitting            = 'EventBased'
+config.Data.unitsPerJob          = $nevents
+config.Data.totalUnits           = $((nevents * jobs))
+config.Data.outLFNDirBase        = '/store/user/ezhemchu/crab/$generator'
+config.Data.publication          = False
+
+config.JobType.pluginName        = 'PrivateMC'
+config.JobType.psetName          = '${generator}_GEN-SIM.py'
+config.JobType.maxJobRuntimeMin  = $jobtime
+config.JobType.inputFiles        = [
+    '${generator}_GEN-SIM-RAW.py',
+    '${generator}_GEN-SIM-RAW-RECO.py',
+    'fwjr-merge'
+]
+config.JobType.scriptExe         = 'crab.sh'
+config.JobType.outputFiles       = [
+    '${generator}_GEN-SIM-RAW.root',
+    '${generator}_GEN-SIM-RAW-RECO.root'
+]
+
+config.JobType.allowUndistributedCMSSW = True
+
+config.Site.storageSite          = 'T3_RU_MEPhI'
+END
+
+echo 'Generating crab.sh'
+cat > crab.sh <<END
+#!/bin/bash
+
+set -xe
+
+cmsRun -j ${generator}_GEN-SIM.xml PSet.py
+cmsRun -j ${generator}_GEN-SIM-RAW.xml ${generator}_GEN-SIM-RAW.py
+cmsRun -j ${generator}_GEN-SIM-RAW-RECO.xml ${generator}_GEN-SIM-RAW-RECO.py
+
+./fwjr-merge ${generator}_GEN-SIM{,-RAW{,-RECO}}.xml > FrameworkJobReport.xml
+END
+chmod +x crab.sh
+
+cp -vL "$base/fwjr-merge" .
+
+echo "Done. Now run \`crab submit -c crab.py'"
