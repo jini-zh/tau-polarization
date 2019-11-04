@@ -100,3 +100,10 @@ def WRToTauNu_191023():
 # 47k events
 def WToTauNu_hadr_nopolar_191031():
   return files_re('WToTauNu_hadr_nopolar_Tauola', '191031_182731')
+
+# W -> tau nu
+# tau decays only into hadrons
+# tau is made unpolarized with Pythia
+# 29k events
+def WToTauNu_hadr_nopolar_191102():
+  return files_re('WToTauNu_hadr_nopolar_Pythia', '191102_114058')
