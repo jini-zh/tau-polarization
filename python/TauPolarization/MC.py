@@ -108,3 +108,11 @@ def WToTauNu_hadr_nopolar_191031():
 def WToTauNu_hadr_right_191102():
   # the files were erroneously named 'nopolar'
   return files_re('WToTauNu_hadr_nopolar_Pythia', '191102_114058')
+
+# W -> tau nu
+# tau decays only to hadrons
+# tau is made unpolarized with Tauola
+# tau pt is forced to be larger than 50 GeV by Pythia
+# 50k events
+def WToTauNu_hadr_nopolar_191117():
+  return files_range('WToTauNu_hadr_nopolar_Tauola', '191117_124910', 50)
