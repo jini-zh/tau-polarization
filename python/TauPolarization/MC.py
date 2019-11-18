@@ -103,7 +103,8 @@ def WToTauNu_hadr_nopolar_191031():
 
 # W -> tau nu
 # tau decays only into hadrons
-# tau is made unpolarized with Pythia
+# tau is made right-handed with Pythia
 # 29k events
-def WToTauNu_hadr_nopolar_191102():
+def WToTauNu_hadr_right_191102():
+  # the files were erroneously named 'nopolar'
   return files_re('WToTauNu_hadr_nopolar_Pythia', '191102_114058')
