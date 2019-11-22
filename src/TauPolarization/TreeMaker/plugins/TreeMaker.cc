@@ -62,6 +62,8 @@
 #include "Math/LorentzVector.h"
 #include "Math/Point3D.h"
 
+#include "Tau/TauAnalyzer/plugins/MySimpleParticle.h"
+
 static inline double sqr(double x) {
 	return x * x;
 }
@@ -100,6 +102,8 @@ private:
 	bool JetPtSum     (const edm::Event&);
 	void AddWT        (const edm::Event&);
 	void AddWTData    (const edm::Event&);
+	bool DecaychannelMatch (std::vector<MySimpleParticle> &particles, int p1, int p2=0, int p3=0, int p4=0, int p5=0, int p6=0);
+	void GenTauDM          (const edm::Event&);
 
 	virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
 	//virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
@@ -145,6 +149,8 @@ private:
 	edm::EDGetTokenT<double> TauSpinnerWThplusToken_;
 	edm::EDGetTokenT<bool>   TauSpinnerWTisValidToken_;
 	edm::EDGetTokenT<int>    TauSpinnerMotherToken_;
+	edm::EDGetTokenT<bool>   Photon1Token_;
+	edm::EDGetTokenT<bool>   Photon2Token_;
 	
 	
 	TTree * tree;
@@ -216,12 +222,15 @@ private:
 	
 	math::XYZPoint pv_position;
 
+	int GenHadronDecayChannel;
+
 	double WT;
 	double WTFlip;
 	double WThminus;
 	double WThplus;
 	bool WTisValid;
 	int  TauSpinnerMother;
+	bool PhotonFlag1, PhotonFlag2;
 
 	//////////////////////////////////////////////////////
 	bool isMC;
@@ -231,6 +240,7 @@ private:
 	double tauDzMax;
 	double null;
 	bool monitoring;
+	double METcut;
 
 	int iT;
 };
@@ -257,6 +267,7 @@ TreeMaker::TreeMaker(const edm::ParameterSet& iConfig) {
 	tauEtaMax 					= iConfig.getParameter<double>("tauEtaMax");
 	tauDzMax 					= iConfig.getParameter<double>("tauDzMax");
 	null 						= iConfig.getParameter<double>("null");
+	METcut                                          = iConfig.getParameter<double>("METcut");
 	
 	trigNames 					= iConfig.getParameter<std::vector<std::string>>("Triggers");
 	triggerEvent_				= edm::InputTag("hltTriggerSummaryAOD","","HLT");
@@ -314,6 +325,8 @@ TreeMaker::TreeMaker(const edm::ParameterSet& iConfig) {
 		TauSpinnerWThplusToken_   = consumes<double>(iConfig.getParameter<edm::InputTag>("WThplusCollection"));
 		TauSpinnerWTisValidToken_ = consumes<bool>(iConfig.getParameter<edm::InputTag>("WTisValidCollection"));
 		TauSpinnerMotherToken_    = consumes<int>(iConfig.getParameter<edm::InputTag>("MotherCollection"));
+		Photon1Token_             = consumes<bool>(iConfig.getParameter<edm::InputTag>("Photon1Flag"));
+		Photon2Token_             = consumes<bool>(iConfig.getParameter<edm::InputTag>("Photon2Flag"));
 	}
 
 }
@@ -328,7 +341,7 @@ TreeMaker::~TreeMaker() {
 
 //
 // member functions
-//
+//GenTauDM
 
 void TreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
 	t_Run   = event.id().run();
@@ -359,6 +372,7 @@ void TreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
 		return;
 	}
 	FindGenTau(event);
+	GenTauDM(event);
 	CountTracks(event);
 	if (!JetPtSum(event)) {
 		if (monitoring) std::cout << "Jet" << std::endl;
@@ -368,6 +382,13 @@ void TreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
 		AddWT(event);
 	} else {
 		AddWTData(event);
+	}
+
+	if (monitoring) {
+		std::cout << "Gentau Decay channel = " << GenHadronDecayChannel << std::endl;
+		std::cout << "WT           = " << WT << std::endl;
+		std::cout << "gentau_found = " << gentau_found << std::endl;
+		std::cout << "tau_found = " << tau_found << std::endl;
 	}
 
 	TLorentzVector pi0, pi1;
@@ -382,6 +403,8 @@ void TreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
 	RHT20    = tau_pt / jetPtSum20;
 	dPhi	 = dphi(tau_phi, met_phi);
 	m_t      = sqrt(2 * tau_pt * met * (1 - cos(dPhi)));
+
+	if (monitoring) std::cout << "Event was writen to the tree" << std::endl;
 
 	tree->Fill();
 };
@@ -463,6 +486,9 @@ void TreeMaker::beginJob() {
 	tree->Branch("WThminus", &WThminus, "WThminus/D");
 	tree->Branch("WThplus", &WThplus, "WThplus/D");
 	tree->Branch("TauSpinnerMother", &TauSpinnerMother, "TauSpinnerMother/I");
+	tree->Branch("PhotonFlag1", &PhotonFlag1, "PhotonFlag1/B");
+	tree->Branch("PhotonFlag2", &PhotonFlag2, "PhotonFlag2/B");
+	tree->Branch("GenHadronDecayChannel", &GenHadronDecayChannel, "GenHadronDecayChannel/I");
 	//tree->Branch("WTisValid", &WTisValid, "WTisValid/D")
 	// add more branches
 	
@@ -719,6 +745,12 @@ bool TreeMaker::FindGenTau(const edm::Event& event) {
 			break;
 		};
 	};
+	if (monitoring) {
+		std::cout << "Final result:" << std::endl;
+		std::cout << "genTauMother PDGId = " << genTauMother << std::endl;
+		std::cout << "genTauFromW        = " << genTauFromW << std::endl;
+		std::cout << "W_pt               = " << W_pt << std::endl;
+	}
 	return true;
 };
 
@@ -746,6 +778,7 @@ bool TreeMaker::AddMET(const edm::Event& event) {
 	auto& MET = mets->front();
 	met = MET.pt();
 	met_phi = MET.phi();
+	if (met < METcut) return false;
 	return true;
 }
 
@@ -805,6 +838,10 @@ void TreeMaker::AddWT(const edm::Event& iEvent) {
 	iEvent.getByToken(TauSpinnerWTisValidToken_, WTisValidHandle);
 	edm::Handle<int>   TauMotherHandle;
 	iEvent.getByToken(TauSpinnerMotherToken_, TauMotherHandle);
+	edm::Handle<bool>   PhotonEmission1;
+	iEvent.getByToken(Photon1Token_, PhotonEmission1);
+	edm::Handle<bool>   PhotonEmission2;
+	iEvent.getByToken(Photon2Token_, PhotonEmission2);
 
 	if (!WTisValidHandle.isValid()) {
 		if (monitoring) std::cout << "WTisValidHandle is not valid" << std::endl;
@@ -817,6 +854,8 @@ void TreeMaker::AddWT(const edm::Event& iEvent) {
 		WThminus  = *WThminusHandle;
 		WThplus   = *WThplusHandle;
 		TauSpinnerMother = *TauMotherHandle;
+		PhotonFlag1 = *PhotonEmission1;
+		PhotonFlag2 = *PhotonEmission2;
 	} else {
 		if (monitoring) std::cout << "WT Collections are not valid" << std::endl;
 		WT        = null;
@@ -824,6 +863,8 @@ void TreeMaker::AddWT(const edm::Event& iEvent) {
 		WThminus  = null;
 		WThplus   = null;
 		TauSpinnerMother = null;
+		PhotonFlag1 = null;
+		PhotonFlag2 = null;
 	}
 
 };
@@ -837,6 +878,210 @@ void TreeMaker::AddWTData(const edm::Event& iEvent) {
 	WThminus  = One;
 	WThplus   = One;
 	TauSpinnerMother = null;
+}
+
+void TreeMaker::GenTauDM (const edm::Event& iEvent) {
+
+  edm::Handle<reco::GenParticleCollection> GP;
+  iEvent.getByToken(GenParticleToken_, GP);
+
+  int channel = null;
+
+  if(GP.isValid()) {
+    if (monitoring) std::cout << "GenParticles collection is valid" << std::endl;
+    for(unsigned i = 0 ; i < GP->size() ; i++) {
+      if (abs((*GP)[i].pdgId())==15) {
+        channel = -1;
+	int tau_pdgid = (*GP)[i].pdgId();
+
+        //std::vector<SimpleParticle> tau_daughters_simple;
+	std::vector<MySimpleParticle> tau_daughters;
+        for (unsigned k = 0; k < (*GP)[i].numberOfDaughters(); k++) {
+          MySimpleParticle tp((*GP)[i].daughter(k)->p4().Px(), (*GP)[i].daughter(k)->p4().Py(), (*GP)[i].daughter(k)->p4().Pz(), (*GP)[i].daughter(k)->p4().E(), (*GP)[i].daughter(k)->pdgId());
+          tau_daughters.push_back(tp);
+        }
+
+        std::vector<int>  pdgid;
+        for (unsigned int l = 0; l < tau_daughters.size(); l++) {
+          pdgid.push_back(tau_daughters[l].pdgid());
+        }
+        if( pdgid.size() == 2 &&
+            (
+              ( tau_pdgid == 15 && DecaychannelMatch(tau_daughters, 16,-211) ) ||
+              ( tau_pdgid ==-15 && DecaychannelMatch(tau_daughters,-16, 211) ) ||
+              ( tau_pdgid == 15 && DecaychannelMatch(tau_daughters, 16,-321) ) ||
+              ( tau_pdgid ==-15 && DecaychannelMatch(tau_daughters,-16, 321) )
+            )
+          ) {
+          channel = 3;
+          if (abs(pdgid[1]) == 321) channel = 6;
+        }
+        else if ( pdgid.size() == 3 &&
+            (
+              ( tau_pdgid== 15 && DecaychannelMatch(tau_daughters, 16,-211, 111) ) ||
+              ( tau_pdgid==-15 && DecaychannelMatch(tau_daughters,-16, 211, 111) ) ||
+              ( tau_pdgid== 15 && DecaychannelMatch(tau_daughters, 16,-211, 130) ) ||
+              ( tau_pdgid==-15 && DecaychannelMatch(tau_daughters,-16, 211, 130) ) ||
+              ( tau_pdgid== 15 && DecaychannelMatch(tau_daughters, 16,-211, 310) ) ||
+              ( tau_pdgid==-15 && DecaychannelMatch(tau_daughters,-16, 211, 310) ) ||
+              ( tau_pdgid== 15 && DecaychannelMatch(tau_daughters, 16,-321, 111) ) ||
+              ( tau_pdgid==-15 && DecaychannelMatch(tau_daughters,-16, 321, 111) )
+            )
+          ) {
+ 
+          channel = 4;
+          if(abs(pdgid[1])==321 || abs(pdgid[2])==130 || abs(pdgid[2])==310) channel = 7;
+        }
+        else if( pdgid.size() == 4 &&
+            (
+              ( tau_pdgid== 15 && DecaychannelMatch(tau_daughters, 16, 111, 111,-211) ) ||
+              ( tau_pdgid==-15 && DecaychannelMatch(tau_daughters,-16, 111, 111, 211) )
+            )
+          ) {
+          channel = 5;
+        }
+        else if( pdgid.size() == 4 &&
+            (
+              ( tau_pdgid== 15 && DecaychannelMatch(tau_daughters, 16,-211,-211, 211) ) ||
+              ( tau_pdgid==-15 && DecaychannelMatch(tau_daughters,-16, 211, 211,-211) )
+            )
+          ) {
+          channel = 6;
+        }
+        else if( pdgid.size()==5 &&
+            (
+              ( tau_pdgid== 15 && DecaychannelMatch(tau_daughters, 16,-211,-211, 211, 111) ) ||
+              ( tau_pdgid==-15 && DecaychannelMatch(tau_daughters,-16, 211, 211,-211, 111) )
+            )
+          ) {
+          channel = 8;
+        }
+        else if( pdgid.size()==5 &&
+            (
+              ( tau_pdgid== 15 && DecaychannelMatch(tau_daughters, 16, 111, 111, 111,-211) ) ||
+              ( tau_pdgid==-15 && DecaychannelMatch(tau_daughters,-16, 111, 111, 111, 211) )
+            )
+          ) {
+          channel = 9;
+        }
+        else if( pdgid.size()==3 &&
+            (
+              ( tau_pdgid== 15 && DecaychannelMatch(tau_daughters, 16, 11,-12) ) ||
+              ( tau_pdgid==-15 && DecaychannelMatch(tau_daughters,-16,-11, 12) )
+            )
+          ) {
+          channel = 1;
+        }
+        else if( pdgid.size()==4 &&
+            (
+              ( tau_pdgid== 15 && DecaychannelMatch(tau_daughters, 16, 11,-12, 22) ) ||
+              ( tau_pdgid==-15 && DecaychannelMatch(tau_daughters,-16,-11, 12, 22) )
+            )
+          ) {
+          channel = 1;
+        }
+        else if( pdgid.size()==3 &&
+            (
+              ( tau_pdgid== 15 && DecaychannelMatch(tau_daughters, 16, 13,-14) ) ||
+              ( tau_pdgid==-15 && DecaychannelMatch(tau_daughters,-16,-13, 14) )
+            )
+          ) {
+          channel = 2;
+        }
+        else if( pdgid.size()==4 &&
+            (
+              ( tau_pdgid== 15 && DecaychannelMatch(tau_daughters, 16, 13,-14, 22) ) ||
+              ( tau_pdgid==-15 && DecaychannelMatch(tau_daughters,-16,-13, 14, 22) )
+            )
+          ) {
+          channel = 2;
+        }
+      }
+      if (channel == -1 && abs((*GP)[i].pdgId())==15 && monitoring) {
+        std::cout << "Unidentified decay channel of tau was found" << std::endl;
+	std::cout << "List of daughters:" << std::endl;
+        for (unsigned t = 0; t < (*GP)[i].numberOfDaughters(); t++) {
+          std::cout << "TauDaughter[" << t << "] pdgId = " << (*GP)[i].daughter(t)->pdgId() << std::endl;
+        }
+      }
+    }
+  }
+  GenHadronDecayChannel = channel;
+  if (GP.isValid() && GenHadronDecayChannel == null && tau_found == 1 && monitoring) {
+    std::cout << "There are no tau leptons among Gen particles" << std::endl;
+    std::cout << "tau_eta    = " << tau_eta << "   " << "tau_phi    = " << tau_phi << std::endl;
+    for(unsigned j = 0 ; j < GP->size() ; j++) {
+      if (abs(tau_eta - (*GP)[j].eta()) < 0.1 && abs(tau_phi - (*GP)[j].phi()) < 0.1) {
+        std::cout << "GP[" << j << "] pdgId = " << (*GP)[j].pdgId() << std::endl;
+      }
+    }
+    std::cout << "piChar_eta = " << piChar_eta << "   " << "piChar_phi = " << piChar_phi << std::endl;
+    for(unsigned j = 0 ; j < GP->size() ; j++) {
+      if (abs(piChar_eta - (*GP)[j].eta()) < 0.1 && abs(piChar_phi - (*GP)[j].phi()) < 0.1) {
+        std::cout << "GP[" << j << "] pdgId = " << (*GP)[j].pdgId() << std::endl;
+      }
+    }
+    std::cout << "piZero_eta = " << piZero_eta << "   " << "piZero_phi = " << piZero_phi << std::endl;
+    for(unsigned j = 0 ; j < GP->size() ; j++) {
+      if (abs(piZero_eta - (*GP)[j].eta()) < 0.1 && abs(piZero_phi - (*GP)[j].phi()) < 0.1) {
+        std::cout << "GP[" << j << "] pdgId = " << (*GP)[j].pdgId() << std::endl;
+      }
+    }
+  }
+}
+
+bool TreeMaker::DecaychannelMatch(std::vector<MySimpleParticle> &particles, int p1, int p2, int p3, int p4, int p5, int p6) {
+  // Copy pdgid-s of all particles
+  std::vector<int> list;
+  
+  // Fill vector list with PGDId-s of tau daughters
+  for (unsigned int i = 0; i < particles.size(); i++) list.push_back(particles[i].pdgid());
+  
+  // Create array out of pdgid-s
+  int p[6] = { p1, p2, p3, p4, p5, p6 };
+
+  // 1) Check if 'particles' contain all pdgid-s on the list 'p'
+  for (int i = 0; i < 6; i++) {
+    // if the pdgid is zero - finish (the list of searched particles ends)
+    if(p[i] == 0) break;
+    bool found = false;
+    // Loop over tau daughters
+    for (unsigned int j = 0;j < list.size(); j++) {
+      // if pdgid is found - erese it from the list and search for the next one
+      if(list[j] == p[i]) {
+        found = true;
+        list.erase(list.begin()+j);
+        break;
+      }
+    }
+    
+    if(!found) return false;
+  }
+  
+  // if there are more particles on the list - there is no match
+  if(list.size()!=0) return false;
+
+  
+  // 2) Rearrange particles to match the order of pdgid-s listed in array 'p'
+
+  std::vector<MySimpleParticle> newList;
+  
+  for(int i = 0; i < 6; i++) {
+    // if the pdgid is zero - finish
+    if(p[i] == 0) break;
+    for(unsigned int j = 0; j < particles.size(); j++) {
+      // if pdgid is found - copy it to new list and erese from the old one
+      if(particles[j].pdgid() == p[i]) {
+        newList.push_back(particles[j]);
+        particles.erase(particles.begin()+j);
+        break;
+      }
+    }
+  }
+  
+  particles = newList;
+
+  return true;
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------

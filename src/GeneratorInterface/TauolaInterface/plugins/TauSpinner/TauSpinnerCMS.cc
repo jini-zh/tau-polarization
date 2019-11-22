@@ -32,9 +32,9 @@ TauSpinnerCMS::TauSpinnerCMS(const ParameterSet &pset)
       CMSEnergy_(pset.getParameter<double>("CMSEnergy"))  //GeV
       ,
       gensrc_(pset.getParameter<edm::InputTag>("gensrc")),
-      MotherPDGID_(pset.getUntrackedParameter("MotherPDGID", (int)(-1))), // -1 - all particles
+      MotherPDGID_(pset.getUntrackedParameter("MotherPDGID", (int)(24))), // -1 - all particles
       Ipol_(pset.getUntrackedParameter("Ipol", (int)(0))), // For Z/gamma case only???
-      nonSM2_(pset.getUntrackedParameter("nonSM2", (int)(0))),
+      nonSM2_(pset.getUntrackedParameter("nonSM2", (int)(1))),
       nonSMN_(pset.getUntrackedParameter("nonSMN", (int)(0))),
       monitoring(pset.getParameter<bool>("monitoring")),
       roundOff_(pset.getUntrackedParameter("roundOff", (double)(0.01))) {
@@ -42,11 +42,15 @@ TauSpinnerCMS::TauSpinnerCMS(const ParameterSet &pset)
   usesResource(edm::SharedResourceNames::kTauola);
 
   produces<bool>("TauSpinnerWTisValid").setBranchAlias("TauSpinnerWTisValid");
+  produces<bool>("PhotonEmisson1").setBranchAlias("PhotonEmisson1");
+  produces<bool>("PhotonEmisson2").setBranchAlias("PhotonEmisson2");
   produces<double>("TauSpinnerWT").setBranchAlias("TauSpinnerWT");
   produces<double>("TauSpinnerWTFlip").setBranchAlias("TauSpinnerWTFlip");
   produces<double>("TauSpinnerWThplus").setBranchAlias("TauSpinnerWThplus");
   produces<double>("TauSpinnerWThminus").setBranchAlias("TauSpinnerWThminus");
   produces<int>("TauSpinnerMother").setBranchAlias("TauSpinnerMother");
+  produces<double>("TauPolarisation").setBranchAlias("TauPolarisation");
+  produces<std::vector<double>>("PolarimetricVector").setBranchAlias("PolarimetricVector");
 
   if (isReco_) {
     GenParticleCollectionToken_ = consumes<reco::GenParticleCollection>(gensrc_);
@@ -94,6 +98,9 @@ void TauSpinnerCMS::produce(edm::Event &e, const edm::EventSetup &iSetup) {
   std::vector<SimpleParticle> tau_daughters, tau_daughters2;
   int stat(0);
   int MotherPDGId = 0;
+  std::vector<double> HHvector;
+  bool Photon1 = false;
+  bool Photon2 = false;
 
   EventNumber++;
   if (monitoring) {
@@ -102,9 +109,21 @@ void TauSpinnerCMS::produce(edm::Event &e, const edm::EventSetup &iSetup) {
   }
 
   if (isReco_) {
-  	// readParticlesfromReco returns 0 if there is decay with tau
-  	// returns 1 if there are no taus
+    // readParticlesfromReco returns 0 if there is decay with tau
+    // returns 1 if there are no taus
     stat = readParticlesfromReco(e, X, tau, tau2, tau_daughters, tau_daughters2);
+
+    if (stat == 23) {
+      Photon1 = true;
+      Photon2 = true;
+    } else if (stat == 2) {
+      Photon1 = true;
+      Photon2 = false;
+    } else if (stat == 3) {
+      Photon1 = false;
+      Photon2 = true;
+    }
+
     if (monitoring) {
       std::cout << "stat = " << stat << endl;
       std::cout << "Total number of tau leptons = " << TauCounter << endl;
@@ -123,11 +142,16 @@ void TauSpinnerCMS::produce(edm::Event &e, const edm::EventSetup &iSetup) {
     if (stat != 1) {
       // Determine the weight
       // Wheights for W+ and H+
-      if (abs(X.pdgid()) == 24 || abs(X.pdgid()) == 37) {
+      if (abs(X.pdgid()) == 24 || abs(X.pdgid()) == 37 || abs(X.pdgid()) == 9900024) {
       	if (abs(X.pdgid()) == 24) {
       	  if (monitoring) std::cout << "W+ is mother" << std::endl;
       	} else if (abs(X.pdgid()) == 37) {
       	  if (monitoring) std::cout << "H+ is mother" << std::endl;
+      	} else if (abs(X.pdgid()) == 9900024) {
+      	  if (monitoring) std::cout << "W_R is mother (" << X.pdgid() << ")" << std::endl;
+      	  // set PDGId of H+ instead of W_R
+      	  X.setPdgid(SignumPDG(X.pdgid()) * 37);
+	  //std::cout << "New PDGId = " << X.pdgid() << std::endl;
       	}
         TLorentzVector tau_1r(0, 0, 0, 0);
         TLorentzVector tau_1(tau.px(), tau.py(), tau.pz(), tau.e());
@@ -140,6 +164,40 @@ void TauSpinnerCMS::produce(edm::Event &e, const edm::EventSetup &iSetup) {
               X, tau, tau2, tau_daughters);  // note that tau2 is tau neutrino
           polSM = getTauSpin();
           WTFlip = (2.0 - WT) / WT;
+
+          //-----------------------------------------------------------------------------------------------------
+	  // Prepare kinematic fo HH and calculate HH for Tau daughters
+	  double phi2 = 0.0, theta2 = 0.0;
+	  // Create Particles from SimpleParticles because method calculateWeightFromParticlesWorHpn takes SimpleParticles
+	  // while prepareKinematicForHH and calculateHH take Particles
+ 
+	  Particle X_new     (   X.px(),    X.py(),    X.pz(),    X.e(),    X.pdgid() );
+	  Particle tau_new   ( tau.px(),  tau.py(),  tau.pz(),  tau.e(),  tau.pdgid() );
+	  Particle nu_tau_new(tau2.px(), tau2.py(), tau2.pz(), tau2.e(), tau2.pdgid() );
+ 
+	  vector<Particle> tau_daughters_new;
+ 
+	  // tau pdgid
+	  int tau_pdgid = tau.pdgid();
+ 
+	  // Create list of tau daughters
+	  for(unsigned int i = 0; i < tau_daughters.size(); i++) {
+	  Particle pp(tau_daughters[i].px(),
+          tau_daughters[i].py(),
+	  tau_daughters[i].pz(),
+	  tau_daughters[i].e(),
+	  tau_daughters[i].pdgid() );
+ 
+	  tau_daughters_new.push_back(pp);
+	  }
+	  prepareKinematicForHH   (tau_new, nu_tau_new, tau_daughters_new, &phi2, &theta2);
+	  double *HH = calculateHH(tau_pdgid, tau_daughters_new, phi2, theta2);
+	  HHvector.clear();
+	  for (unsigned k = 0; k < 4; k++) {
+	    HHvector.push_back(HH[k]);
+	    if (monitoring) std::cout << "HH[" << k << "] = " << HH[k] << std::endl;
+          }
+          //-----------------------------------------------------------------------------------------------------
 
           // Monitoring of values
           if (monitoring) {
@@ -218,6 +276,24 @@ void TauSpinnerCMS::produce(edm::Event &e, const edm::EventSetup &iSetup) {
   *TauSpinnerMother = MotherPDGId;
   e.put(std::move(TauSpinnerMother), "TauSpinnerMother");
 
+  // Polarimetric vector for Tau from W -> tau + nu
+  std::unique_ptr<std::vector<double>> PolarimetricVector(new std::vector<double>);
+  *PolarimetricVector = HHvector;
+  e.put(std::move(PolarimetricVector), "PolarimetricVector");
+
+  std::unique_ptr<bool> PhotonEmisson1(new bool);
+  *PhotonEmisson1 = Photon1;
+  e.put(std::move(PhotonEmisson1), "PhotonEmisson1");
+
+  std::unique_ptr<bool> PhotonEmisson2(new bool);
+  *PhotonEmisson2 = Photon2;
+  e.put(std::move(PhotonEmisson2), "PhotonEmisson2");
+
+  // Type of polariztion polSM
+  std::unique_ptr<double> TauPolarisation(new double);
+  *TauPolarisation = polSM;
+  e.put(std::move(TauPolarisation), "TauPolarisation");
+
   // regular weight
   std::unique_ptr<double> TauSpinnerWeight(new double);
   *TauSpinnerWeight = WT;
@@ -252,31 +328,43 @@ int TauSpinnerCMS::readParticlesfromReco(edm::Event &e,
                                          SimpleParticle &tau2,
                                          std::vector<SimpleParticle> &tau_daughters,
                                          std::vector<SimpleParticle> &tau2_daughters) {
+  if (monitoring) std::cout << "start readParticlesfromReco method" << std::endl;
   edm::Handle<reco::GenParticleCollection> genParticles;
   e.getByToken(GenParticleCollectionToken_, genParticles);
   // Loop over genParticles
   for (reco::GenParticleCollection::const_iterator itr = genParticles->begin(); itr != genParticles->end(); ++itr) {
     int pdgid = abs(itr->pdgId());
-    // 24 - W+
-    // 37 - H+
-    // 25 - H0
-    // 22 - gamma
-    // 23 - Z0
+    //std::cout << "PDGID of genparticle = " << pdgid << std::endl;
+    // 24      - W+
+    // 9900024 - W_R
+    // 37      - H+
+    // 25      - H0
+    // 22      - gamma
+    // 23      - Z0
     // genParticles must be W, H, Z, gamma, etc
-    if (pdgid == 24 || pdgid == 37 || pdgid == 25 || pdgid == 36 || pdgid == 22 || pdgid == 23) {
+    // replace initial list of mother particles to avoid gamma checking
+    //if (pdgid == 24 || pdgid == 37 || pdgid == 25 || pdgid == 36 || pdgid == 22 || pdgid == 23 || pdgid == 9900024) {
+    if (pdgid == MotherPDGID_) {
+      if (monitoring) std::cout << "Found mother particle with PDGId = " << pdgid << std::endl;
       const reco::GenParticle *hx = &(*itr);
+      if (monitoring) std::cout << "Cheking initial mother daughters list (PDGId = " << itr->pdgId() << ")" << std::endl;
+      for (unsigned int i = 0; i < itr->numberOfDaughters(); i++) {
+	const reco::GenParticle *dauinit = static_cast<const reco::GenParticle *>(itr->daughter(i));
+        if (monitoring) std::cout << "Daughter " << i << " pdgid = " << dauinit->pdgId() << std::endl;
+      }
       const reco::GenParticle *LastMotherParticle;
       // If hx is same with it's mother particles returns false
       if (!isFirst(hx))
         continue;
       // recurrent function checks if PDGID of daughter of particle hx is the same with hx's PDGID
       // the replace argument with daughter particle and check it and so on
-      // std::cout << "Calling GetLastSelf method for MOTHER particle" << endl;
-      //if (pdgid == 24) {
-      //  std::cout << "GetLastSelf method for W-boson " << endl;
-      //}
-      GetLastSelfNew(hx, LastMotherParticle);
 
+      GetLastSelfNew(hx, LastMotherParticle);
+      if (monitoring) std::cout << "Cheking last mother daughters list (PDGId = " << LastMotherParticle->pdgId() << ")" << std::endl;
+      for (unsigned int i = 0; i < LastMotherParticle->numberOfDaughters(); i++) {
+	const reco::GenParticle *daulast = static_cast<const reco::GenParticle *>(LastMotherParticle->daughter(i));
+        if (monitoring) std::cout << "Daughter " << i << " pdgid = " << daulast->pdgId() << std::endl;
+      }
       // Now check the value LastMotherParticle and it's daughter particles
       /*
       if (pdgid == 24) {
@@ -290,36 +378,18 @@ int TauSpinnerCMS::readParticlesfromReco(edm::Event &e,
 
       const reco::GenParticle *recotau1 = nullptr;
       const reco::GenParticle *recotau2 = nullptr;
+      const reco::GenParticle *LastRecotau1 = nullptr;
+      const reco::GenParticle *LastRecotau2 = nullptr;
+      bool Photon1_found = false;
+      bool Photon2_found = false;
       unsigned int ntau(0), ntauornu(0);
-      /*
-      // Loop over itr daughters
-      for (unsigned int i = 0; i < itr->numberOfDaughters(); i++) {
-        const reco::Candidate *dau = itr->daughter(i);
-        if (abs(dau->pdgId()) != pdgid) {
-          if (abs(dau->pdgId()) == 15 || abs(dau->pdgId()) == 16) {
-            if (ntau == 0 && abs(dau->pdgId()) == 15) {
-              std::cout << "Found tau in 1st step" << endl;
-              recotau1 = static_cast<const reco::GenParticle *>(dau);
-              GetLastSelf(recotau1);
-              ntau++;
-            } else if ((ntau == 1 && abs(dau->pdgId()) == 15) || abs(dau->pdgId()) == 16) {
-              recotau2 = static_cast<const reco::GenParticle *>(dau);
-              if (abs(dau->pdgId()) == 15) {
-                ntau++;
-                GetLastSelf(recotau2);
-              }
-            }
-            ntauornu++;
-          }
-        }
-      }
-      */
+
       for (unsigned int i = 0; i < LastMotherParticle->numberOfDaughters(); i++) {
         const reco::Candidate *dau = LastMotherParticle->daughter(i);
         if (abs(dau->pdgId()) != pdgid) {
-          if (abs(dau->pdgId()) == 15 || abs(dau->pdgId()) == 16) {
+	  // Add Tau_nu_R pdgID = 9900016
+          if (abs(dau->pdgId()) == 15 || abs(dau->pdgId()) == 16 || abs(dau->pdgId()) == 9900016) {
             if (ntau == 0 && abs(dau->pdgId()) == 15) {
-              //std::cout << "Found tau 1!" << endl;
               recotau1 = static_cast<const reco::GenParticle *>(dau);
               if(monitoring) {
                 std::cout << "recotau1 pdgId = " << recotau1->pdgId() << endl;
@@ -327,59 +397,135 @@ int TauSpinnerCMS::readParticlesfromReco(edm::Event &e,
               }
               for (unsigned int j = 0; j < recotau1->numberOfDaughters(); j++) {
                 const reco::GenParticle *dau1 = static_cast<const reco::GenParticle *>(recotau1->daughter(j));
+		if (abs(dau1->pdgId()) == 22) {
+		  Photon1_found = true;
+		  for (unsigned int k = 0; k < recotau1->numberOfDaughters(); k++) {
+		    const reco::GenParticle *dau11 = static_cast<const reco::GenParticle *>(recotau1->daughter(k));
+		    if (dau11->pdgId() == recotau1->pdgId()) LastRecotau1 = dau11;
+		  }
+		}
                 if(monitoring) std::cout << "Daughter of recotau1 number " << j << "   " << dau1->pdgId() << endl;
               }
 
-              GetLastSelf(recotau1);
+              //GetLastSelf(recotau1);
+              GetLastSelfNew(recotau1, LastRecotau1);
               ntau++;
-            } else if ((ntau == 1 && abs(dau->pdgId()) == 15) || abs(dau->pdgId()) == 16) {
+            } else if ((ntau == 1 && abs(dau->pdgId()) == 15) || abs(dau->pdgId()) == 16 || abs(dau->pdgId()) == 9900016) {
               recotau2 = static_cast<const reco::GenParticle *>(dau);
+	      // recotau2 was const
+	      // recotau2 = const_cast<reco::GenParticle *>(static_cast<const reco::GenParticle *>(dau));
+	      //if (abs(recotau2->pdgId()) == 9900016) {
+	      //  recotau2->setPdgId(SignumPDG(recotau2->pdgId()) * 16);
+	      //}
               if(monitoring) {
-                std::cout << "recotau2 pdgId = " << recotau1->pdgId() << endl;
-                std::cout << "Simple check of recotau1 daughters" << endl;
+                std::cout << "recotau2 pdgId = " << recotau2->pdgId() << endl;
+                std::cout << "Simple check of recotau2 daughters" << endl;
+		if (recotau2->numberOfDaughters() == 0) std::cout << "recotau2 has no daughters" << std::endl;
               }
-              for (unsigned int j = 0; j < recotau1->numberOfDaughters(); j++) {
-                const reco::GenParticle *dau1 = static_cast<const reco::GenParticle *>(recotau1->daughter(j));
-                if(monitoring) std::cout << "Daughter of recotau2 number " << j << "   " << dau1->pdgId() << endl;
+              for (unsigned int j = 0; j < recotau2->numberOfDaughters(); j++) {
+                const reco::GenParticle *dau2 = static_cast<const reco::GenParticle *>(recotau2->daughter(j));
+		if (abs(dau2->pdgId()) == 22) {
+		  Photon1_found = true;
+		  for (unsigned int k = 0; k < recotau2->numberOfDaughters(); k++) {
+		    const reco::GenParticle *dau22 = static_cast<const reco::GenParticle *>(recotau2->daughter(k));
+		    if (dau22->pdgId() == recotau2->pdgId()) LastRecotau2 = dau22;
+		  }
+		}
+                //reco::GenParticle *dau2 = static_cast<reco::GenParticle *>(recotau2->daughter(j));
+                if(monitoring) std::cout << "Daughter of recotau2 number " << j << "   " << dau2->pdgId() << endl;
               }
               if (abs(dau->pdgId()) == 15) {
                 ntau++;
-                GetLastSelf(recotau2);
+                //GetLastSelf(recotau2);
+                GetLastSelfNew(recotau2, LastRecotau2);
               }
             }
             ntauornu++;
+            if(monitoring) {
+              std::cout << "recotau1 pdgId = " << recotau1->pdgId() << endl;
+              std::cout << "First generation daughters of recotau1" << endl;
+	      for (unsigned int j = 0; j < recotau1->numberOfDaughters(); j++) {
+                std::cout << "Daughter of recotau1 number " << j << "   " << recotau1->daughter(j)->pdgId() << endl;
+	      }
+	      /*
+              std::cout << "recotau2 pdgId = " << recotau2->pdgId() << endl;
+              std::cout << "First generation daughters of recotau2" << endl;
+	      for (unsigned int j = 0; j < recotau2->numberOfDaughters(); j++) {
+                std::cout << "Daughter of recotau2 number " << j << "   " << recotau2->daughter(j)->pdgId() << endl;
+	      }
+	      */
+            }
           }
         }
       }
       TauCounter = TauCounter + ntau;
-      // Заполняет четырёхвекторы материнской частицы (например, W) и двух дочерних (tau и nu_tau)
-      // А также заполняет std::vector<SimpleParticle> четырёхвекторами дочерних по отношению к tau частиц
+
       if ((ntau == 2 && ntauornu == 2) || (ntau == 1 && ntauornu == 2)) {
         X.setPx(itr->p4().Px());
         X.setPy(itr->p4().Py());
         X.setPz(itr->p4().Pz());
         X.setE(itr->p4().E());
         X.setPdgid(itr->pdgId());
-        tau.setPx(recotau1->p4().Px());
-        tau.setPy(recotau1->p4().Py());
-        tau.setPz(recotau1->p4().Pz());
-        tau.setE(recotau1->p4().E());
-        tau.setPdgid(recotau1->pdgId());
-        // std::cout << "GetRecoDaughters method for recotau1" << endl;
-        GetRecoDaughters(recotau1, tau_daughters, recotau1->pdgId());
-        /*
-        for (unsigned int l = 0; l < tau_daughters.size(); l++) {
-          std::cout << "tau_daughters vector element " << l << " with pdgID = " << tau_daughters[l].pdgid() << endl; 
-        }
+	if (!Photon1_found) {
+          tau.setPx(recotau1->p4().Px());
+          tau.setPy(recotau1->p4().Py());
+          tau.setPz(recotau1->p4().Pz());
+          tau.setE(recotau1->p4().E());
+          tau.setPdgid(recotau1->pdgId());
+          if (monitoring) std::cout << "GetRecoDaughters method for recotau1" << endl;
+          GetRecoDaughters(recotau1, tau_daughters, recotau1->pdgId());
+	} else {
+          tau.setPx(LastRecotau1->p4().Px());
+          tau.setPy(LastRecotau1->p4().Py());
+          tau.setPz(LastRecotau1->p4().Pz());
+          tau.setE(LastRecotau1->p4().E());
+          tau.setPdgid(LastRecotau1->pdgId());
+          if (monitoring) std::cout << "GetRecoDaughters method for LastRecotau1" << endl;
+          GetRecoDaughters(LastRecotau1, tau_daughters, LastRecotau1->pdgId());
+	}
+	/*
+        if (monitoring) {
+          for (unsigned int l = 0; l < tau_daughters.size(); l++) {
+            std::cout << "tau_daughters vector element " << l << " with pdgID = " << tau_daughters[l].pdgid() << endl; 
+          }
+	}
         */
-        tau2.setPx(recotau2->p4().Px());
-        tau2.setPy(recotau2->p4().Py());
-        tau2.setPz(recotau2->p4().Pz());
-        tau2.setE(recotau2->p4().E());
-        tau2.setPdgid(recotau2->pdgId());
-        if (ntau == 2)
-          GetRecoDaughters(recotau2, tau2_daughters, recotau2->pdgId());
-        return 0;
+	if (!Photon2_found) {
+          tau2.setPx(recotau2->p4().Px());
+          tau2.setPy(recotau2->p4().Py());
+          tau2.setPz(recotau2->p4().Pz());
+          tau2.setE(recotau2->p4().E());
+	  // Change PDGId from nu_tau_R to nu_tau
+          tau2.setPdgid(SignumPDG(recotau2->pdgId()) * 16);
+          if (ntau == 2) {
+	    if (monitoring) std::cout << "GetRecoDaughters method for recotau2" << endl;
+            GetRecoDaughters(recotau2, tau2_daughters, SignumPDG(recotau2->pdgId()) * 16);
+	  }
+	} else {
+          tau2.setPx(LastRecotau2->p4().Px());
+          tau2.setPy(LastRecotau2->p4().Py());
+          tau2.setPz(LastRecotau2->p4().Pz());
+          tau2.setE(LastRecotau2->p4().E());
+	  // Change PDGId from nu_tau_R to nu_tau
+          tau2.setPdgid(SignumPDG(LastRecotau2->pdgId()) * 16);
+          if (ntau == 2) {
+	    if (monitoring) std::cout << "GetRecoDaughters method for LastRecotau2" << endl;
+            GetRecoDaughters(LastRecotau2, tau2_daughters, SignumPDG(LastRecotau2->pdgId()) * 16);
+	  }
+	}
+	/*
+        if (monitoring) {
+          for (unsigned int l = 0; l < tau2_daughters.size(); l++) {
+            std::cout << "tau2_daughters vector element " << l << " with pdgID = " << tau2_daughters[l].pdgid() << endl; 
+          }
+	}
+	*/
+	if (Photon1_found || Photon2_found) {
+	  if (Photon1_found && Photon2_found) return 23;
+	  if (Photon1_found) return 2;
+	  if (Photon2_found) return 3;
+	}
+        else return 0;
       }
       //std::cout << "Number of tau or nu_tau = " << ntauornu << endl;
     }
@@ -390,27 +536,27 @@ int TauSpinnerCMS::readParticlesfromReco(edm::Event &e,
 // Get pointer to constant value GenParticle
 // 
 void TauSpinnerCMS::GetLastSelf(const reco::GenParticle *Particle) {
-  /*
+  
   if (Particle->pdgId() == 15) {
     std::cout << "GetLastSelf for tau" << endl;
   }
   if (Particle->pdgId() == 16) {
     std::cout << "GetLastSelf for tau_nu" << endl;
   }
-  */
+  
   for (unsigned int i = 0; i < Particle->numberOfDaughters(); i++) {
     const reco::GenParticle *dau = static_cast<const reco::GenParticle *>(Particle->daughter(i));
-    /*
+    
     if (Particle->pdgId() == 15 || Particle->pdgId() == 16) {
       std::cout << "Daughter of tau (tau_nu) number " << i << "   " << dau->pdgId() << endl;
     }
-    */
+    
     if (Particle->pdgId() == dau->pdgId()) {
-      /*
+      
       if (Particle->pdgId() == 15 || Particle->pdgId() == 16) {
         std::cout << "   |   " << endl;
       }
-      */
+      
       Particle = dau;
       GetLastSelf(Particle);
     }
@@ -422,20 +568,35 @@ void TauSpinnerCMS::GetLastSelfNew(const reco::GenParticle *Particle, const reco
     const reco::GenParticle *dau = static_cast<const reco::GenParticle *>(Particle->daughter(i));
     if (Particle->pdgId() == dau->pdgId()) {
       Particle = dau;
-      //std::cout << "daughter and mother are same" << endl;
+      if (monitoring) std::cout << "daughter and mother are same" << endl;
       GetLastSelfNew(Particle, LastMother);
     } else {
       LastMother = static_cast<const reco::GenParticle *>(Particle);
-      //std::cout << "Last Mother PDGID in function = " << LastMother->pdgId() << endl;
+      if (monitoring) std::cout << "Last Mother PDGID in function = " << LastMother->pdgId() << endl;
       //LastMother = const_cast<reco::GenParticle *>(static_cast<const reco::GenParticle *>(Particle));
     }
   }
 }
 
+int TauSpinnerCMS::SignumPDG(int particlePDGId) {
+  int Signum = 1;
+  if (particlePDGId < 0) {
+    Signum = -1;
+  } else if (particlePDGId > 0) {
+	Signum = 1;
+  }
+  return Signum;
+}
+
 // Get pointer to constant value GenParticle
 bool TauSpinnerCMS::isFirst(const reco::GenParticle *Particle) {
+  if (monitoring) {
+    std::cout << "isFirst method called for particle with PDGId = " << Particle->pdgId() << std::endl;
+    std::cout << "Number of mothers for this particle = " << Particle->numberOfMothers() << std::endl;
+  }
   for (unsigned int i = 0; i < Particle->numberOfMothers(); i++) {
     const reco::GenParticle *moth = static_cast<const reco::GenParticle *>(Particle->mother(i));
+    if (monitoring) std::cout << "Mother number " << i << " PDGId = " << moth->pdgId() << std::endl;
     if (Particle->pdgId() == moth->pdgId()) {
       return false;
     }
@@ -444,12 +605,16 @@ bool TauSpinnerCMS::isFirst(const reco::GenParticle *Particle) {
 }
 
 // Fills the vector of tau's daughters particles
-// If firs order daughters of tau have ther ows daughter we look at last ones
+// If firs order daughters of tau have their own daughter we look at last ones
 // and so on untill we algorithm have reach particles without daughters or Pi_0
 void TauSpinnerCMS::GetRecoDaughters(const reco::GenParticle *Particle,
                                      std::vector<SimpleParticle> &daughters,
                                      int parentpdgid) {
+  // replace PDGId of tau_nu_R to PDGId of tau_nu
+  // When algo found particle without daughters or pi+, it returning this particle
+  if (monitoring) std::cout << "Mother PDGId = " << Particle->pdgId() << std::endl;
   if (Particle->numberOfDaughters() == 0 || abs(Particle->pdgId()) == 111) {
+    if (monitoring) std::cout << "Pushed to daughters vector" << std::endl;
     SimpleParticle tp(
         Particle->p4().Px(), Particle->p4().Py(), Particle->p4().Pz(), Particle->p4().E(), Particle->pdgId());
     daughters.push_back(tp);
@@ -457,6 +622,7 @@ void TauSpinnerCMS::GetRecoDaughters(const reco::GenParticle *Particle,
   }
   for (unsigned int i = 0; i < Particle->numberOfDaughters(); i++) {
     const reco::Candidate *dau = Particle->daughter(i);
+    if (monitoring) std::cout << "daughter PDGId = " <<  dau->pdgId() << std::endl;
     GetRecoDaughters(static_cast<const reco::GenParticle *>(dau), daughters, Particle->pdgId());
   }
 }
