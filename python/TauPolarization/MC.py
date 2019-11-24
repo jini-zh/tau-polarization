@@ -1,40 +1,42 @@
 import re
 import XRootD.client
 
-def glob(server, directory, regex):
+def ls(server, directory):
   status, dirlist = XRootD.client.FileSystem(server).dirlist(directory)
   if not status.ok:
     raise Exception(
         'Got %d when requesting the contents of root://%s%s: %s' \
         % (status.code, server, directory, status.message)
     )
+  return dirlist
 
+def glob(server, directory, regex):
   return [
       'root://' + server + directory + '/' + f.name
-      for f in dirlist if re.search(regex, f.name) 
+      for f in ls(server, directory) if re.search(regex, f.name) 
   ]
 
 def dirname(sample, datetime):
-  return '/data/phedex/user/ezhemchu/crab/%(sample)s/%(sample)s/crab_%(sample)s/%(datetime)s/0000' \
+  return '/data/phedex/user/ezhemchu/crab/%(sample)s/%(sample)s/crab_%(sample)s/%(datetime)s' \
          % { 'sample': sample, 'datetime': datetime }
 
 def file_job_id(filename):
   return int(re.search(r'(\d+)\.root$', filename).group(1))
 
 def files_re(sample, datetime):
-  files = glob(
-      'cms-phedex.lxfarm.mephi.ru',
-      dirname(sample, datetime),
-      r'GEN-SIM-RAW-RECO_\d+\.root$'
-  )
+  server = 'cms-phedex.lxfarm.mephi.ru'
+  directory = dirname(sample, datetime)
+  files = []
+  for d in ls(server, directory):
+    files += glob(server, '%s/%s' % (directory, d.name), r'GEN-SIM-RAW-RECO_\d+\.root$')
   files.sort(key = file_job_id)
   return files
 
 def files_range(sample, datetime, max):
   directory = dirname(sample, datetime)
   return [
-      'root://cms-phedex.lxfarm.mephi.ru%s/%s_GEN-SIM-RAW-RECO_%d.root' \
-      % (directory, sample, i) \
+      'root://cms-phedex.lxfarm.mephi.ru%s/%04d/%s_GEN-SIM-RAW-RECO_%d.root' \
+      % (directory, i / 1000, sample, i) \
       for i in range(1, max + 1)
   ]
 
@@ -116,3 +118,11 @@ def WToTauNu_hadr_right_191102():
 # 50k events
 def WToTauNu_hadr_nopolar_191117():
   return files_range('WToTauNu_hadr_nopolar_Tauola', '191117_124910', 50)
+
+# W -> tau nu
+# tau decays only to hadrons
+# tau is left-handed (SM)
+# tau pt is forced to be larger than 50 GeV by Pythia
+# 921k events
+def WToTauNu_191120():
+  return files_re('WToTauNu', '191120_122523')
