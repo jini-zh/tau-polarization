@@ -126,3 +126,11 @@ def WToTauNu_hadr_nopolar_191117():
 # 921k events
 def WToTauNu_191120():
   return files_re('WToTauNu', '191120_122523')
+
+# W -> tau nu
+# tau decays only to hadrons
+# tau is right-handed (Pythia)
+# 965k events
+def WToTauNu_hadr_right_191127():
+  # the files were erroneously named 'nopolar'
+  return files_re('WToTauNu_hadr_nopolar_Pythia', '191127_113834')
