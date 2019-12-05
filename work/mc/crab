@@ -54,7 +54,7 @@ if [[ -z "$base" ]]; then
 fi
 
 if ! [[ -e "$base/fwjr-merge" ]]; then
-  echo "$base/fwjr-merge: no such file"
+  die "$base/fwjr-merge: no such file"
 fi
 
 set -e

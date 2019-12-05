@@ -16,13 +16,15 @@ generator = cms.EDFilter(
       pythia8CommonSettingsBlock,
       pythia8CUEP8M1SettingsBlock,
       processParameters = cms.vstring(
-        'WeakSingleBoson:ffbar2W = on',
+        'WeakSingleBoson:ffbar2ffbar(s:W) = on', # enable 2 -> 2 processes mediated by W boson
+        'PhaseSpace:ptHatMin = 50', # minimal pt of one of the produced particles
         '24:onMode = off',    # disable W decays
         '24:onIfAny = 15 16', # enable W -> tau nu decay
         '24:mMin = 50.',      # minimal invariant mass of decay products
         '15:onMode = off'     # disable tau decays
         ),
-      parameterSets = cms.vstring('pythia8CommonSettings',
+      parameterSets = cms.vstring(
+        'pythia8CommonSettings',
         'pythia8CUEP8M1Settings',
         'processParameters',
       )
