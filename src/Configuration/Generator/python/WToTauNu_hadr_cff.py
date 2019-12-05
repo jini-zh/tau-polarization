@@ -18,21 +18,18 @@ generator = cms.EDFilter(
       pythia8CUEP8M1SettingsBlock,
       processParameters = cms.vstring(
         'WeakSingleBoson:ffbar2ffbar(s:W) = on', # enable 2 -> 2 processes mediated by W boson
-        'PhaseSpace:ptHatMin = 50',     # minimal pt of one of the produced particles
-        '24:onMode = off',              # disable W decays
-        '24:onIfAny = 15 16',           # enable W -> tau nu
-        '24:mMin = 50.',                # minimal invariant mass of W decay products
-        '15:offIfAny = 11 13',          # disable tau -> mu nu and tau -> e nu decays
-        'TauDecays:mode = 2',              # set tau polarization
-        'TauDecays:tauPolarization = 1.0', #   to 1.0
-        'TauDecays:tauMother = 24'         #   for taus in W decays
-        ),
+        'PhaseSpace:ptHatMin = 50', # minimal pt of one of the produced particles
+        '24:onMode = off',    # disable W decays
+        '24:onIfAny = 15 16', # enable W -> tau nu decay
+        '24:mMin = 50.',      # minimal invariant mass of decay products
+        '15:offIfAny = 11 13' # disable tau -> mu nu and tau -> e nu decays
+      ),
       parameterSets = cms.vstring(
         'pythia8CommonSettings',
         'pythia8CUEP8M1Settings',
         'processParameters',
-        )
       )
     )
+)
 
 ProductionFilterSequence = cms.Sequence(generator)
