@@ -28,7 +28,7 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-
+#include "FWCore/Framework/interface/makeRefToBaseProdFrom.h"
 
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/HLTReco/interface/TriggerEvent.h"
@@ -40,6 +40,7 @@
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/TauReco/interface/PFTauDiscriminator.h"
 #include "DataFormats/JetReco/interface/PFJetCollection.h"
+#include "DataFormats/JetReco/interface/JetTracksAssociation.h"
 
 #include "FWCore/Common/interface/TriggerNames.h"
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
@@ -53,6 +54,10 @@
 #include "TLorentzVector.h"
 #include "DataFormats/Candidate/interface/VertexCompositeCandidate.h"
 #include "DataFormats/Candidate/interface/VertexCompositeCandidateFwd.h"
+#include "DataFormats/TrackReco/interface/TrackFwd.h"
+#include "DataFormats/RecoCandidate/interface/RecoChargedRefCandidate.h"
+#include "DataFormats/RecoCandidate/interface/RecoChargedRefCandidateFwd.h"
+#include "DataFormats/BTauReco/interface/JetTag.h"
 
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
@@ -124,13 +129,17 @@ private:
 	edm::EDGetTokenT<reco::MuonCollection> MuonCollectionToken_;
 	edm::EDGetTokenT<reco::GsfElectronCollection> ElectronCollectionToken_;
 	edm::EDGetTokenT<reco::PFJetCollection> JetCollectionToken_;
+	edm::EDGetTokenT<reco::PFJetCollection> CHSJetCollectionToken_;
 	edm::EDGetTokenT<reco::PFMETCollection> MetCollectionToken_;
 	edm::EDGetTokenT<reco::VertexCollection> PVToken_;
-	edm::EDGetTokenT<reco::GenParticleCollection> GenParticleToken_;
 	
 	edm::EDGetTokenT<reco::TrackCollection> TrackToken_;
-	
 	edm::EDGetTokenT<reco::PFTauDiscriminator> Token_absIso;
+	edm::EDGetTokenT<reco::GenParticleCollection> GenParticleToken_;
+	edm::EDGetTokenT<reco::JetTracksAssociationCollection> Token_JetTrack;
+	edm::EDGetTokenT<reco::RecoChargedRefCandidateCollection> TrackRefsJets_;
+	edm::EDGetTokenT<reco::JetTagCollection> tok_pfDeepCSVJetTags_b;
+  	edm::EDGetTokenT<reco::JetTagCollection> tok_pfDeepCSVJetTags_bb;
 
 	edm::EDGetTokenT<reco::PFTauDiscriminator> Token_looseCombinedIso;
 	edm::EDGetTokenT<reco::PFTauDiscriminator> Token_mediumCombinedIso;
@@ -142,6 +151,11 @@ private:
 	edm::EDGetTokenT<reco::PFTauDiscriminator> Token_tightMuonRejection;
 	edm::EDGetTokenT<reco::PFTauDiscriminator> Token_looseElectronRejection;
 	edm::EDGetTokenT<reco::PFTauDiscriminator> Token_tightElectronRejection;
+
+	edm::EDGetTokenT<reco::PFTauDiscriminator> Token_pfTausDiscriminationByDecayModeFinding;
+	edm::EDGetTokenT<reco::PFTauDiscriminator> Token_hpsPFTauDiscriminationByDecayModeFinding;
+	edm::EDGetTokenT<reco::PFTauDiscriminator> Token_hpsPFTauDiscriminationByDecayModeFindingNewDMs;
+	edm::EDGetTokenT<reco::PFTauDiscriminator> Token_hpsPFTauDiscriminationByDecayModeFindingOldDMs;
 
 	edm::EDGetTokenT<double> TauSpinnerWTToken_;
 	edm::EDGetTokenT<double> TauSpinnerWTFlipToken_;
@@ -186,6 +200,7 @@ private:
 	double tau_tightMuonRejection;
 	double tau_looseElectronRejection;
 	double tau_tightElectronRejection;
+	double tau_DecayModeFindingNewDMs;
 	
 
 	double tau_found;
@@ -209,12 +224,36 @@ private:
 	double pipiMass;
 	double upsilon;
 
-	double jetPtSum10, jetPtSum15, jetPtSum20;
-	double RHT10, RHT15, RHT20;
-	int nJets20;
+	double jetPtSum15, jetPtSum20, jetPtSum15PV, jetPtSum20PV;
+	int nJets20, nJets20PV;
+	double CHSjetPtSum15, CHSjetPtSum20, CHSjetPtSum15PV, CHSjetPtSum20PV;
+	int nCHSJets20, nCHSJets20PV;
+	int nLooseBtagedCHSJets, nMediumBtagedCHSJets, nTightBtagedCHSJets;
+	int nLooseBtagedCHSJetsPV, nMediumBtagedCHSJetsPV, nTightBtagedCHSJetsPV;
+	int nLooseBtagedJets, nMediumBtagedJets, nTightBtagedJets;
+	int nLooseBtagedJetsPV, nMediumBtagedJetsPV, nTightBtagedJetsPV;
+	double LeadingJet_pt;
+	double LeadingJet_eta;
+	double LeadingJet_phi;
+	double LeadingJet_m;
+	double LeadingJet_btag;
+	double SubLeadingJet_pt;
+	double SubLeadingJet_eta;
+	double SubLeadingJet_phi;
+	double SubLeadingJet_m;
+	double SubLeadingJet_btag;
+	double BJet_pt;
+	double BJet_eta;
+	double BJet_phi;
+	double BJet_m;
+	double BJet_btag;
+
 	int nPi0;
 	double met;
 	double met_phi;
+	double met_eta;
+	double met_significance;
+	double met_mEtSig;
 	
 	double m_t;
 	
@@ -232,6 +271,15 @@ private:
 	int  TauSpinnerMother;
 	bool PhotonFlag1, PhotonFlag2;
 
+	// Generated tau parameters
+	double gentau_pt, gentau_px, gentau_py, gentau_pz, gentau_eta, gentau_phi;
+	double genPiChar_pt, genPiChar_px, genPiChar_py, genPiChar_pz, genPiChar_eta, genPiChar_phi;
+	double genPi0_pt, genPi0_px, genPi0_py, genPi0_pz, genPi0_eta, genPi0_phi;
+	double nuW_pt, nuW_px, nuW_py, nuW_pz, nuW_eta, nuW_phi;
+	double nutau_pt, nutau_px, nutau_py, nutau_pz, nutau_eta, nutau_phi;
+	double gentau_dm, gentau_nPi0;
+	double nunu_pt;
+
 	//////////////////////////////////////////////////////
 	bool isMC;
 	double tauPtMin;
@@ -240,6 +288,7 @@ private:
 	double tauDzMax;
 	double null;
 	bool monitoring;
+	bool monitoringGen;
 	double METcut;
 
 	int iT;
@@ -262,6 +311,7 @@ TreeMaker::TreeMaker(const edm::ParameterSet& iConfig) {
 
 	isMC						= iConfig.getParameter<bool>("isMC");
 	monitoring					= iConfig.getParameter<bool>("monitoring");
+	monitoringGen					= iConfig.getParameter<bool>("monitoringGen");
 	tauPtMin 					= iConfig.getParameter<double>("tauPtMin");
 	piPtMin 					= iConfig.getParameter<double>("piPtMin");
 	tauEtaMax 					= iConfig.getParameter<double>("tauEtaMax");
@@ -277,22 +327,27 @@ TreeMaker::TreeMaker(const edm::ParameterSet& iConfig) {
 	std::string muonCollection        = iConfig.getParameter<std::string>("muonCollection");
 	std::string electronCollection    = iConfig.getParameter<std::string>("electronCollection");
 	std::string jetCollection         = iConfig.getParameter<std::string>("jetCollection");
+	std::string CHSjetCollection         = iConfig.getParameter<std::string>("CHSjetCollection");
 	std::string metCollection         = iConfig.getParameter<std::string>("metCollection");
 	std::string vertexCollection      = iConfig.getParameter<std::string>("vertexCollection");
 	std::string genParticleCollection = iConfig.getParameter<std::string>("genParticleCollection");
 	std::string trackCollection       = iConfig.getParameter<std::string>("trackCollection");
 	
-	std::string absIsoDiscriminator					= iConfig.getParameter<std::string>("absIsoDiscriminator");
-	std::string looseCombinedIsoDiscriminator		= iConfig.getParameter<std::string>("looseCombinedIsoDiscriminator");
-	std::string mediumCombinedIsoDiscriminator		= iConfig.getParameter<std::string>("mediumCombinedIsoDiscriminator");
-	std::string tightCombinedIsoDiscriminator		= iConfig.getParameter<std::string>("tightCombinedIsoDiscriminator");
-	std::string looseMvaIsoDiscriminator			= iConfig.getParameter<std::string>("looseMvaIsoDiscriminator");
-	std::string mediumMvaIsoDiscriminator			= iConfig.getParameter<std::string>("mediumMvaIsoDiscriminator");
-	std::string tightMvaIsoDiscriminator			= iConfig.getParameter<std::string>("tightMvaIsoDiscriminator");
-	std::string looseMuonRejectionDiscriminator		= iConfig.getParameter<std::string>("looseMuonRejectionDiscriminator");
-	std::string tightMuonRejectionDiscriminator		= iConfig.getParameter<std::string>("tightMuonRejectionDiscriminator");
-	std::string looseElectronRejectionDiscriminator	= iConfig.getParameter<std::string>("looseElectronRejectionDiscriminator");
-	std::string tightElectronRejectionDiscriminator	= iConfig.getParameter<std::string>("tightElectronRejectionDiscriminator");
+	std::string absIsoDiscriminator					 = iConfig.getParameter<std::string>("absIsoDiscriminator");
+	std::string looseCombinedIsoDiscriminator		 = iConfig.getParameter<std::string>("looseCombinedIsoDiscriminator");
+	std::string mediumCombinedIsoDiscriminator		 = iConfig.getParameter<std::string>("mediumCombinedIsoDiscriminator");
+	std::string tightCombinedIsoDiscriminator		 = iConfig.getParameter<std::string>("tightCombinedIsoDiscriminator");
+	std::string looseMvaIsoDiscriminator			 = iConfig.getParameter<std::string>("looseMvaIsoDiscriminator");
+	std::string mediumMvaIsoDiscriminator			 = iConfig.getParameter<std::string>("mediumMvaIsoDiscriminator");
+	std::string tightMvaIsoDiscriminator			 = iConfig.getParameter<std::string>("tightMvaIsoDiscriminator");
+	std::string looseMuonRejectionDiscriminator		 = iConfig.getParameter<std::string>("looseMuonRejectionDiscriminator");
+	std::string tightMuonRejectionDiscriminator		 = iConfig.getParameter<std::string>("tightMuonRejectionDiscriminator");
+	std::string looseElectronRejectionDiscriminator	 = iConfig.getParameter<std::string>("looseElectronRejectionDiscriminator");
+	std::string tightElectronRejectionDiscriminator	 = iConfig.getParameter<std::string>("tightElectronRejectionDiscriminator");
+	std::string pfTauDMFindingDiscriminator       	 = iConfig.getParameter<std::string>("pfTauDMFindingDiscriminator");
+	std::string hpspfTauDMFindingDiscriminator	     = iConfig.getParameter<std::string>("hpspfTauDMFindingDiscriminator");
+	std::string hpspfTauDMFindingDiscriminatorNewDMs = iConfig.getParameter<std::string>("hpspfTauDMFindingDiscriminatorNewDMs");
+	std::string hpspfTauDMFindingDiscriminatorOldDMs = iConfig.getParameter<std::string>("hpspfTauDMFindingDiscriminatorOldDMs");
 	
 	
 	tok_trigEvt					= consumes<trigger::TriggerEvent>(triggerEvent_);
@@ -301,10 +356,19 @@ TreeMaker::TreeMaker(const edm::ParameterSet& iConfig) {
 	MuonCollectionToken_ 		= consumes<reco::MuonCollection>(edm::InputTag(muonCollection));
 	ElectronCollectionToken_	= consumes<reco::GsfElectronCollection>(edm::InputTag(electronCollection));
 	JetCollectionToken_ 		= consumes<reco::PFJetCollection>(edm::InputTag(jetCollection));
+	CHSJetCollectionToken_          = consumes<reco::PFJetCollection>(edm::InputTag(CHSjetCollection));
 	MetCollectionToken_ 		= consumes<reco::PFMETCollection>(edm::InputTag(metCollection));
-	PVToken_ 					= consumes<reco::VertexCollection>(edm::InputTag(vertexCollection));
-	GenParticleToken_ 			= consumes<reco::GenParticleCollection>(edm::InputTag(genParticleCollection));
-	TrackToken_					= consumes<reco::TrackCollection>(edm::InputTag(trackCollection));
+	PVToken_ 		    = consumes<reco::VertexCollection>(edm::InputTag(vertexCollection));
+	GenParticleToken_ 	    = consumes<reco::GenParticleCollection>(edm::InputTag(genParticleCollection));
+	TrackToken_		    = consumes<reco::TrackCollection>(edm::InputTag(trackCollection));
+	Token_JetTrack              = consumes<reco::JetTracksAssociationCollection>(iConfig.getParameter<edm::InputTag>("ak4JetTracksAssociatorAtVertexPF"));
+	TrackRefsJets_              = consumes<reco::RecoChargedRefCandidateCollection>(iConfig.getParameter<edm::InputTag>("trackRefsForJets"));
+	// pfDeepCSVJetTags:probb + pfDeepCSVJetTags:probbb working points
+	// loose	0.1522
+ 	// medium	0.4941	 	 
+ 	// tight	0.8001
+	tok_pfDeepCSVJetTags_b      = consumes<reco::JetTagCollection>(iConfig.getParameter<edm::InputTag>("pfDeepCSVJetTags_b"));
+    tok_pfDeepCSVJetTags_bb     = consumes<reco::JetTagCollection>(iConfig.getParameter<edm::InputTag>("pfDeepCSVJetTags_bb"));
 
 	Token_absIso 				    = consumes<reco::PFTauDiscriminator>(edm::InputTag(absIsoDiscriminator));
 	Token_looseCombinedIso 		  	= consumes<reco::PFTauDiscriminator>(edm::InputTag(looseCombinedIsoDiscriminator));
@@ -317,6 +381,10 @@ TreeMaker::TreeMaker(const edm::ParameterSet& iConfig) {
 	Token_tightMuonRejection 	  	= consumes<reco::PFTauDiscriminator>(edm::InputTag(tightMuonRejectionDiscriminator));
 	Token_looseElectronRejection	= consumes<reco::PFTauDiscriminator>(edm::InputTag(looseElectronRejectionDiscriminator));
 	Token_tightElectronRejection	= consumes<reco::PFTauDiscriminator>(edm::InputTag(tightElectronRejectionDiscriminator));
+	Token_pfTausDiscriminationByDecayModeFinding         = consumes<reco::PFTauDiscriminator>(edm::InputTag(pfTauDMFindingDiscriminator));
+	Token_hpsPFTauDiscriminationByDecayModeFinding       = consumes<reco::PFTauDiscriminator>(edm::InputTag(hpspfTauDMFindingDiscriminator));
+	Token_hpsPFTauDiscriminationByDecayModeFindingNewDMs = consumes<reco::PFTauDiscriminator>(edm::InputTag(hpspfTauDMFindingDiscriminatorNewDMs));
+	Token_hpsPFTauDiscriminationByDecayModeFindingOldDMs = consumes<reco::PFTauDiscriminator>(edm::InputTag(hpspfTauDMFindingDiscriminatorOldDMs));
 
 	if (isMC) {
 		TauSpinnerWTToken_        = consumes<double>(iConfig.getParameter<edm::InputTag>("WTCollection"));
@@ -384,12 +452,14 @@ void TreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
 		AddWTData(event);
 	}
 
+	/*
 	if (monitoring) {
 		std::cout << "Gentau Decay channel = " << GenHadronDecayChannel << std::endl;
 		std::cout << "WT           = " << WT << std::endl;
 		std::cout << "gentau_found = " << gentau_found << std::endl;
 		std::cout << "tau_found = " << tau_found << std::endl;
 	}
+	*/
 
 	TLorentzVector pi0, pi1;
 	pi0.SetPtEtaPhiM(piZero_pt, piZero_eta, piZero_phi, piZero_m);
@@ -398,13 +468,17 @@ void TreeMaker::analyze(const edm::Event& event, const edm::EventSetup&) {
 	pipiMass = (pi0 + pi1).M();
 //	upsilon  = (pi1.E() - pi0.E()) / tau_pt;
 	upsilon  = 2 * piChar_pt / tau_pt - 1;
-	RHT10    = tau_pt / jetPtSum10;
-	RHT15    = tau_pt / jetPtSum15;
-	RHT20    = tau_pt / jetPtSum20;
 	dPhi	 = dphi(tau_phi, met_phi);
 	m_t      = sqrt(2 * tau_pt * met * (1 - cos(dPhi)));
 
-	if (monitoring) std::cout << "Event was writen to the tree" << std::endl;
+	if (monitoring) {
+		std::cout << "!!! Event was writen to the tree" << std::endl;
+		std::cout << "tau_pt       = " << tau_pt << std::endl;
+		std::cout << "tau_dm       = " << tau_dm << std::endl;
+		std::cout << "gentau_found = " << gentau_found << std::endl;
+		std::cout << "gentau_pt    = " << gentau_pt << std::endl;
+		std::cout << "gentau_dm    = " << gentau_dm << std::endl;
+	}
 
 	tree->Fill();
 };
@@ -437,6 +511,7 @@ void TreeMaker::beginJob() {
 	tree->Branch("tau_tightMuonRejection",&tau_tightMuonRejection,"tau_tightMuonRejection/D");
 	tree->Branch("tau_looseElectronRejection",&tau_looseElectronRejection,"tau_looseElectronRejection/D");
 	tree->Branch("tau_tightElectronRejection",&tau_tightElectronRejection,"tau_tightElectronRejection/D");
+	tree->Branch("tau_DecayModeFindingNewDMs",&tau_DecayModeFindingNewDMs,"tau_DecayModeFindingNewDMs/D");
 	
 	tree->Branch("piChar_pt", &piChar_pt, "piChar_pt/D");
 	tree->Branch("piChar_eta", &piChar_eta, "piChar_eta/D");
@@ -459,18 +534,56 @@ void TreeMaker::beginJob() {
 	tree->Branch("W_pt", &W_pt, "W_pt/D");
 
 	tree->Branch("genTauMother", &genTauMother, "genTauMother/I");
-	
 
-	tree->Branch("jetPtSum10", &jetPtSum10, "jetPtSum10/D");
-	tree->Branch("RHT10", &RHT10, "RHT10/D");
+	// Jets
 	tree->Branch("jetPtSum15", &jetPtSum15, "jetPtSum15/D");
-	tree->Branch("RHT15", &RHT15, "RHT15/D");
 	tree->Branch("jetPtSum20", &jetPtSum20, "jetPtSum20/D");
-	tree->Branch("RHT20", &RHT20, "RHT20/D");
+	tree->Branch("jetPtSum15PV", &jetPtSum15PV, "jetPtSum15PV/D");
+	tree->Branch("jetPtSum20PV", &jetPtSum20PV, "jetPtSum20PV/D");
 	tree->Branch("nJets20", &nJets20, "nJets20/I");
+	tree->Branch("nJets20PV", &nJets20PV, "nJets20PV/I");
+	tree->Branch("nLooseBtagedJets", &nLooseBtagedJets, "nLooseBtagedJets/I");
+	tree->Branch("nMediumBtagedJets", &nMediumBtagedJets, "nMediumBtagedJets/I");
+	tree->Branch("nTightBtagedJets", &nTightBtagedJets, "nTightBtagedJets/I");
+	tree->Branch("nLooseBtagedJetsPV", &nLooseBtagedJetsPV, "nLooseBtagedJetsPV/I");
+	tree->Branch("nMediumBtagedJetsPV", &nMediumBtagedJetsPV, "nMediumBtagedJetsPV/I");
+	tree->Branch("nTightBtagedJetsPV", &nTightBtagedJetsPV, "nTightBtagedJetsPV/I");
+
+	// CHSJets
+	tree->Branch("CHSjetPtSum15", &CHSjetPtSum15, "CHSjetPtSum15/D");
+	tree->Branch("CHSjetPtSum20", &CHSjetPtSum20, "CHSjetPtSum20/D");
+	tree->Branch("CHSjetPtSum15PV", &CHSjetPtSum15PV, "CHSjetPtSum15PV/D");
+	tree->Branch("CHSjetPtSum20PV", &CHSjetPtSum20PV, "CHSjetPtSum20PV/D");
+	tree->Branch("nCHSJets20", &nCHSJets20, "nCHSJets20/I");
+	tree->Branch("nCHSJets20PV", &nCHSJets20PV, "nCHSJets20PV/I");
+	tree->Branch("nLooseBtagedCHSJets", &nLooseBtagedCHSJets, "nLooseBtagedCHSJets/I");
+	tree->Branch("nMediumBtagedCHSJets", &nMediumBtagedCHSJets, "nMediumBtagedCHSJets/I");
+	tree->Branch("nTightBtagedCHSJets", &nTightBtagedCHSJets, "nTightBtagedCHSJets/I");
+	tree->Branch("nLooseBtagedCHSJetsPV", &nLooseBtagedCHSJetsPV, "nLooseBtagedCHSJetsPV/I");
+	tree->Branch("nMediumBtagedCHSJetsPV", &nMediumBtagedCHSJetsPV, "nMediumBtagedCHSJetsPV/I");
+	tree->Branch("nTightBtagedCHSJetsPV", &nTightBtagedCHSJetsPV, "nTightBtagedCHSJetsPV/I");
+
+	tree->Branch("LeadingJet_pt", &LeadingJet_pt, "LeadingJet_pt/D");
+	tree->Branch("LeadingJet_eta", &LeadingJet_eta, "LeadingJet_eta/D");
+	tree->Branch("LeadingJet_phi", &LeadingJet_phi, "LeadingJet_phi/D");
+	tree->Branch("LeadingJet_m", &LeadingJet_m, "LeadingJet_m/D");
+	tree->Branch("LeadingJet_btag", &LeadingJet_btag, "LeadingJet_btag/D");
+	tree->Branch("SubLeadingJet_pt", &SubLeadingJet_pt, "SubLeadingJet_pt/D");
+	tree->Branch("SubSubLeadingJet_eta", &SubLeadingJet_eta, "SubLeadingJet_eta/D");
+	tree->Branch("SubLeadingJet_phi", &SubLeadingJet_phi, "SubLeadingJet_phi/D");
+	tree->Branch("SubLeadingJet_m", &SubLeadingJet_m, "SubLeadingJet_m/D");
+	tree->Branch("SubLeadingJet_btag", &SubLeadingJet_btag, "SubLeadingJet_btag/D");
+	tree->Branch("BJet_pt", &BJet_pt, "BJet_pt/D");
+	tree->Branch("BJet_eta", &BJet_eta, "BJet_eta/D");
+	tree->Branch("BJet_phi", &BJet_phi, "BJet_phi/D");
+	tree->Branch("BJet_m", &BJet_m, "BJet_m/D");
+	tree->Branch("BJet_btag", &BJet_btag, "BJet_btag/D");
 	
 	tree->Branch("met", &met, "met/D");
 	tree->Branch("met_phi", &met_phi, "met_phi/D");
+	tree->Branch("met_eta", &met_eta, "met_eta/D");
+	tree->Branch("met_significance", &met_significance, "met_significance/D");
+	tree->Branch("met_mEtSig", &met_mEtSig, "met_mEtSig/D");
 	tree->Branch("m_t", &m_t, "m_t/D");
 	tree->Branch("dPhi", &dPhi, "dPhi/D");
 	
@@ -489,6 +602,15 @@ void TreeMaker::beginJob() {
 	tree->Branch("PhotonFlag1", &PhotonFlag1, "PhotonFlag1/B");
 	tree->Branch("PhotonFlag2", &PhotonFlag2, "PhotonFlag2/B");
 	tree->Branch("GenHadronDecayChannel", &GenHadronDecayChannel, "GenHadronDecayChannel/I");
+
+	tree->Branch("gentau_pt",&gentau_pt,"gentau_pt/D");
+	tree->Branch("genPiChar_pt",&genPiChar_pt,"genPiChar_pt/D");
+	tree->Branch("genPi0_pt",&genPi0_pt,"genPi0_pt/D");
+	tree->Branch("nutau_pt",&nutau_pt,"nutau_pt/D");
+	tree->Branch("nuW_pt",&nuW_pt,"nuW_pt/D");
+	tree->Branch("nunu_pt",&nunu_pt,"nunu_pt/D");
+	tree->Branch("gentau_dm",&gentau_dm,"gentau_dm/D");
+	tree->Branch("gentau_nPi0",&gentau_nPi0,"gentau_nPi0/D");
 	//tree->Branch("WTisValid", &WTisValid, "WTisValid/D")
 	// add more branches
 	
@@ -585,6 +707,10 @@ bool TreeMaker::AddTau(const edm::Event& event) {
 	edm::Handle<reco::PFTauDiscriminator> tightMuonRejection;
 	edm::Handle<reco::PFTauDiscriminator> looseElectronRejection;
 	edm::Handle<reco::PFTauDiscriminator> tightElectronRejection;
+	edm::Handle<reco::PFTauDiscriminator> pfTausDiscriminationByDecayModeFinding;
+	edm::Handle<reco::PFTauDiscriminator> hpsPFTauDiscriminationByDecayModeFinding;
+	edm::Handle<reco::PFTauDiscriminator> hpsPFTauDiscriminationByDecayModeFindingNewDMs;
+	edm::Handle<reco::PFTauDiscriminator> hpsPFTauDiscriminationByDecayModeFindingOldDMs;
 
 	event.getByToken(Token_absIso, absIso);
 	event.getByToken(Token_looseCombinedIso, looseCombinedIso);
@@ -597,6 +723,10 @@ bool TreeMaker::AddTau(const edm::Event& event) {
 	event.getByToken(Token_tightMuonRejection, tightMuonRejection);
 	event.getByToken(Token_looseElectronRejection, looseElectronRejection);
 	event.getByToken(Token_tightElectronRejection, tightElectronRejection);
+	event.getByToken(Token_pfTausDiscriminationByDecayModeFinding, pfTausDiscriminationByDecayModeFinding);
+	event.getByToken(Token_hpsPFTauDiscriminationByDecayModeFinding, hpsPFTauDiscriminationByDecayModeFinding);
+	event.getByToken(Token_hpsPFTauDiscriminationByDecayModeFindingNewDMs, hpsPFTauDiscriminationByDecayModeFindingNewDMs);
+	event.getByToken(Token_hpsPFTauDiscriminationByDecayModeFindingOldDMs, hpsPFTauDiscriminationByDecayModeFindingOldDMs);
 
 	// search for the tau candidate with the minimum isolation and the
 	// maximum transverse momentum
@@ -658,6 +788,18 @@ bool TreeMaker::AddTau(const edm::Event& event) {
 	tau_tightMuonRejection     = tightMuonRejection->value(index);
 	tau_looseElectronRejection = looseElectronRejection->value(index);
 	tau_tightElectronRejection = tightElectronRejection->value(index);
+	tau_DecayModeFindingNewDMs = hpsPFTauDiscriminationByDecayModeFindingNewDMs->value(index);
+
+	/*
+	if (tau_dm > 1) {
+	  std::cout << "Tau pt = " << tau_pt << std::endl;
+	  std::cout << "tau_dm = " << tau_dm << std::endl; 
+	  std::cout << "pfTausDiscriminationByDecayModeFinding         = " << pfTausDiscriminationByDecayModeFinding->value(index) << std::endl;
+	  std::cout << "hpsPFTauDiscriminationByDecayModeFinding       = " << hpsPFTauDiscriminationByDecayModeFinding->value(index) << std::endl;
+	  std::cout << "hpsPFTauDiscriminationByDecayModeFindingNewDMs = " << hpsPFTauDiscriminationByDecayModeFindingNewDMs->value(index) << std::endl;
+	  std::cout << "hpsPFTauDiscriminationByDecayModeFindingOldDMs = " << hpsPFTauDiscriminationByDecayModeFindingOldDMs->value(index) << std::endl;
+	}
+	*/
 
 	piZero_pt  = pi0.pt();
 	piZero_eta = pi0.eta();
@@ -682,28 +824,47 @@ bool TreeMaker::FindGenTau(const edm::Event& event) {
 	genTauFromW   = null;
 	genTauMother  = null;
 	dR            = null;
-	W_pt          = null;
+	gentau_pt     = null;
+	genPiChar_pt  = null;
+	genPi0_pt     = null;
+	nutau_pt      = null;
+	nuW_pt        = null;
+	nunu_pt       = null;
+	double nuW_m  = 0.;
 
 	edm::Handle<reco::GenParticleCollection> genParticles;
 	event.getByToken(GenParticleToken_, genParticles);
 	if (!genParticles.isValid()) return false;
 
-	const int pdg_tau = 15;
-	const int pdg_pi0 = 111;
-	const int pdg_pi1 = 211;
-	const int pdg_W   = 24;
+	if (monitoringGen) std::cout << "GenParticles is valid" << std::endl;
 
-	const reco::Candidate* tau = nullptr;
+	const int pdg_tau    = 15;
+	const int pdg_pi0    = 111;
+	const int pdg_pi1    = 211;
+	const int pdg_W      = 24;
+	const int pdg_nu_tau = 16;
+
+	const reco::Candidate* tau    = nullptr;
+	const reco::Candidate* pi0    = nullptr;
+	const reco::Candidate* pi1    = nullptr;
+	const reco::Candidate* nu_W   = nullptr;
+	const reco::Candidate* nu_tau = nullptr;
 	double dRmin = null;
 	for (auto& particle: *genParticles) {
 		// look for the tau -> pi+ pi0 neutrino decay most oriented towards
 		// the reconstructed tau (if present)
 #define cut(condition) if (!(condition)) continue;
 		cut(abs(particle.pdgId()) == pdg_tau);
+		if (monitoringGen) {
+			std::cout << "Tau found in GP collection (pt = " << particle.pt() << ", eta = " << particle.eta() << ")" << std::endl;
+			std::cout << "Tau has " << particle.numberOfDaughters() << " daughters:" << std::endl;
+			for (unsigned j = 0; j < particle.numberOfDaughters(); ++j) {
+				const reco::Candidate* daughter = particle.daughter(j);
+				int id = abs(daughter->pdgId());
+				std::cout << "pdgId(" << j << ") = " << id << std::endl;
+			}
+		}
 		cut(particle.numberOfDaughters() == 3);
-
-		const reco::Candidate* pi0 = nullptr;
-		const reco::Candidate* pi1 = nullptr;
 		for (int i = 0; i < 3; ++i) {
 			const reco::Candidate* daughter = particle.daughter(i);
 			int id = abs(daughter->pdgId());
@@ -711,13 +872,20 @@ bool TreeMaker::FindGenTau(const edm::Event& event) {
 				pi0 = daughter;
 			else if (id == pdg_pi1)
 				pi1 = daughter;
+			else if (id == pdg_nu_tau)
+				nu_tau = daughter;
 		};
 		cut(pi0 && pi1);
+		if (monitoringGen) std::cout << "PiChar and Pi0 among daughters" << std::endl;
 
 		cut(particle.pt() > tauPtMin);
+		if (monitoringGen) std::cout << "pass pt cut" << std::endl;
 		cut(TMath::Abs(particle.eta()) < tauEtaMax);
+		if (monitoringGen) std::cout << "pass eta cut" << std::endl;
 		cut((pv_position - particle.vertex()).R() < tauDzMax);
+		if (monitoringGen) std::cout << "pass Dz cut" << std::endl;
 		cut(pi1->pt() > piPtMin);
+		if (monitoringGen) std::cout << "pass PiChar_pt cut" << std::endl;
 
 		double dR_ = null;
 		if (tau_found) {
@@ -730,9 +898,20 @@ bool TreeMaker::FindGenTau(const edm::Event& event) {
 				dRmin = dR_;
 			};
 		};
+		if (monitoringGen) std::cout << "distance from reco tau = " << dRmin << std::endl;
 #undef cut
 	};
-	if (!tau) return false;
+	if (!tau) {
+		if (monitoringGen) std::cout << "gen has not been written to Tree" << std::endl;
+		return false;
+	}
+
+	gentau_pt  = tau->pt();
+	gentau_px  = tau->px();
+	gentau_py  = tau->py();
+	gentau_pz  = tau->pz();
+	gentau_eta = tau->eta();
+	gentau_phi = tau->phi();
 
 	dR           = dRmin;
 	gentau_found = 1;
@@ -742,15 +921,77 @@ bool TreeMaker::FindGenTau(const edm::Event& event) {
 		if (abs(p->pdgId()) == pdg_W) {
 			genTauFromW = 1;
 			W_pt        = p->pt();
+			if (monitoringGen) std::cout << "W was found, daughters:" << std::endl;
+			for (unsigned l = 0; l < p->numberOfDaughters(); l++) {
+				const reco::Candidate* Wdaughter= p->daughter(l);
+				if (monitoringGen) std::cout << "W_daughter(" << l << ") = " << Wdaughter->pdgId() << std::endl;
+				if (abs(Wdaughter->pdgId()) == pdg_nu_tau) {
+					nu_W = Wdaughter;
+				} else continue;
+			}
 			break;
 		};
+
 	};
-	if (monitoring) {
-		std::cout << "Final result:" << std::endl;
-		std::cout << "genTauMother PDGId = " << genTauMother << std::endl;
-		std::cout << "genTauFromW        = " << genTauFromW << std::endl;
-		std::cout << "W_pt               = " << W_pt << std::endl;
+
+	// Parameters of tau daughters from generator
+	gentau_pt  = tau->pt();
+	gentau_px  = tau->px();
+	gentau_py  = tau->py();
+	gentau_pz  = tau->pz();
+	gentau_eta = tau->eta();
+	gentau_phi = tau->phi();
+
+	genPiChar_pt  = pi1->pt();
+	genPiChar_px  = pi1->px();
+	genPiChar_py  = pi1->py();
+	genPiChar_pz  = pi1->pz();
+	genPiChar_eta = pi1->eta();
+	genPiChar_phi = pi1->phi();
+	double genPiChar_m = pi1->mass();
+
+	genPi0_pt  = pi0->pt();
+	genPi0_px  = pi0->px();
+	genPi0_py  = pi0->py();
+	genPi0_pz  = pi0->pz();
+	genPi0_eta = pi0->eta();
+	genPi0_phi = pi0->phi();
+	double genPi0_m = pi0->mass();
+
+	nutau_pt  = nu_tau->pt();
+	nutau_px  = nu_tau->px();
+	nutau_py  = nu_tau->py();
+	nutau_pz  = nu_tau->pz();
+	nutau_eta = nu_tau->eta();
+	nutau_phi = nu_tau->phi();
+	double nutau_m = nu_tau->mass();
+	if (genTauFromW > 0) {
+		nuW_pt  = nu_W->pt();
+		nuW_px  = nu_W->px();
+		nuW_py  = nu_W->py();
+		nuW_pz  = nu_W->pz();
+		nuW_eta = nu_W->eta();
+		nuW_phi = nu_W->phi();
+		double nuW_m = nu_W->mass();
 	}
+
+	if (genTauFromW > 0) {
+		TLorentzVector genpi0, genpi1, gennutau, gennuW;
+		genpi1.SetPtEtaPhiM(genPiChar_pt, genPiChar_eta, genPiChar_phi, genPiChar_m);
+		genpi0.SetPtEtaPhiM(genPi0_pt, genPi0_eta, genPi0_phi, genPi0_m);
+		gennutau.SetPtEtaPhiM(nutau_pt, nutau_eta, nutau_phi, nutau_m);
+		gennuW.SetPtEtaPhiM(nuW_pt, nuW_eta, nuW_phi, nuW_m);
+
+		nunu_pt = (gennutau + gennuW).Pt();
+	}
+	
+	if (monitoringGen) {
+		std::cout << "Final result Gen:" << std::endl;
+		std::cout << "nutau_pt          = " << nutau_pt << std::endl;
+		std::cout << "nuW_pt            = " << nuW_pt << std::endl;
+		std::cout << "nunu_pt           = " << nunu_pt << std::endl;
+	}
+	
 	return true;
 };
 
@@ -778,6 +1019,9 @@ bool TreeMaker::AddMET(const edm::Event& event) {
 	auto& MET = mets->front();
 	met = MET.pt();
 	met_phi = MET.phi();
+	met_eta = MET.eta();
+	met_significance = MET.significance();
+	met_mEtSig       = MET.mEtSig();
 	if (met < METcut) return false;
 	return true;
 }
@@ -793,23 +1037,335 @@ bool TreeMaker::AddVertex(const edm::Event& event) {
 	return true;
 };
 
+// https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookAssociationVector
+// https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideEDMRef
+
+// Products to test:
+// trackRefsForJets
+// ak4TrackJets
+
 bool TreeMaker::JetPtSum(const edm::Event& event) {
-	jetPtSum10 = 0;
+	// Jets
 	jetPtSum15 = 0;
 	jetPtSum20 = 0;
 	nJets20    = 0;
+	jetPtSum15PV = 0;
+	jetPtSum20PV = 0;
+	nJets20PV    = 0;
+	nLooseBtagedJets    = 0;
+	nMediumBtagedJets   = 0;
+	nTightBtagedJets    = 0;
+	nLooseBtagedJetsPV  = 0;
+	nMediumBtagedJetsPV = 0;
+	nTightBtagedJetsPV  = 0;
+	// CHS Jets
+	CHSjetPtSum15 = 0;
+	CHSjetPtSum20 = 0;
+	nCHSJets20    = 0;
+	CHSjetPtSum15PV = 0;
+	CHSjetPtSum20PV = 0;
+	nCHSJets20PV    = 0;
+	nLooseBtagedCHSJets    = 0;
+	nMediumBtagedCHSJets   = 0;
+	nTightBtagedCHSJets    = 0;
+	nLooseBtagedCHSJetsPV  = 0;
+	nMediumBtagedCHSJetsPV = 0;
+	nTightBtagedCHSJetsPV  = 0;
+
+	LeadingJet_pt   = null;
+	LeadingJet_eta  = null;
+	LeadingJet_phi  = null;
+	LeadingJet_m    = null;
+	LeadingJet_btag = null;
+	SubLeadingJet_pt   = null;
+	SubLeadingJet_eta  = null;
+	SubLeadingJet_phi  = null;
+	SubLeadingJet_m    = null;
+	SubLeadingJet_btag = null;
+
+	BJet_pt   = null;
+	BJet_eta  = null;
+	BJet_phi  = null;
+	BJet_m    = null;
+	BJet_btag = null;
 
 	edm::Handle<reco::PFJetCollection> jets;
 	event.getByToken(JetCollectionToken_, jets);
 	if (!jets.isValid()) return false;
+	edm::Handle<reco::PFJetCollection> CHSjets;
+	event.getByToken(CHSJetCollectionToken_, CHSjets);
+	if (!CHSjets.isValid()) return false;
+	edm::Handle<reco::TrackCollection> tracks;
+	event.getByToken(TrackToken_, tracks);
+	if (!tracks.isValid()) return false;
+	edm::Handle<reco::VertexCollection> vertices;
+	event.getByToken(PVToken_, vertices);
+	if (!vertices.isValid() || vertices->size() == 0) return false;
 
+	edm::Handle<reco::JetTagCollection> pfDeepCSVJetTags_b;
+    	event.getByToken(tok_pfDeepCSVJetTags_b, pfDeepCSVJetTags_b);
+  	edm::Handle<reco::JetTagCollection> pfDeepCSVJetTags_bb;
+  	event.getByToken(tok_pfDeepCSVJetTags_bb, pfDeepCSVJetTags_bb);
+
+  	double WPBTag_loose   = 0.1522;
+ 	double WPBTag_medium  = 0.4941; 	 
+ 	double WPBTag_tight   = 0.8001;
+
+  	const reco::JetTagCollection & bTag  = *(pfDeepCSVJetTags_b.product());
+  	const reco::JetTagCollection & bbTag = *(pfDeepCSVJetTags_bb.product());
+
+	// Primary vertex or 0 element of vertices collection
+	if (monitoring) {
+		std::cout << "pv position = (" << pv_position.X() << ", " << pv_position.Y() << ", " << pv_position.Z() << ")" << std::endl;
+		std::cout << "Jets:"<< std::endl;
+	}
+
+	int i = 0;
 	for (auto& jet: *jets) {
 		if (TMath::Abs(jet.eta()) > 3) continue;
-		if (jet.pt() > 10) jetPtSum10 += jet.pt();
-		if (jet.pt() > 15) jetPtSum15 += jet.pt();
-		if (jet.pt() > 20) {
-			jetPtSum20 += jet.pt();
-			++nJets20;
+		if (jet.pt() > 15) {
+			i++;
+			if (monitoring) std::cout << std::endl << "Jet[" << i << "] Pt = " << jet.pt() << std::endl;
+			reco::TrackRefVector JetTracksRef = jet.getTrackRefs();
+			std::map <int, int> VertexTracksMap;
+			std::map <int, std::pair<int, double>> VertexTracksPtMap;
+			double JetDeepCSV_prob_b = 0;
+			double JetDeepCSV_prob_bb = 0;
+			int NtracksFromPV = 0;
+			double SumtracksPtFromPV = 0;
+			bool JetFromPV = true;
+			int ntrk1 = 0;
+			std::vector<int> TrackCounter;
+			std::vector<double> TracksPtSum;
+			//int TrackCounter[vertices->size()];
+			//double TracksPtSum[vertices->size()];
+			for (unsigned count = 0; count < vertices->size(); count++) {
+				//TrackCounter[count] = 0;
+				//TracksPtSum[count] = 0;
+				TrackCounter.push_back(0);
+				TracksPtSum.push_back(0);
+			}
+			// Loop over tracks from Jet
+			for (reco::TrackRefVector::const_iterator i_trk = JetTracksRef.begin(); i_trk != JetTracksRef.end(); i_trk++, ntrk1++) {
+				// Loop over vrtices
+				for (unsigned nvtx = 0; nvtx < vertices->size(); nvtx++) {
+					// number of tracks from this vertex in jet
+					VertexTracksMap.insert(std::pair<int, int> (nvtx, TrackCounter.at(nvtx)));
+					//std::pair <int, double> Pair1 (TrackCounter[nvtx], TracksPtSum[nvtx]);
+					std::pair <int, double> Pair1 (TrackCounter.at(nvtx), TracksPtSum.at(nvtx));
+					VertexTracksPtMap.insert(std::pair<int, std::pair<int, double>> (nvtx, Pair1));
+					reco::Vertex::trackRef_iterator it = (*vertices)[nvtx].tracks_begin();
+					reco::Vertex::trackRef_iterator lastTrack = (*vertices)[nvtx].tracks_end();
+					int ntrk = 0;
+					// Loop over tracks from vertex
+					for (; it != lastTrack; ++it, ++ntrk) {
+						if (abs((*i_trk)->eta() - (*it)->eta()) < 0.0001 && abs((*i_trk)->phi() - (*it)->phi()) < 0.0001) {
+							TrackCounter.at(nvtx)++;
+							TracksPtSum.at(nvtx) += (*i_trk)->pt();
+							std::pair <int, double> NTraksSumPt (TrackCounter.at(nvtx), TracksPtSum.at(nvtx));
+							VertexTracksMap.at(nvtx) = TrackCounter.at(nvtx);
+							VertexTracksPtMap.at(nvtx) = NTraksSumPt;
+						}
+					}
+				}
+			}
+			for (auto Map_iter1 = VertexTracksPtMap.begin(); Map_iter1 != VertexTracksPtMap.end(); ++Map_iter1) {
+				if ((*Map_iter1).second.first < 1) continue;
+				if ((*Map_iter1).first == 0) SumtracksPtFromPV = (*Map_iter1).second.second;
+				if ((*Map_iter1).first > 0 && (*Map_iter1).second.second > SumtracksPtFromPV) JetFromPV = false;
+				if (monitoring) std::cout << "Vertex number   = " << (*Map_iter1).first << "  entries = " << (*Map_iter1).second.first << "  SumPt = " << (*Map_iter1).second.second << std::endl;
+			}
+
+			// Loop over bTags
+    		for (unsigned i = 0; i != bTag.size(); i++) {
+    			if (abs(bTag[i].first->eta() - jet.eta()) < 0.025 && abs(bTag[i].first->phi() - jet.phi()) < 0.025 ){
+          			JetDeepCSV_prob_b = bTag[i].second;
+          			if (monitoring) {
+            			std::cout << "##### Btag associated with jet number " << std::endl;
+            			std::cout << "BTagCollection   eta = " << bTag[i].first->eta() << "   phi = " << bTag[i].first->phi() << std::endl;
+            			std::cout << "PFCollection     eta = " << jet.eta() << "   phi = " << jet.phi() << std::endl;
+            			std::cout << "Pt (BTagCollection)  = " << bTag[i].first->pt() << std::endl;
+            			std::cout << "bTag                 = " << bTag[i].second << std::endl;
+          			}
+        		} else continue;
+    		}
+    		for (unsigned i = 0; i != bbTag.size(); i++) {
+        		if (abs(bbTag[i].first->eta() - jet.eta()) < 0.025 && abs(bbTag[i].first->phi() - jet.phi()) < 0.025 ){
+          			JetDeepCSV_prob_bb = bbTag[i].second;
+          			if (monitoring) {
+            			std::cout << "bbTag                = " << bbTag[i].second << std::endl;
+          			}
+        		} else continue;
+    		}
+
+    		jetPtSum15 += jet.pt();
+			if (JetFromPV) {
+				jetPtSum15PV += jet.pt();
+				if (JetDeepCSV_prob_b + JetDeepCSV_prob_bb > WPBTag_loose) {
+    				nLooseBtagedJetsPV++;
+    				if (JetDeepCSV_prob_b + JetDeepCSV_prob_bb > WPBTag_medium) {
+    					nMediumBtagedJetsPV++;
+    					if (JetDeepCSV_prob_b + JetDeepCSV_prob_bb > WPBTag_tight) {
+    						nTightBtagedJetsPV++;
+    					}
+    				}
+    			}
+			}
+			if (JetDeepCSV_prob_b + JetDeepCSV_prob_bb > WPBTag_loose) {
+    			nLooseBtagedJets++;
+    			if (JetDeepCSV_prob_b + JetDeepCSV_prob_bb > WPBTag_medium) {
+    				nMediumBtagedJets++;
+    				if (JetDeepCSV_prob_b + JetDeepCSV_prob_bb > WPBTag_tight) {
+    					nTightBtagedJets++;
+    				}
+    			}
+    		}
+
+			if (jet.pt() > 20) {
+				jetPtSum20 += jet.pt();
+				nJets20++;
+				if (JetFromPV) {
+					nJets20PV++;
+					jetPtSum20PV += jet.pt();
+				}
+			}
+		}
+	}
+
+	if (monitoring) std::cout << "CHSJets:"<< std::endl;
+
+	int j = 0;
+	// Lopp over Jets
+	for (auto& jet: *CHSjets) {
+		if (TMath::Abs(jet.eta()) > 3) continue;
+		if (jet.pt() > 15) {
+			j++;
+			if (monitoring) {
+				std::cout << std::endl;
+				std::cout << "CHSJet[" << j << "] Pt = " << jet.pt() << std::endl;
+			}
+			reco::TrackRefVector JetTracksRef = jet.getTrackRefs();
+			std::map <int, int> VertexTracksMap;
+			std::map <int, std::pair<int, double>> VertexTracksPtMap;
+			double JetDeepCSV_prob_b = 0;
+			double JetDeepCSV_prob_bb = 0;
+			int NtracksFromPV = 0;
+			bool JetFromPV = true;
+			std::vector<int> TrackCounter;
+			std::vector<double> TracksPtSum;
+			for (unsigned count = 0; count < vertices->size(); count++) {
+				TrackCounter.push_back(0);
+				TracksPtSum.push_back(0);
+			}
+			// Loop over tracks from Jet
+			for (reco::TrackRefVector::const_iterator i_trk = JetTracksRef.begin(); i_trk != JetTracksRef.end(); i_trk++) {
+				// Loop over vrtices
+				for (unsigned nvtx = 0; nvtx < vertices->size(); nvtx++) {
+					// number of tracks from this vertex in jet
+					VertexTracksMap.insert(std::pair<int, int> (nvtx, TrackCounter.at(nvtx)));
+					std::pair <int, double> Pair1 (TrackCounter.at(nvtx), TracksPtSum.at(nvtx));
+					VertexTracksPtMap.insert(std::pair<int, std::pair<int, double>> (nvtx, Pair1));
+					reco::Vertex::trackRef_iterator it = (*vertices)[nvtx].tracks_begin();
+					reco::Vertex::trackRef_iterator lastTrack = (*vertices)[nvtx].tracks_end();
+					int ntrk = 0;
+					// Loop over tracks from vertex
+					for (; it != lastTrack; ++it, ++ntrk) {
+						if (abs((*i_trk)->eta() - (*it)->eta()) < 0.0001 && abs((*i_trk)->phi() - (*it)->phi()) < 0.0001) {
+							TrackCounter.at(nvtx)++;
+							TracksPtSum.at(nvtx) += (*i_trk)->pt();
+							std::pair <int, double> NTraksSumPt (TrackCounter.at(nvtx), TracksPtSum.at(nvtx));
+							VertexTracksMap.at(nvtx) = TrackCounter.at(nvtx);
+							VertexTracksPtMap.at(nvtx) = NTraksSumPt;
+						}
+					}
+				}
+			}
+			if (monitoring) std::cout << std::endl;
+			for (auto Map_iter = VertexTracksMap.begin(); Map_iter != VertexTracksMap.end(); ++Map_iter) {
+				if ((*Map_iter).first == 0) NtracksFromPV = (*Map_iter).second;
+				if ((*Map_iter).first > 0 && (*Map_iter).second > NtracksFromPV) JetFromPV = false;
+				if ((*Map_iter).second < 1) continue;
+			}
+			for (auto Map_iter1 = VertexTracksPtMap.begin(); Map_iter1 != VertexTracksPtMap.end(); ++Map_iter1) {
+				if ((*Map_iter1).second.first < 1) continue;
+				if (monitoring) std::cout << "Vertex number   = " << (*Map_iter1).first << "  entries = " << (*Map_iter1).second.first << "  SumPt = " << (*Map_iter1).second.second << std::endl;
+			}
+
+			// Loop over bTags
+    		for (unsigned i = 0; i != bTag.size(); i++) {
+    			if (abs(bTag[i].first->eta() - jet.eta()) < 0.001 && abs(bTag[i].first->phi() - jet.phi()) < 0.001 ){
+          			JetDeepCSV_prob_b = bTag[i].second;
+          			if (monitoring) {
+            			std::cout << "##### Btag associated with jet number " << std::endl;
+            			std::cout << "BTagCollection   eta = " << bTag[i].first->eta() << "   phi = " << bTag[i].first->phi() << std::endl;
+            			std::cout << "PFCollection     eta = " << jet.eta() << "   phi = " << jet.phi() << std::endl;
+            			std::cout << "Pt (BTagCollection)  = " << bTag[i].first->pt() << std::endl;
+            			std::cout << "bTag                 = " << bTag[i].second << std::endl;
+          			}
+        		} else continue;
+    		}
+    		for (unsigned i = 0; i != bbTag.size(); i++) {
+        		if (abs(bbTag[i].first->eta() - jet.eta()) < 0.001 && abs(bbTag[i].first->phi() - jet.phi()) < 0.001 ){
+          			JetDeepCSV_prob_bb = bbTag[i].second;
+          			if (monitoring) {
+            			std::cout << "bbTag                = " << bbTag[i].second << std::endl;
+          			}
+        		} else continue;
+    		}
+
+    		if (JetDeepCSV_prob_b + JetDeepCSV_prob_bb > BJet_btag) {
+    			BJet_pt   = jet.pt();
+	            BJet_eta  = jet.eta();
+				BJet_phi  = jet.phi();
+				BJet_m    = jet.mass();
+				BJet_btag = JetDeepCSV_prob_b + JetDeepCSV_prob_bb;
+    		}
+
+    		if (j == 1) {
+    		    LeadingJet_pt   = jet.pt();
+    		    LeadingJet_eta  = jet.eta();
+    		    LeadingJet_phi  = jet.phi();
+    		    LeadingJet_m    = jet.mass();
+    		    LeadingJet_btag = JetDeepCSV_prob_b + JetDeepCSV_prob_bb;
+    		} else if (j == 2) {
+    		    SubLeadingJet_pt   = jet.pt();
+    		    SubLeadingJet_eta  = jet.eta();
+    		    SubLeadingJet_phi  = jet.phi();
+    		    SubLeadingJet_m    = jet.mass();
+    		    SubLeadingJet_btag = JetDeepCSV_prob_b + JetDeepCSV_prob_bb;
+    		}
+			
+			CHSjetPtSum15 += jet.pt();
+			if (JetFromPV) {
+				CHSjetPtSum15PV += jet.pt();
+				if (JetDeepCSV_prob_b + JetDeepCSV_prob_bb > WPBTag_loose) {
+    				nLooseBtagedCHSJetsPV++;
+    				if (JetDeepCSV_prob_b + JetDeepCSV_prob_bb > WPBTag_medium) {
+    					nMediumBtagedCHSJetsPV++;
+    					if (JetDeepCSV_prob_b + JetDeepCSV_prob_bb > WPBTag_tight) {
+    						nTightBtagedCHSJetsPV++;
+    					}
+    				}
+    			}
+			}
+			if (JetDeepCSV_prob_b + JetDeepCSV_prob_bb > WPBTag_loose) {
+    			nLooseBtagedCHSJets++;
+    			if (JetDeepCSV_prob_b + JetDeepCSV_prob_bb > WPBTag_medium) {
+    				nMediumBtagedCHSJets++;
+    				if (JetDeepCSV_prob_b + JetDeepCSV_prob_bb > WPBTag_tight) {
+    					nTightBtagedCHSJets++;
+    				}
+    			}
+    		}
+
+			if (jet.pt() > 20) {
+				CHSjetPtSum20 += jet.pt();
+				nCHSJets20++;
+				if (JetFromPV) {
+					nCHSJets20PV++;
+					CHSjetPtSum20PV += jet.pt();
+				}
+			}
 		}
 	}
 
@@ -844,7 +1400,7 @@ void TreeMaker::AddWT(const edm::Event& iEvent) {
 	iEvent.getByToken(Photon2Token_, PhotonEmission2);
 
 	if (!WTisValidHandle.isValid()) {
-		if (monitoring) std::cout << "WTisValidHandle is not valid" << std::endl;
+		//if (monitoring) std::cout << "WTisValidHandle is not valid" << std::endl;
 		return;
 	}
 	WTisValid = *WTisValidHandle;
@@ -857,7 +1413,7 @@ void TreeMaker::AddWT(const edm::Event& iEvent) {
 		PhotonFlag1 = *PhotonEmission1;
 		PhotonFlag2 = *PhotonEmission2;
 	} else {
-		if (monitoring) std::cout << "WT Collections are not valid" << std::endl;
+		//if (monitoring) std::cout << "WT Collections are not valid" << std::endl;
 		WT        = null;
 		WTFlip    = null;
 		WThminus  = null;
@@ -886,20 +1442,25 @@ void TreeMaker::GenTauDM (const edm::Event& iEvent) {
   iEvent.getByToken(GenParticleToken_, GP);
 
   int channel = null;
+  gentau_dm = null;
+  gentau_nPi0 = null;
 
   if(GP.isValid()) {
-    if (monitoring) std::cout << "GenParticles collection is valid" << std::endl;
     for(unsigned i = 0 ; i < GP->size() ; i++) {
       if (abs((*GP)[i].pdgId())==15) {
         channel = -1;
 	int tau_pdgid = (*GP)[i].pdgId();
+        if (monitoring) std::cout << "GenTauDM particle number " << i << std::endl;
 
         //std::vector<SimpleParticle> tau_daughters_simple;
 	std::vector<MySimpleParticle> tau_daughters;
         for (unsigned k = 0; k < (*GP)[i].numberOfDaughters(); k++) {
           MySimpleParticle tp((*GP)[i].daughter(k)->p4().Px(), (*GP)[i].daughter(k)->p4().Py(), (*GP)[i].daughter(k)->p4().Pz(), (*GP)[i].daughter(k)->p4().E(), (*GP)[i].daughter(k)->pdgId());
           tau_daughters.push_back(tp);
+          if (monitoring) std::cout << "Tau_daughter[" << k << "] = " << (*GP)[i].daughter(k)->pdgId() << std::endl;
         }
+
+	if (tau_daughters.size() >= 2 && (abs(tau_daughters[0].pdgid()) == 15 || abs(tau_daughters[1].pdgid()) == 15)) continue;
 
         std::vector<int>  pdgid;
         for (unsigned int l = 0; l < tau_daughters.size(); l++) {
@@ -914,6 +1475,8 @@ void TreeMaker::GenTauDM (const edm::Event& iEvent) {
             )
           ) {
           channel = 3;
+	  gentau_dm = 0;
+	  gentau_nPi0 = 0;
           if (abs(pdgid[1]) == 321) channel = 6;
         }
         else if ( pdgid.size() == 3 &&
@@ -930,6 +1493,8 @@ void TreeMaker::GenTauDM (const edm::Event& iEvent) {
           ) {
  
           channel = 4;
+	  gentau_dm = 1;
+	  gentau_nPi0 = 1;
           if(abs(pdgid[1])==321 || abs(pdgid[2])==130 || abs(pdgid[2])==310) channel = 7;
         }
         else if( pdgid.size() == 4 &&
@@ -939,6 +1504,8 @@ void TreeMaker::GenTauDM (const edm::Event& iEvent) {
             )
           ) {
           channel = 5;
+	  gentau_dm = 2;
+	  gentau_nPi0 = 2;
         }
         else if( pdgid.size() == 4 &&
             (
@@ -947,6 +1514,8 @@ void TreeMaker::GenTauDM (const edm::Event& iEvent) {
             )
           ) {
           channel = 6;
+	  gentau_dm = 10;
+	  gentau_nPi0 = 0;
         }
         else if( pdgid.size()==5 &&
             (
@@ -955,6 +1524,8 @@ void TreeMaker::GenTauDM (const edm::Event& iEvent) {
             )
           ) {
           channel = 8;
+	  gentau_dm = 11;
+	  gentau_nPi0 = 1;
         }
         else if( pdgid.size()==5 &&
             (
@@ -963,6 +1534,7 @@ void TreeMaker::GenTauDM (const edm::Event& iEvent) {
             )
           ) {
           channel = 9;
+	  gentau_nPi0 = 3;
         }
         else if( pdgid.size()==3 &&
             (
@@ -999,7 +1571,7 @@ void TreeMaker::GenTauDM (const edm::Event& iEvent) {
       }
       if (channel == -1 && abs((*GP)[i].pdgId())==15 && monitoring) {
         std::cout << "Unidentified decay channel of tau was found" << std::endl;
-	std::cout << "List of daughters:" << std::endl;
+	    std::cout << "List of daughters:" << std::endl;
         for (unsigned t = 0; t < (*GP)[i].numberOfDaughters(); t++) {
           std::cout << "TauDaughter[" << t << "] pdgId = " << (*GP)[i].daughter(t)->pdgId() << std::endl;
         }
