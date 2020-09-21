@@ -50,19 +50,19 @@ process.source = cms.Source("PoolSource",
 
 # MVA MET
 
-process.load("RecoJets.JetProducers.ak4PFJets_cfi")
-process.task.add(process.ak4PFJets)
-process.ak4PFJets.src = cms.InputTag("packedPFCandidates")
-process.ak4PFJets.doAreaFastjet = cms.bool(True)
+#process.load("RecoJets.JetProducers.ak4PFJets_cfi")
+#process.task.add(process.ak4PFJets)
+#process.ak4PFJets.src = cms.InputTag("packedPFCandidates")
+#process.ak4PFJets.doAreaFastjet = cms.bool(True)
 
-from JetMETCorrections.Configuration.DefaultJEC_cff import ak4PFJetsL1FastL2L3
+#from JetMETCorrections.Configuration.DefaultJEC_cff import ak4PFJetsL1FastL2L3
 
-process.load("RecoMET.METPUSubtraction.mvaPFMET_cff")
+#process.load("RecoMET.METPUSubtraction.mvaPFMET_cff")
 #process.task.add(process.pfMVAMEtTask)
-process.MVAMET = process.pfMVAMEtTask
+#process.MVAMET = process.pfMVAMEtTask
 #process.pfMVAMEt.srcLeptons = cms.VInputTag("slimmedElectrons")
-process.pfMVAMEt.srcPFCandidates = cms.InputTag("packedPFCandidates")
-process.pfMVAMEt.srcVertices = cms.InputTag("offlineSlimmedPrimaryVertices")
+#process.pfMVAMEt.srcPFCandidates = cms.InputTag("packedPFCandidates")
+#process.pfMVAMEt.srcVertices = cms.InputTag("offlineSlimmedPrimaryVertices")
 
 # TreeMakder for miniAOD
 
@@ -74,6 +74,7 @@ process.TTbarTauLepton = cms.EDAnalyzer("TTbarTauLepton",
         monitoringJets    = cms.bool(False),
         monitoringBJets   = cms.bool(False),
         monitoringLeptons = cms.bool(False),
+	monitoringMET     = cms.bool(False),
 	isMC = cms.bool(True),
 	TauSpinnerOn = cms.bool(False),
 	looseTauID = cms.bool(True),
@@ -414,4 +415,4 @@ process.TFileService = cms.Service("TFileService",
   fileName = cms.string('TTbar_MC_v1.root')
 )
 
-process.p = cms.Path(process.MVAMET * process.TTbarTauLepton)
+process.p = cms.Path(process.TTbarTauLepton)
