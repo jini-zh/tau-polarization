@@ -43,7 +43,7 @@ void TauMonitor (const pat::Tau &tau, bool DeepTau, const math::XYZPoint &pv_pos
 
     //reco::CandidatePtrVector VectorPi0 = tau.signalNeutrHadrCands();
     reco::CandidatePtrVector VectorPiCh = tau.signalChargedHadrCands();
-    reco::CandidatePtrVector VectorSignalCands = tau.signalCands(); 
+    reco::CandidatePtrVector VectorSignalCands = tau.signalCands();
 
     std::cout << "Pt                        = " << tau.pt() << std::endl
     << "eta                       = " << tau.eta() << std::endl
@@ -83,8 +83,8 @@ void TauMonitor (const pat::Tau &tau, bool DeepTau, const math::XYZPoint &pv_pos
         << "againstElectronVLooseMVA6             = " << tau.tauID("againstElectronVLooseMVA6") << std::endl
         << "againstMuonLoose3                     = " << tau.tauID("againstMuonLoose3") << std::endl;
     }
-    std::cout << "SV pos   = (" << tau.secondaryVertexPos().x() << ", " << tau.secondaryVertexPos().y() << ", " << tau.secondaryVertexPos().z() << ")" << std::endl;
-    std::cout << "dz(SV, PV) = " << (tau.secondaryVertexPos() - pv_position).R() << std::endl;
+    //std::cout << "SV pos   = (" << tau.secondaryVertexPos().x() << ", " << tau.secondaryVertexPos().y() << ", " << tau.secondaryVertexPos().z() << ")" << std::endl;
+    //std::cout << "dz(SV, PV) = " << (tau.secondaryVertexPos() - pv_position).R() << std::endl;
     if (tau.hasSecondaryVertex()) {
         std::cout << "has Secondary vertex" << std::endl;
     } else {
@@ -110,6 +110,7 @@ void TauMonitor (const pat::Tau &tau, bool DeepTau, const math::XYZPoint &pv_pos
     << "mass = " << leadPiCh->mass() << std::endl;
     */
 
+    std::cout << "All candidates:" << std::endl;
     if (VectorSignalCands.size() > 0) {
         for (unsigned l = 0; l < VectorSignalCands.size(); l++) {
             std::cout << "Signal Candidate number " << l << " (pdgId " << VectorSignalCands[l]->pdgId() << ")" << std::endl
@@ -119,6 +120,18 @@ void TauMonitor (const pat::Tau &tau, bool DeepTau, const math::XYZPoint &pv_pos
             << "mass  = " << VectorSignalCands[l]->mass() << std::endl;
         }
     }
+    /*
+    std::cout << "Photon candidates:" << std::endl;
+    if (tau.signalGammaCands().size() > 0) {
+        for (unsigned l = 0; l < tau.signalGammaCands().size(); l++) {
+            std::cout << "Gamma Candidate number " << l << " (pdgId " << ((tau.signalGammaCands())[l])->pdgId() << ")" << std::endl
+            << "Pt    = " << ((tau.signalGammaCands())[l])->pt() << std::endl
+            << "eta   = " << ((tau.signalGammaCands())[l])->eta() << std::endl
+            << "phi   = " << ((tau.signalGammaCands())[l])->phi() << std::endl
+            << "mass  = " << ((tau.signalGammaCands())[l])->mass() << std::endl;
+        }
+    }
+    */
     /*
     if (VectorPiCh.size() > 0) {
         std::cout << "Only charged candidates:" << std::endl;

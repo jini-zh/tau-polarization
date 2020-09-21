@@ -24,7 +24,7 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condD
 process.GlobalTag.globaltag='94X_mc2017_realistic_v14'
 
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(20) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(50000) )
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
@@ -48,17 +48,32 @@ process.source = cms.Source("PoolSource",
 
 #process.treemaker = cms.EDAnalyzer('TTbarTauLepton')
 
+# MVA MET
+
+process.load("RecoJets.JetProducers.ak4PFJets_cfi")
+process.task.add(process.ak4PFJets)
+process.ak4PFJets.src = cms.InputTag("packedPFCandidates")
+process.ak4PFJets.doAreaFastjet = cms.bool(True)
+
+from JetMETCorrections.Configuration.DefaultJEC_cff import ak4PFJetsL1FastL2L3
+
+process.load("RecoMET.METPUSubtraction.mvaPFMET_cff")
+#process.task.add(process.pfMVAMEtTask)
+process.MVAMET = process.pfMVAMEtTask
+#process.pfMVAMEt.srcLeptons = cms.VInputTag("slimmedElectrons")
+process.pfMVAMEt.srcPFCandidates = cms.InputTag("packedPFCandidates")
+process.pfMVAMEt.srcVertices = cms.InputTag("offlineSlimmedPrimaryVertices")
+
 # TreeMakder for miniAOD
 
 process.TTbarTauLepton = cms.EDAnalyzer("TTbarTauLepton",
-	monitoring        = cms.bool(True),
+	monitoring        = cms.bool(False),
         monitoringHLT     = cms.bool(False),
-        monitoringTau     = cms.bool(True),
+        monitoringTau     = cms.bool(False),
         monitoringGen     = cms.bool(False),
         monitoringJets    = cms.bool(False),
         monitoringBJets   = cms.bool(False),
         monitoringLeptons = cms.bool(False),
-	monitoringMET     = cms.bool(False),
 	isMC = cms.bool(True),
 	TauSpinnerOn = cms.bool(False),
 	looseTauID = cms.bool(True),
@@ -265,7 +280,132 @@ process.TTbarTauLepton = cms.EDAnalyzer("TTbarTauLepton",
 		"HLT_TripleJet110_35_35_Mjj650_PFMET120_v",
 		"HLT_TripleJet110_35_35_Mjj650_PFMET130_v",
 		),
-							
+	BTagCSVTriggers = cms.vstring(
+		"HLT_AK8PFJet330_PFAK8BTagCSV_p17_v",
+		"HLT_AK8PFJet330_PFAK8BTagCSV_p1_v",
+		"HLT_DoublePFJets100MaxDeta1p6_DoubleCaloBTagCSV_p33_v",
+		"HLT_DoublePFJets100_CaloBTagCSV_p33_v",
+		"HLT_DoublePFJets116MaxDeta1p6_DoubleCaloBTagCSV_p33_v",
+		"HLT_DoublePFJets128MaxDeta1p6_DoubleCaloBTagCSV_p33_v",
+		"HLT_DoublePFJets200_CaloBTagCSV_p33_v",
+		"HLT_DoublePFJets350_CaloBTagCSV_p33_v",
+		"HLT_DoublePFJets40_CaloBTagCSV_p33_v",
+		"HLT_Mu12_DoublePFJets100_CaloBTagCSV_p33_v",
+		"HLT_Mu12_DoublePFJets200_CaloBTagCSV_p33_v",
+		"HLT_Mu12_DoublePFJets350_CaloBTagCSV_p33_v",
+		"HLT_Mu12_DoublePFJets40MaxDeta1p6_DoubleCaloBTagCSV_p33_v",
+		"HLT_Mu12_DoublePFJets40_CaloBTagCSV_p33_v",
+		"HLT_Mu12_DoublePFJets54MaxDeta1p6_DoubleCaloBTagCSV_p33_v",
+		"HLT_Mu12_DoublePFJets62MaxDeta1p6_DoubleCaloBTagCSV_p33_v",
+		"HLT_PFHT300PT30_QuadPFJet_75_60_45_40_TriplePFBTagCSV_3p0_v",
+		"HLT_PFHT300PT30_QuadPFJet_75_60_45_40_v",
+		"HLT_QuadPFJet103_88_75_15_BTagCSV_p013_VBF2_v",
+		"HLT_QuadPFJet103_88_75_15_DoubleBTagCSV_p013_p08_VBF1_v",
+		"HLT_QuadPFJet105_88_76_15_BTagCSV_p013_VBF2_v",
+		"HLT_QuadPFJet105_90_76_15_DoubleBTagCSV_p013_p08_VBF1_v",
+		"HLT_QuadPFJet111_90_80_15_BTagCSV_p013_VBF2_v",
+		"HLT_QuadPFJet111_90_80_15_DoubleBTagCSV_p013_p08_VBF1_v",
+		"HLT_QuadPFJet98_83_71_15_BTagCSV_p013_VBF2_v",
+		"HLT_QuadPFJet98_83_71_15_DoubleBTagCSV_p013_p08_VBF1_v",
+		"HLT_SingleJet30_Mu12_SinglePFJet40_v",
+		),
+	BTagMuTriggers = cms.vstring(
+		"HLT_BTagMu_AK4DiJet110_Mu5_v",
+		"HLT_BTagMu_AK4DiJet170_Mu5_v",
+		"HLT_BTagMu_AK4DiJet20_Mu5_v",
+		"HLT_BTagMu_AK4DiJet40_Mu5_v",
+		"HLT_BTagMu_AK4DiJet70_Mu5_v",
+		"HLT_BTagMu_AK4Jet300_Mu5_v",
+		"HLT_BTagMu_AK8DiJet170_Mu5_v",
+		"HLT_BTagMu_AK8Jet300_Mu5_v",
+		),
+	SingleMuonTriggers = cms.vstring(
+		"HLT_IsoMu20_eta2p1_LooseChargedIsoPFTau27_eta2p1_CrossL1_v",
+		"HLT_IsoMu20_eta2p1_LooseChargedIsoPFTau27_eta2p1_TightID_CrossL1_v"
+		"HLT_IsoMu20_eta2p1_MediumChargedIsoPFTau27_eta2p1_CrossL1_v"
+		"HLT_IsoMu20_eta2p1_MediumChargedIsoPFTau27_eta2p1_TightID_CrossL1_v"
+		"HLT_IsoMu20_eta2p1_TightChargedIsoPFTau27_eta2p1_CrossL1_v"
+		"HLT_IsoMu20_eta2p1_TightChargedIsoPFTau27_eta2p1_TightID_CrossL1_v"
+		"HLT_IsoMu20_v"
+		"HLT_IsoMu24_eta2p1_LooseChargedIsoPFTau20_SingleL1_v"
+		"HLT_IsoMu24_eta2p1_LooseChargedIsoPFTau20_TightID_SingleL1_v"
+		"HLT_IsoMu24_eta2p1_LooseChargedIsoPFTau35_Trk1_TightID_eta2p1_Reg_CrossL1_v"
+		"HLT_IsoMu24_eta2p1_LooseChargedIsoPFTau35_Trk1_eta2p1_Reg_CrossL1_v"
+		"HLT_IsoMu24_eta2p1_MediumChargedIsoPFTau20_SingleL1_v"
+		"HLT_IsoMu24_eta2p1_MediumChargedIsoPFTau20_TightID_SingleL1_v"
+		"HLT_IsoMu24_eta2p1_MediumChargedIsoPFTau35_Trk1_TightID_eta2p1_Reg_CrossL1_v"
+		"HLT_IsoMu24_eta2p1_MediumChargedIsoPFTau35_Trk1_eta2p1_Reg_CrossL1_v"
+		"HLT_IsoMu24_eta2p1_TightChargedIsoPFTau20_SingleL1_v"
+		"HLT_IsoMu24_eta2p1_TightChargedIsoPFTau20_TightID_SingleL1_v"
+		"HLT_IsoMu24_eta2p1_TightChargedIsoPFTau35_Trk1_TightID_eta2p1_Reg_CrossL1_v"
+		"HLT_IsoMu24_eta2p1_TightChargedIsoPFTau35_Trk1_eta2p1_Reg_CrossL1_v"
+		"HLT_IsoMu24_eta2p1_v"
+		"HLT_IsoMu24_v"
+		"HLT_IsoMu27_v"
+		"HLT_IsoMu30_v"
+		"HLT_L1SingleMu18_v"
+		"HLT_L1SingleMu25_v"
+		"HLT_L1_DoubleJet30_Mass_Min400_Mu10_v"
+		"HLT_L2Mu10_v"
+		"HLT_L2Mu50_v"
+		"HLT_Mu10_TrkIsoVVL_DiPFJet40_DEta3p5_MJJ750_HTT350_PFMETNoMu60_v"
+		"HLT_Mu12_v"
+		"HLT_Mu15_IsoVVVL_PFHT450_CaloBTagCSV_4p5_v"
+		"HLT_Mu15_IsoVVVL_PFHT450_PFMET50_v"
+		"HLT_Mu15_IsoVVVL_PFHT450_v"
+		"HLT_Mu15_IsoVVVL_PFHT600_v"
+		"HLT_Mu15_v"
+		"HLT_Mu20_v"
+		"HLT_Mu27_v"
+		"HLT_Mu3_PFJet40_v"
+		"HLT_Mu50_IsoVVVL_PFHT450_v"
+		"HLT_Mu50_v"
+		"HLT_Mu55_v"
+		"HLT_Mu8_TrkIsoVVL_DiPFJet40_DEta3p5_MJJ750_HTT300_PFMETNoMu60_v"
+		"HLT_OldMu100_v"
+		"HLT_TkMu100_v"
+	),
+	SingleElectronTriggers = cms.vstring(
+		"HLT_Ele115_CaloIdVT_GsfTrkIdT_v",
+		"HLT_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30_v",
+		"HLT_Ele135_CaloIdVT_GsfTrkIdT_v",
+		"HLT_Ele145_CaloIdVT_GsfTrkIdT_v",
+		"HLT_Ele15_CaloIdL_TrackIdL_IsoVL_PFJet30_v",
+		"HLT_Ele15_IsoVVVL_PFHT450_CaloBTagCSV_4p5_v",
+		"HLT_Ele15_IsoVVVL_PFHT450_PFMET50_v",
+		"HLT_Ele15_IsoVVVL_PFHT450_v",
+		"HLT_Ele15_IsoVVVL_PFHT600_v",
+		"HLT_Ele15_WPLoose_Gsf_v",
+		"HLT_Ele17_CaloIdM_TrackIdM_PFJet30_v",
+		"HLT_Ele17_WPLoose_Gsf_v",
+		"HLT_Ele200_CaloIdVT_GsfTrkIdT_v",
+		"HLT_Ele20_WPLoose_Gsf_v",
+		"HLT_Ele20_WPTight_Gsf_v",
+		"HLT_Ele20_eta2p1_WPLoose_Gsf_v",
+		"HLT_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30_v",
+		"HLT_Ele23_CaloIdM_TrackIdM_PFJet30_v",
+		"HLT_Ele24_eta2p1_WPTight_Gsf_LooseChargedIsoPFTau30_eta2p1_CrossL1_v",
+		"HLT_Ele24_eta2p1_WPTight_Gsf_LooseChargedIsoPFTau30_eta2p1_TightID_CrossL1_v",
+		"HLT_Ele24_eta2p1_WPTight_Gsf_MediumChargedIsoPFTau30_eta2p1_CrossL1_v",
+		"HLT_Ele24_eta2p1_WPTight_Gsf_MediumChargedIsoPFTau30_eta2p1_TightID_CrossL1_v",
+		"HLT_Ele24_eta2p1_WPTight_Gsf_TightChargedIsoPFTau30_eta2p1_CrossL1_v",
+		"HLT_Ele24_eta2p1_WPTight_Gsf_TightChargedIsoPFTau30_eta2p1_TightID_CrossL1_v",
+		"HLT_Ele250_CaloIdVT_GsfTrkIdT_v",
+		"HLT_Ele27_WPTight_Gsf_v",
+		"HLT_Ele28_eta2p1_WPTight_Gsf_HT150_v",
+		"HLT_Ele300_CaloIdVT_GsfTrkIdT_v",
+		"HLT_Ele30_eta2p1_WPTight_Gsf_CentralPFJet35_EleCleaned_v",
+		"HLT_Ele32_WPTight_Gsf_L1DoubleEG_v",
+		"HLT_Ele32_WPTight_Gsf_v",
+		"HLT_Ele35_WPTight_Gsf_L1EGMT_v",
+		"HLT_Ele35_WPTight_Gsf_v",
+		"HLT_Ele38_WPTight_Gsf_v",
+		"HLT_Ele40_WPTight_Gsf_v",
+		"HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165_v",
+		"HLT_Ele50_IsoVVVL_PFHT450_v",
+		"HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v",
+		"HLT_Ele8_CaloIdM_TrackIdM_PFJet30_v",
+	),		
 )
 
 #process.load('Tau.TreeMaker.treeMaker_Data-MET_cfi')
@@ -274,4 +414,4 @@ process.TFileService = cms.Service("TFileService",
   fileName = cms.string('TTbar_MC_v1.root')
 )
 
-process.p = cms.Path(process.TTbarTauLepton)
+process.p = cms.Path(process.MVAMET * process.TTbarTauLepton)

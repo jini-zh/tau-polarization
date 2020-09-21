@@ -69,6 +69,16 @@
 #include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
+// Pi Zero libs
+#include "RecoTauTag/RecoTau/interface/RecoTauPiZeroPlugins.h"
+#include "DataFormats/TauReco/interface/RecoTauPiZero.h"
+#include "DataFormats/Candidate/interface/CandidateFwd.h"
+#include "DataFormats/Candidate/interface/Candidate.h"
+#include "RecoTauTag/RecoTau/interface/RecoTauQualityCuts.h"
+#include "RecoTauTag/RecoTau/interface/CombinatoricGenerator.h"
+#include "CommonTools/CandUtils/interface/AddFourMomenta.h"
+#include "CommonTools/CandUtils/src/AddFourMomenta.cc"
+
 #include <Math/Vector3D.h>
 #include "Math/LorentzVector.h"
 #include "Math/Point3D.h"
@@ -77,6 +87,7 @@
 #include "Tau/TreeMakerMiniAOD/plugins/BJetCandidate.h"
 #include "Tau/TreeMakerMiniAOD/plugins/LeptonCandidate.h"
 #include "Tau/TreeMakerMiniAOD/plugins/GenRecoMonitor.h"
+//#include "Tau/TreeMakerMiniAOD/plugins/PiZeroReconstructor.h"
 //#include "Tau/TauAnalyzer/plugins/MySimpleParticle.h"
 
 void GetLastDaughter(const reco::Candidate* &particle) {
@@ -146,6 +157,10 @@ private:
 	std::vector<std::string>  trigNamesTau;
 	std::vector<std::string>  trigNamesJetHT;
 	std::vector<std::string>  trigNamesMET;
+	std::vector<std::string>  trigNamesBTagCSV;
+	std::vector<std::string>  trigNamesBTagMu;
+	std::vector<std::string>  trigNamesSingleMuon;
+	std::vector<std::string>  trigNamesSingleElectron;
 	std::vector<std::string>  trigNamesEmpty;
 
 	edm::EDGetTokenT<double> TauSpinnerWTToken_;
@@ -184,6 +199,7 @@ private:
 	double SV_Chi2;
 	double SV_Chi2NDF;
 	double tauPVtoSVdPhi;
+	double tau_dR2; 
 	
 	double tau_absIso;
 	double tau_againstElectronRaw;
@@ -254,15 +270,16 @@ private:
 	double DiPhoton_phi;
 	double DiPhoton_m;
 
-	// Photons (leading and subleading)
-	double LeadingPhoton_pt;
-	double LeadingPhoton_eta;
-	double LeadingPhoton_phi;
-	double LeadingPhoton_energy;
-	double SubLeadingPhoton_pt;
-	double SubLeadingPhoton_eta;
-	double SubLeadingPhoton_phi;
-	double SubLeadingPhoton_energy;
+	// Gamma candidates
+	double TauPhoton1_pt;
+	double TauPhoton1_eta;
+	double TauPhoton1_phi;
+	double TauPhoton1_energy;
+
+	double TauPhoton2_pt;
+	double TauPhoton2_eta;
+	double TauPhoton2_phi;
+	double TauPhoton2_energy;
 	
 	double pipiMass;
 	double upsilon;
@@ -278,7 +295,7 @@ private:
 
 	double tau_found;
 	double gentau_found;
-	double gentau_dm, gentau_nPi0;
+	int    gentau_dm;
 	double dR;
 	double bquark1dR;
 	double bquark2dR;
@@ -326,26 +343,27 @@ private:
 	double lepton1_pt;
 	double lepton1_eta;
 	double lepton1_phi;
-	double lepton1_dz;
-	double lepton1_flavor;
-	double lepton1_charge;
 	double lepton1_E;
-	double lepton1_trackIso;
+	double lepton1_dz;
+	int    lepton1_flavor;
+	int    lepton1_charge;
+	float  lepton1_trackIso;
 	float  lepton1_sumPuppiIso;
+	float  lepton1_sumPuppiNoLeptonIso;
 
 	double lepton2_pt;
 	double lepton2_eta;
 	double lepton2_phi;
-	double lepton2_dz;
-	double lepton2_flavor;
-	double lepton2_charge;
 	double lepton2_E;
-	double lepton2_trackIso;
+	double lepton2_dz;
+	int    lepton2_flavor;
+	int    lepton2_charge;
+	float  lepton2_trackIso;
 	float  lepton2_sumPuppiIso;
+	float  lepton2_sumPuppiNoLeptonIso;
 	double m_ll;
-	int nLeptonCandidates;
+	int    nLeptonCandidates;
 
-	int nPi0;
 	int nPhotons;
 	int nGamma;
 
@@ -376,6 +394,10 @@ private:
 	int nTauTriggers;
 	int nJetHTTriggers;
 	int nMETTriggers;
+	int nBTagCSVTriggers;
+	int nBTagMuTriggers;
+	int nSingleMuonTriggers;
+	int nSingleElectronTriggers;
 	
 	math::XYZPoint pv_position;
 	math::XYZPoint SV_position;
@@ -467,6 +489,10 @@ TTbarTauLepton::TTbarTauLepton(const edm::ParameterSet& iConfig) {
 	trigNamesTau                      = iConfig.getParameter<std::vector<std::string>>("TauTriggers");
 	trigNamesJetHT                    = iConfig.getParameter<std::vector<std::string>>("JetHTTriggers");
 	trigNamesMET                      = iConfig.getParameter<std::vector<std::string>>("METTriggers");
+	trigNamesBTagCSV                  = iConfig.getParameter<std::vector<std::string>>("BTagCSVTriggers");
+	trigNamesBTagMu                   = iConfig.getParameter<std::vector<std::string>>("BTagMuTriggers");
+	trigNamesSingleMuon               = iConfig.getParameter<std::vector<std::string>>("SingleMuonTriggers");
+	trigNamesSingleElectron           = iConfig.getParameter<std::vector<std::string>>("SingleElectronTriggers");
 	trigNamesEmpty                    = iConfig.getParameter<std::vector<std::string>>("Triggers");
 	std::string PackedCandidateCollection = iConfig.getParameter<std::string>("PackedCandidateCollection");
 	
@@ -671,15 +697,25 @@ void TTbarTauLepton::beginJob() {
 	tree->Branch("DiPhoton_phi", &DiPhoton_phi, "DiPhoton_phi/D");
 	tree->Branch("DiPhoton_m", &DiPhoton_m, "DiPhoton_m/D");
 
-	// Leading and SubLeading photons from tau decay
-	tree->Branch("LeadingPhoton_pt", &LeadingPhoton_pt, "LeadingPhoton_pt/D");
-	tree->Branch("LeadingPhoton_eta", &LeadingPhoton_eta, "LeadingPhoton_eta/D");
-	tree->Branch("LeadingPhoton_phi", &LeadingPhoton_phi, "LeadingPhoton_phi/D");
-	tree->Branch("LeadingPhoton_energy", &LeadingPhoton_energy, "LeadingPhoton_energy/D");
-	tree->Branch("SubLeadingPhoton_pt", &SubLeadingPhoton_pt, "SubLeadingPhoton_pt/D");
-	tree->Branch("SubLeadingPhoton_eta", &SubLeadingPhoton_eta, "SubLeadingPhoton_eta/D");
-	tree->Branch("SubLeadingPhoton_phi", &SubLeadingPhoton_phi, "SubLeadingPhoton_phi/D");
-	tree->Branch("SubLeadingPhoton_energy", &SubLeadingPhoton_energy, "SubLeadingPhoton_energy/D");
+	// Gamma candidates
+	tree->Branch("TauPhoton1_pt", &TauPhoton1_pt, "TauPhoton1_pt/D");
+	tree->Branch("TauPhoton1_eta", &TauPhoton1_eta, "TauPhoton1_eta/D");
+	tree->Branch("TauPhoton1_phi", &TauPhoton1_phi, "TauPhoton1_phi/D");
+	tree->Branch("TauPhoton1_energy", &TauPhoton1_energy, "TauPhoton1_energy/D");
+
+	tree->Branch("TauPhoton2_pt", &TauPhoton2_pt, "TauPhoton2_pt/D");
+	tree->Branch("TauPhoton2_eta", &TauPhoton2_eta, "TauPhoton2_eta/D");
+	tree->Branch("TauPhoton2_phi", &TauPhoton2_phi, "TauPhoton2_phi/D");
+	tree->Branch("TauPhoton2_energy", &TauPhoton2_energy, "TauPhoton2_energy/D");
+
+	// SV parameters
+	tree->Branch("tau_hasSV",&tau_hasSV,"tau_hasSV/I");
+	tree->Branch("tau_SVdR", &tau_SVdR, "tau_SVdR/D");
+	tree->Branch("pv_SVdR", &pv_SVdR, "pv_SVdR/D");
+	tree->Branch("SV_Chi2", &SV_Chi2, "SV_Chi2/D");
+	tree->Branch("SV_Chi2NDF", &SV_Chi2NDF, "SV_Chi2NDF/D");
+	tree->Branch("tauPVtoSVdPhi", &tauPVtoSVdPhi, "tauPVtoSVdPhi/D");
+	tree->Branch("tau_dR2", &tau_dR2, "tau_dR2/D");
 
 	tree->Branch("pipiMass", &pipiMass, "pipiMass/D");
 	tree->Branch("upsilon", &upsilon, "upsilon/D");
@@ -694,8 +730,7 @@ void TTbarTauLepton::beginJob() {
 	tree->Branch("genTauFromW", &genTauFromW, "genTauFromW/D");
 	tree->Branch("W_pt", &W_pt, "W_pt/D");
 	tree->Branch("genTauMother", &genTauMother, "genTauMother/I");
-	tree->Branch("gentau_dm",&gentau_dm,"gentau_dm/D");
-	tree->Branch("gentau_nPi0",&gentau_nPi0,"gentau_nPi0/D");
+	tree->Branch("gentau_dm",&gentau_dm,"gentau_dm/I");
 	tree->Branch("gentau_pt",&gentau_pt,"gentau_pt/D");
 	tree->Branch("genPiChar_pt",&genPiChar_pt,"genPiChar_pt/D");
 	tree->Branch("genPi0_pt",&genPi0_pt,"genPi0_pt/D");
@@ -737,8 +772,9 @@ void TTbarTauLepton::beginJob() {
 	tree->Branch("lepton1_dz", &lepton1_dz, "lepton1_dz/D");
 	tree->Branch("lepton1_flavor", &lepton1_flavor, "lepton1_flavor/I");
 	tree->Branch("lepton1_charge", &lepton1_charge, "lepton1_charge/I");
-	tree->Branch("lepton1_trackIso", &lepton1_trackIso, "lepton1_trackIso/D");
-	tree->Branch("lepton1_sumPuppiIso", &lepton1_sumPuppiIso, "lepton1_sumPuppiIso/D");
+	tree->Branch("lepton1_trackIso", &lepton1_trackIso, "lepton1_trackIso/F");
+	tree->Branch("lepton1_sumPuppiIso", &lepton1_sumPuppiIso, "lepton1_sumPuppiIso/F");
+	tree->Branch("lepton1_sumPuppiNoLeptonIso", &lepton1_sumPuppiNoLeptonIso, "lepton1_sumPuppiNoLeptonIso/F");
 	tree->Branch("lepton2_pt", &lepton2_pt, "lepton2_pt/D");
 	tree->Branch("lepton2_E", &lepton2_E, "lepton2_E/D");
 	tree->Branch("lepton2_eta", &lepton2_eta, "lepton2_eta/D");
@@ -746,8 +782,9 @@ void TTbarTauLepton::beginJob() {
 	tree->Branch("lepton2_dz", &lepton2_dz, "lepton2_dz/D");
 	tree->Branch("lepton2_flavor", &lepton2_flavor, "lepton2_flavor/I");
 	tree->Branch("lepton2_charge", &lepton2_charge, "lepton2_charge/I");
-	tree->Branch("lepton2_trackIso", &lepton2_trackIso, "lepton2_trackIso/D");
-	tree->Branch("lepton2_sumPuppiIso", &lepton2_sumPuppiIso, "lepton2_sumPuppiIso/D");
+	tree->Branch("lepton2_trackIso", &lepton2_trackIso, "lepton2_trackIso/F");
+	tree->Branch("lepton2_sumPuppiIso", &lepton2_sumPuppiIso, "lepton2_sumPuppiIso/F");
+	tree->Branch("lepton2_sumPuppiNoLeptonIso", &lepton2_sumPuppiNoLeptonIso, "lepton2_sumPuppiNoLeptonIso/F");
 	tree->Branch("m_ll", &m_ll, "m_ll/D");
 	tree->Branch("BJet1_pt", &BJet1_pt, "BJet1_pt/D");
 	tree->Branch("BJet1_E", &BJet1_E, "BJet1_E/D");
@@ -789,7 +826,6 @@ void TTbarTauLepton::beginJob() {
 	tree->Branch("nTau",&nTau,"nTau/I");
 	tree->Branch("nTauC",&nTauC,"nTauC/I");
 
-	tree->Branch("nPi0",&nPi0,"nPi0/I");
 	tree->Branch("nGamma",&nGamma,"nGamma/I");
 	tree->Branch("nPhotons",&nPhotons,"nPhotons/I");
 
@@ -802,6 +838,10 @@ void TTbarTauLepton::beginJob() {
 	tree->Branch("nTauTriggers", &nTauTriggers, "nTauTriggers/I");
 	tree->Branch("nJetHTTriggers", &nJetHTTriggers, "nJetHTTriggers/I");
 	tree->Branch("nMETTriggers", &nMETTriggers, "nMETTriggers/I");
+	tree->Branch("nBTagCSVTriggers", &nBTagCSVTriggers, "nBTagCSVTriggers/I");
+	tree->Branch("nBTagMuTriggers", &nBTagMuTriggers, "nBTagMuTriggers/I");
+	tree->Branch("nSingleMuonTriggers", &nSingleMuonTriggers, "nSingleMuonTriggers/I");
+	tree->Branch("nSingleElectronTriggers", &nSingleElectronTriggers, "nSingleElectronTriggers/I");
 	//tree->Branch("WTisValid", &WTisValid, "WTisValid/D")
 	// add more branches
 	
@@ -850,6 +890,10 @@ bool TTbarTauLepton::TriggerOK (const edm::Event& iEvent) {
 	nTauTriggers = 0;
 	nJetHTTriggers = 0;
 	nMETTriggers = 0;
+	nBTagCSVTriggers = 0;
+	nBTagMuTriggers = 0;
+	nSingleMuonTriggers = 0;
+	nSingleElectronTriggers = 0;
     /////////////////////////////TriggerResults////////////////////////////////////
 	edm::Handle<edm::TriggerResults> triggerResults;
 	iEvent.getByToken(tok_trigRes, triggerResults);
@@ -876,6 +920,30 @@ bool TTbarTauLepton::TriggerOK (const edm::Event& iEvent) {
 					if ( triggerNames_[iHLT].find(trigNamesMET[i].c_str())!= std::string::npos ) {
 						nMETTriggers++;
 						if (monitoringHLT) std::cout << "MET Trigger" << std::endl;
+					}
+				}
+				for ( unsigned int i=0; i<trigNamesBTagCSV.size(); ++i ) {
+					if ( triggerNames_[iHLT].find(trigNamesBTagCSV[i].c_str())!= std::string::npos ) {
+						nBTagCSVTriggers++;
+						if (monitoringHLT) std::cout << "BTagCSV Trigger" << std::endl;
+					}
+				}
+				for ( unsigned int i=0; i<trigNamesBTagMu.size(); ++i ) {
+					if ( triggerNames_[iHLT].find(trigNamesBTagMu[i].c_str())!= std::string::npos ) {
+						nBTagMuTriggers++;
+						if (monitoringHLT) std::cout << "BTagMu Trigger" << std::endl;
+					}
+				}
+				for ( unsigned int i=0; i<trigNamesSingleMuon.size(); ++i ) {
+					if ( triggerNames_[iHLT].find(trigNamesSingleMuon[i].c_str())!= std::string::npos ) {
+						nSingleMuonTriggers++;
+						if (monitoringHLT) std::cout << "SingleMuon Trigger" << std::endl;
+					}
+				}
+				for ( unsigned int i=0; i<trigNamesSingleElectron.size(); ++i ) {
+					if ( triggerNames_[iHLT].find(trigNamesSingleElectron[i].c_str())!= std::string::npos ) {
+						nSingleElectronTriggers++;
+						if (monitoringHLT) std::cout << "SingleElectron Trigger" << std::endl;
 					}
 				}
 			}
@@ -932,74 +1000,6 @@ bool TTbarTauLepton::AddTau(const edm::Event& event) {
 			cut(tau.tauID("byVVVLooseDeepTau2017v2VSjet"));
 		}
 
-		//if (monitoringTau) TauMonitor (tau, DeepTau, pv_position);
-
-		/*
-		const reco::CandidatePtr leadPiCh = tau.leadChargedHadrCand();
-		reco::CandidatePtrVector VectorSignalCands = tau.signalCands(); 
-
-		reco::CandidatePtrVector VectorSignalCands_Photons;
-		VectorSignalCands_Photons.clear();
-
-		if (VectorSignalCands.size() > 0) {
-			for (unsigned l = 0; l < VectorSignalCands.size(); l++) {
-				if (VectorSignalCands[l]->pdgId() == 22) {
-					VectorSignalCands_Photons.push_back(VectorSignalCands[l]);
-				}
-			}
-		}
-
-		if (VectorSignalCands_Photons.size() > 1) {
-			LeadingPhoton_pt     = VectorSignalCands_Photons[0]->p4().pt();
-			LeadingPhoton_eta    = VectorSignalCands_Photons[0]->p4().eta();
-			LeadingPhoton_phi    = VectorSignalCands_Photons[0]->p4().phi();
-			LeadingPhoton_energy = VectorSignalCands_Photons[0]->p4().energy();
-			SubLeadingPhoton_pt      = VectorSignalCands_Photons[1]->p4().pt();
-			SubLeadingPhoton_eta     = VectorSignalCands_Photons[1]->p4().eta();
-			SubLeadingPhoton_phi     = VectorSignalCands_Photons[1]->p4().phi();
-			SubLeadingPhoton_energy  = VectorSignalCands_Photons[1]->p4().energy();
-		} else if (VectorSignalCands_Photons.size() == 1) {
-			LeadingPhoton_pt     = VectorSignalCands_Photons[0]->p4().pt();
-			LeadingPhoton_eta    = VectorSignalCands_Photons[0]->p4().eta();
-			LeadingPhoton_phi    = VectorSignalCands_Photons[0]->p4().phi();
-			LeadingPhoton_energy = VectorSignalCands_Photons[0]->p4().energy();
-			SubLeadingPhoton_pt      = null;
-			SubLeadingPhoton_eta     = null;
-			SubLeadingPhoton_phi     = null;
-			SubLeadingPhoton_energy  = null;
-		} else {
-			LeadingPhoton_pt     = null;
-			LeadingPhoton_eta    = null;
-			LeadingPhoton_phi    = null;
-			LeadingPhoton_energy = null;
-			SubLeadingPhoton_pt      = null;
-			SubLeadingPhoton_eta     = null;
-			SubLeadingPhoton_phi     = null;
-			SubLeadingPhoton_energy  = null;
-		}
-
-		math::XYZTLorentzVector Photons_p4;
-		double InvMass_temp = null;
-
-		if (VectorSignalCands_Photons.size() > 0) {
-			for (unsigned l = 0; l < VectorSignalCands_Photons.size(); l++) {
-				Photons_p4 += VectorSignalCands_Photons[l]->p4();
-				for (unsigned n = l; n < VectorSignalCands_Photons.size(); n++) {
-					if (n == l) continue;
-					double InvMass_pi0 = (VectorSignalCands_Photons[l]->p4() + VectorSignalCands_Photons[n]->p4()).M();
-					if (monitoringTau) std::cout << "mass Photon [" << l <<"][" << n << "] = " << InvMass_pi0 << std::endl;
-					if (l == 0 && n == 1) {
-						InvMass_temp = InvMass_pi0;
-						DiPhoton_p4 = VectorSignalCands_Photons[l]->p4() + VectorSignalCands_Photons[n]->p4();
-					} else if (abs(InvMass_pi0 - 0.135) < abs(InvMass_temp - 0.135)) {
-						InvMass_temp = InvMass_pi0;
-						DiPhoton_p4 = VectorSignalCands_Photons[l]->p4() + VectorSignalCands_Photons[n]->p4();
-					}
-				}
-			}
-		}
-		*/
-
 		++nTauC;
 		allTauPt->Fill(tau.pt());
 		std::pair <int, double> PairAbsIsoPt (tau.tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits"), tau.pt());
@@ -1031,46 +1031,39 @@ bool TTbarTauLepton::AddTau(const edm::Event& event) {
 
 	reco::CandidatePtrVector VectorSignalCands_Photons;
 	VectorSignalCands_Photons.clear();
+	//std::vector<reco::PFCandidate> newPhotons;
+	//std::vector<reco::PFCandidatePtr> newPhotonsPtrs;
+	//newPhotons.clear();
 	// Fill vector of Photons for chosen tau lepton
+	// Also calcolate dR^2 variable
+	double tau_dR2_numerator = 0;
+	double tau_dR2_denominator = 0;
 	if (VectorSignalCands.size() > 0) {
 		for (unsigned l = 0; l < VectorSignalCands.size(); l++) {
+			tau_dR2_numerator += sqr(VectorSignalCands[l]->pt()) * (sqr(dphi(tau.phi(), VectorSignalCands[l]->phi())) + sqr(tau.eta() - VectorSignalCands[l]->eta()));
+			tau_dR2_denominator += sqr(VectorSignalCands[l]->pt());
 			if (VectorSignalCands[l]->pdgId() == 22) {
 				VectorSignalCands_Photons.push_back(VectorSignalCands[l]);
 			}
 		}
 	}
-	// Intialize the leading and subleading photons
-	if (VectorSignalCands_Photons.size() > 1) {
-		LeadingPhoton_pt     = VectorSignalCands_Photons[0]->p4().pt();
-		LeadingPhoton_eta    = VectorSignalCands_Photons[0]->p4().eta();
-		LeadingPhoton_phi    = VectorSignalCands_Photons[0]->p4().phi();
-		LeadingPhoton_energy = VectorSignalCands_Photons[0]->p4().energy();
-		SubLeadingPhoton_pt      = VectorSignalCands_Photons[1]->p4().pt();
-		SubLeadingPhoton_eta     = VectorSignalCands_Photons[1]->p4().eta();
-		SubLeadingPhoton_phi     = VectorSignalCands_Photons[1]->p4().phi();
-		SubLeadingPhoton_energy  = VectorSignalCands_Photons[1]->p4().energy();
-	} else if (VectorSignalCands_Photons.size() == 1) {
-		LeadingPhoton_pt     = VectorSignalCands_Photons[0]->p4().pt();
-		LeadingPhoton_eta    = VectorSignalCands_Photons[0]->p4().eta();
-		LeadingPhoton_phi    = VectorSignalCands_Photons[0]->p4().phi();
-		LeadingPhoton_energy = VectorSignalCands_Photons[0]->p4().energy();
-		SubLeadingPhoton_pt      = null;
-		SubLeadingPhoton_eta     = null;
-		SubLeadingPhoton_phi     = null;
-		SubLeadingPhoton_energy  = null;
-	} else {
-		LeadingPhoton_pt     = null;
-		LeadingPhoton_eta    = null;
-		LeadingPhoton_phi    = null;
-		LeadingPhoton_energy = null;
-		SubLeadingPhoton_pt      = null;
-		SubLeadingPhoton_eta     = null;
-		SubLeadingPhoton_phi     = null;
-		SubLeadingPhoton_energy  = null;
-	}
+	if (tau_dR2_denominator > 0) tau_dR2 = tau_dR2_numerator/tau_dR2_denominator;
+	else tau_dR2 = null;
+
 	// Calculate DiPhoton kinematic
 	math::XYZTLorentzVector Photons_p4;
 	double InvMass_temp = null;
+
+	using namespace reco;
+    using namespace tau;
+
+	std::vector<reco::RecoTauPiZero> CombPi0Vector;
+	CombPi0Vector.clear();
+	AddFourMomenta p4Builder;
+	unsigned choose = 2;
+	unsigned maxInputGammas = 10;
+	double maxMass = -1;
+	double minMass = 0;
 
 	if (monitoringTau) std::cout << "--- Photons parameters:" << std::endl;
 	if (VectorSignalCands_Photons.size() > 0) {
@@ -1078,8 +1071,17 @@ bool TTbarTauLepton::AddTau(const edm::Event& event) {
 			Photons_p4 += VectorSignalCands_Photons[l]->p4();
 			for (unsigned n = l; n < VectorSignalCands_Photons.size(); n++) {
 				if (n == l) continue;
+				// Pi zero candidate
+				const Candidate::LorentzVector totalP4;
+				reco::RecoTauPiZero piZero(0, totalP4, Candidate::Point(0, 0, 0), 111, 10001, true, RecoTauPiZero::kCombinatoric);
+				piZero.addDaughter(VectorSignalCands_Photons[l]);
+				piZero.addDaughter(VectorSignalCands_Photons[n]);
+				p4Builder.set(piZero);
+				if (piZero.daughterPtr(0).isNonnull()) piZero.setVertex(piZero.daughterPtr(0)->vertex());
+				if ((maxMass < 0 || piZero.mass() < maxMass) && piZero.mass() > minMass) CombPi0Vector.push_back(piZero);
+				//
 				double InvMass_pi0 = (VectorSignalCands_Photons[l]->p4() + VectorSignalCands_Photons[n]->p4()).M();
-				if (monitoringTau) std::cout << "mass Photon [" << l <<"][" << n << "] = " << InvMass_pi0 << std::endl;
+				//if (monitoringTau) std::cout << "mass Photon [" << l <<"][" << n << "] = " << InvMass_pi0 << std::endl;
 				if (l == 0 && n == 1) {
 					InvMass_temp = InvMass_pi0;
 					DiPhoton_p4 = VectorSignalCands_Photons[l]->p4() + VectorSignalCands_Photons[n]->p4();
@@ -1092,6 +1094,15 @@ bool TTbarTauLepton::AddTau(const edm::Event& event) {
 	}
 
 	nPhotons_temp = VectorSignalCands_Photons.size();
+
+	if (monitoringTau) {
+		std::cout << "Vector of Combined Pi zeros:" << std::endl;
+		for (unsigned n = 0; n < CombPi0Vector.size(); n++) {
+			std::cout << "Pi0 [" << n << "]: Pt = " << CombPi0Vector[n].pt() << ", mass = " << CombPi0Vector[n].mass() << std::endl;
+		}
+	}
+
+	// ----------------------------------------------------------------------------------------------
 
 	// Add second tau candidate if there is
     if (nTauC > 1) {
@@ -1194,20 +1205,49 @@ bool TTbarTauLepton::AddTau(const edm::Event& event) {
 		DiPhoton_eta = DiPhoton_p4.eta();
 		DiPhoton_phi = DiPhoton_p4.phi();
 		DiPhoton_m   = DiPhoton_p4.M();
+		TauPhoton1_pt      = tau.signalGammaCands()[0]->pt();
+		TauPhoton1_eta     = tau.signalGammaCands()[0]->eta();
+		TauPhoton1_phi     = tau.signalGammaCands()[0]->phi();
+		TauPhoton1_energy  = tau.signalGammaCands()[0]->energy();
+		TauPhoton2_pt      = tau.signalGammaCands()[1]->pt();
+		TauPhoton2_eta     = tau.signalGammaCands()[1]->eta();
+		TauPhoton2_phi     = tau.signalGammaCands()[1]->phi();
+		TauPhoton2_energy  = tau.signalGammaCands()[1]->energy();
 	} else {
 		DiPhoton_pt  = null;
 		DiPhoton_eta = null;
 		DiPhoton_phi = null;
 		DiPhoton_m   = null;
+		if (tau.signalGammaCands().size() == 1) {
+			TauPhoton1_pt      = tau.signalGammaCands()[0]->pt();
+			TauPhoton1_eta     = tau.signalGammaCands()[0]->eta();
+			TauPhoton1_phi     = tau.signalGammaCands()[0]->phi();
+			TauPhoton1_energy  = tau.signalGammaCands()[0]->energy();
+			TauPhoton2_pt      = null;
+			TauPhoton2_eta     = null;
+			TauPhoton2_phi     = null;
+			TauPhoton2_energy  = null;
+		} else {
+			TauPhoton1_pt      = null;
+			TauPhoton1_eta     = null;
+			TauPhoton1_phi     = null;
+			TauPhoton1_energy  = null;
+			TauPhoton2_pt      = null;
+			TauPhoton2_eta     = null;
+			TauPhoton2_phi     = null;
+			TauPhoton2_energy  = null;
+		}
 	}
 
 
 	// SV analysis
 	///const reco::VertexCompositePtrCandidate *TauSVCandidate = nullptr;
-	tau_hasSV  = null;
-	tau_SVdR   = null;
-	SV_Chi2    = null;
-	SV_Chi2NDF = null;
+	tau_hasSV     = null;
+	tau_SVdR      = null;
+	SV_Chi2       = null;
+	SV_Chi2NDF    = null;
+	tauPVtoSVdPhi = null;
+
 	if (VectorPiCh.size() > 0) {
         for (unsigned n = 0; n < VectorPiCh.size(); n++) {
            if (monitoringTau) std::cout << "Charged Candidate " << n << ": pdgID = " << VectorPiCh[n]->pdgId() << ", Pt = " << VectorPiCh[n]->pt() << std::endl;
@@ -1241,14 +1281,16 @@ bool TTbarTauLepton::AddTau(const edm::Event& event) {
     Tau_vector.SetXYZ(tau.px(), tau.py(), tau.pz());
     ROOT::Math::Cartesian3D <double> PVtoSV_vector;
     PVtoSV_vector.SetXYZ((pv_position - SV_position).x(), (pv_position - SV_position).y(), (pv_position - SV_position).z());
-    tauPVtoSVdPhi = dphi(Tau_vector.Phi(), PVtoSV_vector.Phi());
-    std::cout << "Final SV:" << std::endl;
-    std::cout << "deltaR          = " << pv_SVdR << std::endl; 
-	std::cout << "vertex Chi2     = " << SV_Chi2 << std::endl;
-	std::cout << "vertex Chi2/NDF = " << SV_Chi2NDF << std::endl;
-	std::cout << "dPhi            = " << tauPVtoSVdPhi << std::endl;
+    if (tau_hasSV > 0) tauPVtoSVdPhi = dphi(Tau_vector.Phi(), PVtoSV_vector.Phi());
 
-	nPi0      = 1;
+    if (monitoringTau) {
+    	std::cout << "Final SV:" << std::endl;
+    	std::cout << "deltaR          = " << pv_SVdR << std::endl; 
+		std::cout << "vertex Chi2     = " << SV_Chi2 << std::endl;
+		std::cout << "vertex Chi2/NDF = " << SV_Chi2NDF << std::endl;
+		std::cout << "dPhi            = " << tauPVtoSVdPhi << std::endl;
+    }
+
 	nPhotons  = nPhotons_temp;
 	nGamma    = tau.signalGammaCands().size();
 	nTau      = taus->size();
@@ -1275,6 +1317,10 @@ bool TTbarTauLepton::AddTau(const edm::Event& event) {
 		tau2_absIso = null;
 	}
 
+	VectorSignalCands.clear();
+	VectorPiCh.clear();
+	VectorSignalCands_Photons.clear();
+
 	return true;
 };
 
@@ -1291,6 +1337,7 @@ bool TTbarTauLepton::FindGenTau(const edm::Event& event) {
 	leptondR      = null;
 	W_pt          = null;
 	gentau_pt     = null;
+	gentau_dm     = null;
 	gentau_energy = null;
 	genPiChar_pt  = null;
 	genPi0_pt     = null;
@@ -1317,7 +1364,8 @@ bool TTbarTauLepton::FindGenTau(const edm::Event& event) {
 	const int pdg_bquark   = 5;
 	const int pdg_tquark   = 6;
 
-	const reco::Candidate* tau    = nullptr;
+	//const reco::Candidate* tau    = nullptr;
+	const reco::GenParticle* tau  = nullptr;
 	const reco::Candidate* nu_W   = nullptr;
 	const reco::Candidate* nu_tau = nullptr;
 	const reco::Candidate* pi0    = nullptr;
@@ -1365,10 +1413,7 @@ bool TTbarTauLepton::FindGenTau(const edm::Event& event) {
 
 		double dR_ = null;
 		if (tau_found) {
-			dR_ = TMath::Sqrt(
-					  sqr(dphi(particle.phi(), tau_phi))
-					+ sqr(particle.eta() - tau_eta)
-			);
+			dR_ = TMath::Sqrt( sqr(dphi(particle.phi(), tau_phi)) + sqr(particle.eta() - tau_eta) );
 			if (!tau || dR_ < dRmin) {
 				tau = &particle;
 				dRmin = dR_;
@@ -1386,6 +1431,7 @@ bool TTbarTauLepton::FindGenTau(const edm::Event& event) {
 	gentau_energy = tau->energy();
 	gentau_eta    = tau->eta();
 	gentau_phi    = tau->phi();
+	gentau_dm     = GenTauDecayMode(*tau);
 	//gentau_energy = tau->energy();
 
 	dR           = dRmin;
@@ -1540,6 +1586,11 @@ bool TTbarTauLepton::FindGenTau(const edm::Event& event) {
 			//if (sqrt(deltaR2((*tquarks[0]).eta(), (*tquarks[0]).phi(), particle.eta(), particle.phi())) > 0.5) break;
 		}
 	}
+
+	leptons.clear();
+	bquarks.clear();
+	Wbosons.clear();
+	tquarks.clear();
 
 	if (monitoringGen) std::cout << "gentau Flag 3" << std::endl;
 
@@ -2021,6 +2072,7 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
 	lepton1_E        = LepCandidates[0].FourMomentum.E();
 	lepton1_trackIso = LepCandidates[0].trackIso;
 	lepton1_sumPuppiIso = LepCandidates[0].puppiChargedHadronIso + LepCandidates[0].puppiNeutralHadronIso + LepCandidates[0].puppiPhotonIso;
+	lepton1_sumPuppiNoLeptonIso = LepCandidates[0].puppiNoLeptonsChargedHadronIso + LepCandidates[0].puppiNoLeptonsNeutralHadronIso + LepCandidates[0].puppiNoLeptonsPhotonIso;
 	if (LepCandidates.size() > 1) {
 		lepton2_pt       = LepCandidates[1].Pt;
 		lepton2_eta      = LepCandidates[1].Eta;
@@ -2031,6 +2083,7 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
 		lepton2_E        = LepCandidates[1].FourMomentum.E();
 		lepton2_trackIso = LepCandidates[1].trackIso;
 		lepton2_sumPuppiIso = LepCandidates[1].puppiChargedHadronIso + LepCandidates[1].puppiNeutralHadronIso + LepCandidates[1].puppiPhotonIso;
+		lepton2_sumPuppiNoLeptonIso = LepCandidates[1].puppiNoLeptonsChargedHadronIso + LepCandidates[1].puppiNoLeptonsNeutralHadronIso + LepCandidates[1].puppiNoLeptonsPhotonIso;
 		m_ll             = (LepCandidates[0].FourMomentum + LepCandidates[1].FourMomentum).M();
 	}
 
