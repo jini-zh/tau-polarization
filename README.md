@@ -36,7 +36,7 @@ Output variables:
 - BJets and 2 leading jets parameters
 - Two leptons with highest pT (and dR(tau, lepton) > 0.3) parameters:
   * "*Iso" parameters is sum of pT of particles in cone (dR < 0.4 (?)) around lepton
-    So higher the "*Iso" value corresponds to less isolated particle
+    So higher "*Iso" value corresponds to less isolated particle
 - Two types of MET (may be Puppi MET is better as PU subtracted one).
   * "dPhi" is asimuth angle between MET and tau
   * "dPhiPuppimetTau" is asimuth angle between Puppi MET and tau
