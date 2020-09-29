@@ -1,0 +1,1 @@
+MCWeights = (IntegratedLuminosity(data) * CrossSection * 1000) / NEvents;
