@@ -208,7 +208,7 @@ bool DecaychannelMatch(std::vector<MySimpleParticle> &particles, int p1, int p2 
 
 int GenTauDecayMode (const reco::GenParticle &genParticle) {
 
-    int TauDM = -10;
+    int TauDM = -20;
     //int channel = -10;
     //int gentau_nPi0 = -10;
 

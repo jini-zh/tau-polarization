@@ -68,6 +68,8 @@
 #include "DataFormats/Common/interface/Association.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+#include "DataFormats/METReco/interface/GenMET.h"
+#include "DataFormats/METReco/interface/GenMETCollection.h"
 
 // Pi Zero libs
 #include "RecoTauTag/RecoTau/interface/RecoTauPiZeroPlugins.h"
@@ -116,7 +118,8 @@ private:
 	virtual void endJob() override;
 	
 	bool AddTau            (const edm::Event&);
-	bool FindGenTau        (const edm::Event&);
+	void FindGenTau        (const edm::Event&);
+	//void AddGenMET         (const edm::Event&);
 	bool AddLepton         (const edm::Event&);
 	bool AddMET            (const edm::Event&);
 	bool AddVertex         (const edm::Event&);
@@ -151,6 +154,7 @@ private:
 	edm::EDGetTokenT<pat::IsolatedTrackCollection> TrackToken_;
 	edm::EDGetTokenT<GenEventInfoProduct> GenEventInfoToken_;
 	edm::EDGetTokenT<GenRunInfoProduct> GenRunInfoToken_;
+	//edm::EDGetTokenT<reco::GenMETCollection> tok_GenMetTrue_;
 	// HLT
 	edm::InputTag theTriggerResultsLabel;
 	edm::EDGetTokenT<edm::TriggerResults> tok_trigRes;
@@ -284,6 +288,7 @@ private:
 	double pipiMass;
 	double upsilon;
 	
+	/*
 	double tau2_pt;
 	double tau2_eta;
 	double tau2_phi;
@@ -292,6 +297,7 @@ private:
 	double tau2_q;
 	double tau2_m;
 	double tau2_absIso;
+	*/
 
 	double tau_found;
 	double gentau_found;
@@ -301,8 +307,16 @@ private:
 	double bquark2dR;
 	double leptondR;
 	double genTauFromW;
+	double genTauFromWFromt;
 	int genTauMother;
-	double W_pt;
+	int genLeptonMother;
+	double W_pt, W_eta, W_phi, W_energy, W_charge;
+	double genLeptonFromW;
+	double genLeptonFromWFromt;
+	double genb1Fromt;
+	double genb2Fromt;
+	int genb1Mother;
+	int genb2Mother;
 
 	// Generated tau parameters
 	double gentau_pt, gentau_energy, gentau_eta, gentau_phi;
@@ -310,7 +324,10 @@ private:
 	double genPi0_pt, genPi0_energy, genPi0_eta, genPi0_phi;
 	double nuW_pt, nuW_energy, nuW_eta, nuW_phi;
 	double nutau_pt, nutau_energy, nutau_eta, nutau_phi;
+	int nNu;
+	double SumNu_pt, SumNu_eta, SumNu_phi, SumNu_energy;
 	double nunu_pt;
+	double gentau_vis_pt, gentau_vis_eta, gentau_vis_phi, gentau_vis_energy;
 
 	double PuppijetPtSum15, PuppijetPtSum20, PuppijetPtSum15PV, PuppijetPtSum20PV;
 	int nPuppiJets20, nPuppiJets20PV;
@@ -350,6 +367,7 @@ private:
 	float  lepton1_trackIso;
 	float  lepton1_sumPuppiIso;
 	float  lepton1_sumPuppiNoLeptonIso;
+	double lepton1_tauAbsIso;
 
 	double lepton2_pt;
 	double lepton2_eta;
@@ -361,6 +379,7 @@ private:
 	float  lepton2_trackIso;
 	float  lepton2_sumPuppiIso;
 	float  lepton2_sumPuppiNoLeptonIso;
+	double lepton2_tauAbsIso;
 	double m_ll;
 	int    nLeptonCandidates;
 
@@ -387,8 +406,13 @@ private:
 	double tauPuppimet_mass;
 	double Puppimet_significance;
 	double Puppimet_metSig;
-	
 	double dPhiPuppimetTau;
+
+	//Gen MET
+	double TrueMetPt;
+	double TrueMetEta;
+	double TrueMetPhi;
+	double TrueMetEnergy;
 
 	// Trigger matching
 	int nTauTriggers;
@@ -414,6 +438,7 @@ private:
 
 	//////////////////////////////////////////////////////
 	bool isMC;
+	bool useHLT;
 	bool TauSpinnerOn;
 	double tauPtMin;
 	double piPtMin;
@@ -454,6 +479,7 @@ TTbarTauLepton::TTbarTauLepton(const edm::ParameterSet& iConfig) {
 	iT =0;
 
 	isMC						= iConfig.getParameter<bool>("isMC");
+	useHLT                      = iConfig.getParameter<bool>("useHLT");
 	monitoring					= iConfig.getParameter<bool>("monitoring");
 	monitoringHLT				= iConfig.getParameter<bool>("monitoringHLT");
 	monitoringTau				= iConfig.getParameter<bool>("monitoringTau");
@@ -504,11 +530,11 @@ TTbarTauLepton::TTbarTauLepton(const edm::ParameterSet& iConfig) {
 	PuppiMetCollectionToken_    = consumes<pat::METCollection>(edm::InputTag(PuppimetCollection));
 	PVToken_ 			        = consumes<reco::VertexCollection>(edm::InputTag(vertexCollection));
 	SVToken_                    = consumes<reco::VertexCompositePtrCandidateCollection>(edm::InputTag(SVCollection));
-	//GenParticleToken_ 		= consumes<pat::PackedCandidateCollection>(edm::InputTag(genParticleCollection));
 	GenParticleToken_           = consumes<reco::GenParticleCollection>(edm::InputTag(genParticleCollection));
 	TrackToken_			        = consumes<pat::IsolatedTrackCollection>(edm::InputTag(trackCollection));
 	tok_trigRes                 = consumes<edm::TriggerResults>(theTriggerResultsLabel);
 	PackedCandidateCollectionToken_ = consumes<pat::PackedCandidateCollection>(edm::InputTag(PackedCandidateCollection));
+	//tok_GenMetTrue_                 = consumes<reco::GenMETCollection>( iConfig.getParameter<edm::InputTag>("genMetTrue"));
 
 	if (isMC && TauSpinnerOn) {
 		TauSpinnerWTToken_        = consumes<double>(iConfig.getParameter<edm::InputTag>("WTCollection"));
@@ -668,16 +694,6 @@ void TTbarTauLepton::beginJob() {
 	tree->Branch("tau_VTightDeepTau2017v2VSe",&tau_VTightDeepTau2017v2VSe,"tau_VTightDeepTau2017v2VSe/D");
 	tree->Branch("tau_VVTightDeepTau2017v2VSe",&tau_VVTightDeepTau2017v2VSe,"tau_VVTightDeepTau2017v2VSe/D");
 
-	// Second tau parameters
-	tree->Branch("tau2_pt",&tau2_pt,"tau2_pt/D");
-	tree->Branch("tau2_eta",&tau2_eta,"tau2_eta/D");
-	tree->Branch("tau2_phi",&tau2_phi,"tau2_phi/D");
-	tree->Branch("tau2_q",&tau2_q,"tau2_q/D");
-	tree->Branch("tau2_m",&tau2_m,"tau2_m/D");
-	tree->Branch("tau2_dm",&tau2_dm,"tau2_dm/D");
-	tree->Branch("tau2_dz",&tau2_dz,"tau2_dz/D");
-	tree->Branch("tau2_absIso",&tau2_absIso,"tau2_absIso/D");
-
 	// Charged Pi parameters
 	tree->Branch("piChar_pt", &piChar_pt, "piChar_pt/D");
 	tree->Branch("piChar_eta", &piChar_eta, "piChar_eta/D");
@@ -727,17 +743,57 @@ void TTbarTauLepton::beginJob() {
 	tree->Branch("leptondR", &leptondR, "leptondR/D");
 	tree->Branch("bquark1dR", &bquark1dR, "bquark1dR/D");
 	tree->Branch("bquark2dR", &bquark2dR, "bquark2dR/D");
+	// generated W-boson (Tau mother)
 	tree->Branch("genTauFromW", &genTauFromW, "genTauFromW/D");
 	tree->Branch("W_pt", &W_pt, "W_pt/D");
+	tree->Branch("W_eta", &W_eta, "W_eta/D");
+	tree->Branch("W_phi", &W_phi, "W_phi/D");
+	tree->Branch("W_energy", &W_energy, "W_energy/D");
+	tree->Branch("genTauFromWFromt", &genTauFromWFromt, "genTauFromWFromt/D");
 	tree->Branch("genTauMother", &genTauMother, "genTauMother/I");
+	tree->Branch("genLeptonMother", &genLeptonMother, "genLeptonMother/I");
+	tree->Branch("genLeptonFromW", &genLeptonFromW, "genLeptonFromW/D");
+	tree->Branch("genLeptonFromWFromt", &genLeptonFromWFromt, "genLeptonFromWFromt/D");
+	tree->Branch("genb1Fromt", &genb1Fromt, "genb1Fromt/D");
+	tree->Branch("genb2Fromt", &genb2Fromt, "genb2Fromt/D");
+	tree->Branch("genb1Mother", &genb1Mother, "genb1Mother/I");
+	tree->Branch("genb2Mother", &genb2Mother, "genb2Mother/I");
+	// gen Tau
 	tree->Branch("gentau_dm",&gentau_dm,"gentau_dm/I");
 	tree->Branch("gentau_pt",&gentau_pt,"gentau_pt/D");
+	tree->Branch("gentau_eta",&gentau_eta,"gentau_eta/D");
+	tree->Branch("gentau_phi",&gentau_phi,"gentau_phi/D");
+	tree->Branch("gentau_energy",&gentau_energy,"gentau_energy/D");
+	// PiChar
 	tree->Branch("genPiChar_pt",&genPiChar_pt,"genPiChar_pt/D");
+	tree->Branch("genPiChar_eta",&genPiChar_eta,"genPiChar_eta/D");
+	tree->Branch("genPiChar_phi",&genPiChar_phi,"genPiChar_phi/D");
+	tree->Branch("genPiChar_energy",&genPiChar_energy,"genPiChar_energy/D");
+	// PiZero
 	tree->Branch("genPi0_pt",&genPi0_pt,"genPi0_pt/D");
+	tree->Branch("genPi0_eta",&genPi0_eta,"genPi0_eta/D");
+	tree->Branch("genPi0_phi",&genPi0_phi,"genPi0_phi/D");
+	tree->Branch("genPi0_energy",&genPi0_energy,"genPi0_energy/D");
+	// Visible tau from generator
+	tree->Branch("gentau_vis_pt",&gentau_vis_pt,"gentau_vis_pt/D");
+	tree->Branch("gentau_vis_eta",&gentau_vis_eta,"gentau_vis_eta/D");
+	tree->Branch("gentau_vis_phi",&gentau_vis_phi,"gentau_vis_phi/D");
+	tree->Branch("gentau_vis_energy",&gentau_vis_energy,"gentau_vis_energy/D");
+	// Neutrinos
 	tree->Branch("nutau_pt",&nutau_pt,"nutau_pt/D");
+	tree->Branch("nutau_eta",&nutau_eta,"nutau_eta/D");
+	tree->Branch("nutau_phi",&nutau_phi,"nutau_phi/D");
+	tree->Branch("nutau_energy",&nutau_energy,"nutau_energy/D");
 	tree->Branch("nuW_pt",&nuW_pt,"nuW_pt/D");
-	tree->Branch("nunu_pt",&nunu_pt,"nunu_pt/D");
-
+	tree->Branch("nuW_eta",&nuW_eta,"nuW_eta/D");
+	tree->Branch("nuW_phi",&nuW_phi,"nuW_phi/D");
+	tree->Branch("nuW_energy",&nuW_energy,"nuW_energy/D");
+	// Sum of all neutrinos in evenet
+	tree->Branch("nNu",&nNu,"nNu/I");
+	tree->Branch("SumNu_pt",&SumNu_pt,"SumNu_pt/D");
+	tree->Branch("SumNu_eta",&SumNu_eta,"SumNu_eta/D");
+	tree->Branch("SumNu_phi",&SumNu_phi,"SumNu_phi/D");
+	tree->Branch("SumNu_energy",&SumNu_energy,"SumNu_energy/D");
 	// PuppiJets
 	tree->Branch("PuppijetPtSum15", &PuppijetPtSum15, "PuppijetPtSum15/D");
 	tree->Branch("PuppijetPtSum20", &PuppijetPtSum20, "PuppijetPtSum20/D");
@@ -774,6 +830,7 @@ void TTbarTauLepton::beginJob() {
 	tree->Branch("lepton1_charge", &lepton1_charge, "lepton1_charge/I");
 	tree->Branch("lepton1_trackIso", &lepton1_trackIso, "lepton1_trackIso/F");
 	tree->Branch("lepton1_sumPuppiIso", &lepton1_sumPuppiIso, "lepton1_sumPuppiIso/F");
+	tree->Branch("lepton1_tauAbsIso", &lepton1_tauAbsIso, "lepton1_tauAbsIso/D");
 	tree->Branch("lepton1_sumPuppiNoLeptonIso", &lepton1_sumPuppiNoLeptonIso, "lepton1_sumPuppiNoLeptonIso/F");
 	tree->Branch("lepton2_pt", &lepton2_pt, "lepton2_pt/D");
 	tree->Branch("lepton2_E", &lepton2_E, "lepton2_E/D");
@@ -785,6 +842,7 @@ void TTbarTauLepton::beginJob() {
 	tree->Branch("lepton2_trackIso", &lepton2_trackIso, "lepton2_trackIso/F");
 	tree->Branch("lepton2_sumPuppiIso", &lepton2_sumPuppiIso, "lepton2_sumPuppiIso/F");
 	tree->Branch("lepton2_sumPuppiNoLeptonIso", &lepton2_sumPuppiNoLeptonIso, "lepton2_sumPuppiNoLeptonIso/F");
+	tree->Branch("lepton2_tauAbsIso", &lepton2_tauAbsIso, "lepton2_tauAbsIso/D");
 	tree->Branch("m_ll", &m_ll, "m_ll/D");
 	tree->Branch("BJet1_pt", &BJet1_pt, "BJet1_pt/D");
 	tree->Branch("BJet1_E", &BJet1_E, "BJet1_E/D");
@@ -819,6 +877,12 @@ void TTbarTauLepton::beginJob() {
 	tree->Branch("tauPuppimet_mass", &tauPuppimet_mass, "tauPuppimet_mass/D");
 	tree->Branch("dPhiPuppimetTau", &dPhiPuppimetTau, "dPhiPuppimetTau/D");
 	//tree->Branch("m_t", &m_t, "m_t/D");
+
+	// True MET from MC
+	tree->Branch("TrueMetPt", &TrueMetPt, "TrueMetPt/D");
+	tree->Branch("TrueMetEta", &TrueMetEta, "TrueMetEta/D");
+	tree->Branch("TrueMetPhi", &TrueMetPhi, "TrueMetPhi/D");
+	tree->Branch("TrueMetEnergy", &TrueMetEnergy, "TrueMetEnergy/D");
 	
 	// Vertices, tracks, tau candidates
 	tree->Branch("nVtx",&nVtx,"nVtx/I");
@@ -887,6 +951,7 @@ bool TTbarTauLepton::TriggerOK (const edm::Event& iEvent) {
 
 	if (monitoringHLT) std::cout << std::endl << "!!! Triggers !!!" << std::endl;
 
+	bool triggerOK = false;
 	nTauTriggers = 0;
 	nJetHTTriggers = 0;
 	nMETTriggers = 0;
@@ -957,7 +1022,9 @@ bool TTbarTauLepton::TriggerOK (const edm::Event& iEvent) {
 		}
 		*/
 	}
-	return true;
+	if (nTauTriggers + nJetHTTriggers + nMETTriggers + nBTagCSVTriggers + nSingleMuonTriggers + nSingleElectronTriggers > 0) triggerOK = true;
+	if (useHLT) return triggerOK;
+	else return true;
 }
 
 //-----------------------------------------------------------------------------------------
@@ -981,8 +1048,8 @@ bool TTbarTauLepton::AddTau(const edm::Event& event) {
 	// search for the tau candidate with the minimum isolation and the
 	// maximum transverse momentum
 	size_t index  = taus->size();;
-	int index_2 = null;
-	std::map <int, std::pair <double, double>> TauIdMap;
+	//int index_2 = null;
+	//std::map <int, std::pair <double, double>> TauIdMap;
 	for (size_t i = 0; i < taus->size(); ++i) {
 #define cut(condition) if (!(condition)) continue;
 		auto& tau = (*taus)[i];
@@ -1002,8 +1069,8 @@ bool TTbarTauLepton::AddTau(const edm::Event& event) {
 
 		++nTauC;
 		allTauPt->Fill(tau.pt());
-		std::pair <int, double> PairAbsIsoPt (tau.tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits"), tau.pt());
-		TauIdMap.insert(std::pair<int, std::pair<double, double>> (i, PairAbsIsoPt));
+		//std::pair <int, double> PairAbsIsoPt (tau.tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits"), tau.pt());
+		//TauIdMap.insert(std::pair<int, std::pair<double, double>> (i, PairAbsIsoPt));
 
 		cut((pv_position - tau.vertex()).R() < tauDzMax); // tau vertex displacement
 
@@ -1105,6 +1172,7 @@ bool TTbarTauLepton::AddTau(const edm::Event& event) {
 	// ----------------------------------------------------------------------------------------------
 
 	// Add second tau candidate if there is
+	/*
     if (nTauC > 1) {
 		for (auto MapId_iter = TauIdMap.begin(); MapId_iter !=  TauIdMap.end(); ++MapId_iter) {
 			if ((*MapId_iter).second.first < tau.tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits") ||
@@ -1115,6 +1183,7 @@ bool TTbarTauLepton::AddTau(const edm::Event& event) {
 	} else {
 		index_2 = null;
 	}
+	*/
 
     //reco::CandidateCollection Tau_daughters = tau.daughters;
 
@@ -1296,27 +1365,6 @@ bool TTbarTauLepton::AddTau(const edm::Event& event) {
 	nTau      = taus->size();
 	tau_found = 1;
 
-	if (index_2 >= 0) {
-		auto& tau2  = (*taus)[index_2];
-		tau2_pt     = tau2.pt();
-		tau2_eta    = tau2.eta();
-		tau2_phi    = tau2.phi();
-		tau2_dm     = tau2.decayMode();
-		tau2_dz     = (pv_position - tau2.vertex()).R();
-		tau2_q      = tau2.charge();
-		tau2_m      = tau2.mass();
-		tau2_absIso = tau2.tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
-	} else {
-		tau2_pt     = null;
-		tau2_eta    = null;
-		tau2_phi    = null;
-		tau2_dm     = null;
-		tau2_dz     = null;
-		tau2_q      = null;
-		tau2_m      = null;
-		tau2_absIso = null;
-	}
-
 	VectorSignalCands.clear();
 	VectorPiCh.clear();
 	VectorSignalCands_Photons.clear();
@@ -1324,59 +1372,115 @@ bool TTbarTauLepton::AddTau(const edm::Event& event) {
 	return true;
 };
 
-bool TTbarTauLepton::FindGenTau(const edm::Event& event) {
+void TTbarTauLepton::FindGenTau(const edm::Event& event) {
 
 	if (monitoringGen) std::cout << std::endl << "!!! Generated particles !!!" << std::endl;
 
-	gentau_found   = 0;
+	gentau_found  = 0;
 	genTauFromW   = null;
-	genTauMother  = null;
+	genTauFromWFromt = null;
+	genLeptonFromW   = null;
+	genLeptonFromWFromt = null;
+	genb1Fromt = null;
+	genb2Fromt = null;
+	genTauMother  = 0;
+	genLeptonMother = 0;
+	genb1Mother = 0;
+	genb2Mother = 0;
 	dR            = null;
 	bquark1dR     = null;
 	bquark2dR     = null;
 	leptondR      = null;
+	// W, b, t
 	W_pt          = null;
+	W_eta         = null;
+	W_phi         = null;
+	W_energy      = null;
+	W_charge      = null;
+	// Tau
 	gentau_pt     = null;
+	gentau_eta    = null;
+	gentau_phi    = null;
 	gentau_dm     = null;
 	gentau_energy = null;
-	genPiChar_pt  = null;
-	genPi0_pt     = null;
+	// Neutrinos
 	nutau_pt      = null;
 	nuW_pt        = null;
 	nunu_pt       = null;
+	nuW_energy    = null;
+	nuW_eta       = null;
+	nuW_phi       = null;
+	nutau_energy  = null;
+	nutau_eta     = null;
+	nutau_phi     = null;
+	nNu           = 0;
+	SumNu_pt      = null;
+	SumNu_eta     = null;
+	SumNu_phi     = null;
+	SumNu_energy  = null;
+	// PiChar and PiZero
+	genPiChar_pt     = null;
+	genPiChar_energy = null;
+	genPiChar_eta    = null;
+	genPiChar_phi    = null;
+	genPi0_pt        = null;
+	genPi0_energy    = null;
+	genPi0_eta       = null;
+	genPi0_phi       = null;
+	gentau_vis_pt     = null;
+	gentau_vis_eta    = null;
+	gentau_vis_phi    = null;
+	gentau_vis_energy = null;
+
+	if (!isMC) {
+		if (monitoring) std::cout << "This is not MC file" << std::endl; 
+		return;
+	}
 
 	//edm::Handle<pat::PackedCandidateCollection> genParticles;
 	edm::Handle<reco::GenParticleCollection> genParticles;
 	event.getByToken(GenParticleToken_, genParticles);
-	if (!genParticles.isValid()) return false;
+	if (!genParticles.isValid()) {
+		std::cout << "gen particles collection is not valid" << std::endl;
+		return;
+	}
 
 	if (monitoringGen) std::cout << "Searching for tau lepton among Gen particles" << std::endl;
 
 	const int pdg_tau      = 15;
 	const int pdg_pi0      = 111;
 	const int pdg_pi1      = 211;
+	const int pdg_rho_plus = 213;
 	const int pdg_W        = 24;
 	const int pdg_nu_tau   = 16;
 	const int pdg_electron = 11;
-	//const int pdg_nu_ele   = 12;
+	const int pdg_nu_ele   = 12;
 	const int pdg_mu       = 13;
-	//const int pdg_nu_mu    = 14;
+	const int pdg_nu_mu    = 14;
 	const int pdg_bquark   = 5;
 	const int pdg_tquark   = 6;
 
 	//const reco::Candidate* tau    = nullptr;
-	const reco::GenParticle* tau  = nullptr;
-	const reco::Candidate* nu_W   = nullptr;
-	const reco::Candidate* nu_tau = nullptr;
-	const reco::Candidate* pi0    = nullptr;
-	const reco::Candidate* pi1    = nullptr;
-	double dRmin = null;
-	// new vectors of gen particles
-	std::vector<const reco::Candidate*> leptons;
-	std::vector<const reco::Candidate*> bquarks;
-	std::vector<const reco::Candidate*> Wbosons;
-	std::vector<const reco::Candidate*> tquarks;
+	const reco::GenParticle* tau     = nullptr;
+	const reco::GenParticle* lepton  = nullptr;
+	const reco::GenParticle* bquark1 = nullptr;
+	const reco::GenParticle* bquark2 = nullptr;
+	const reco::Candidate* nu_W      = nullptr;
+	const reco::Candidate* nu_tau    = nullptr;
+	const reco::Candidate* pi0       = nullptr;
+	const reco::Candidate* pi1       = nullptr;
+	const reco::Candidate* W_lep     = nullptr;
+	const reco::Candidate* tquark_tau = nullptr;
+	const reco::Candidate* tquark_lep = nullptr;
+	// test
+	//double dRmin = null;
+	double dRmin       = 100;
+	double leptondRmin = 100;
+	double b1dRmin     = 100;
+	double b2dRmin     = 100;
 
+	math::XYZTLorentzVector TauVisP4;
+	math::XYZTLorentzVector SumNuP4;
 
 	// Look for tau among generated particles
 	for (auto& particle: *genParticles) {
@@ -1384,17 +1488,15 @@ bool TTbarTauLepton::FindGenTau(const edm::Event& event) {
 		// look for the tau -> pi+ pi0 neutrino decay most oriented towards
 		// the reconstructed tau (if present)
 		cut(abs(particle.pdgId()) == pdg_tau);
-		if (monitoringGen) {
-			std::cout << "---------- Tau" << std::endl;
-			GenRecoMonitor *TauGenReco = new GenRecoMonitor(particle, pdg_tau, tau_pt, tau_eta, tau_phi);
-			TauGenReco->PrintComp(true, true);
-			delete TauGenReco;
-			std::cout << "decay mode = " << GenTauDecayMode(particle) << std::endl;
-		}
+		// If tau radiate photon
+		if (particle.numberOfDaughters() >= 2 && (abs(particle.daughter(0)->pdgId()) == 15 || abs(particle.daughter(1)->pdgId()) == 15)) continue;
 
 		for (unsigned i = 0; i < particle.numberOfDaughters(); ++i) {
 			const reco::Candidate* daughter = particle.daughter(i);
 			int id = abs(daughter->pdgId());
+			if (id != pdg_nu_tau) {
+				TauVisP4 += daughter->p4();
+			}
 			if (id == pdg_pi0)
 				pi0 = daughter;
 			else if (id == pdg_pi1)
@@ -1412,185 +1514,238 @@ bool TTbarTauLepton::FindGenTau(const edm::Event& event) {
 		//cut(pi1->pt() > piPtMin);
 
 		double dR_ = null;
-		if (tau_found) {
+		if (tau_found > 0) {
 			dR_ = TMath::Sqrt( sqr(dphi(particle.phi(), tau_phi)) + sqr(particle.eta() - tau_eta) );
 			if (!tau || dR_ < dRmin) {
 				tau = &particle;
 				dRmin = dR_;
+				if (monitoringGen) {
+					std::cout << "---------- Tau" << std::endl;
+					GenRecoMonitor *TauGenReco = new GenRecoMonitor(particle, pdg_tau, tau_pt, tau_eta, tau_phi);
+					TauGenReco->PrintComp(true, true);
+					delete TauGenReco;
+					std::cout << "decay mode = " << GenTauDecayMode(particle) << std::endl;
+				}
 			};
 		};
 #undef cut
 		//if (monitoringGen) GenTauMonitor(particle);
 	};
 
-	if (!tau) return false;
+	//if (!tau) return;
+	if (!tau && monitoringGen) std::cout << "No tau leptons among gen particles" << std::endl;
 
 	if (monitoringGen) std::cout << "Investigate the source of tau (mother)" << std::endl;
 
-	gentau_pt     = tau->pt();
-	gentau_energy = tau->energy();
-	gentau_eta    = tau->eta();
-	gentau_phi    = tau->phi();
-	gentau_dm     = GenTauDecayMode(*tau);
-	//gentau_energy = tau->energy();
-
-	dR           = dRmin;
-	gentau_found = 1;
-	genTauFromW  = 0;
-
-	// Look for W which is mother particle for tau
-	for (auto p = tau->mother(); p; p = p->mother()) {
-		genTauMother = p->pdgId();
-		//if (monitoringGen) std::cout << "gnetau mother pdg ID = " << genTauMother << std::endl;
-		if (abs(p->pdgId()) == pdg_W) {
-			if (monitoringGen) {
-				std::cout << "---------- W-boson (tau mother)" << std::endl;
-				GenRecoMonitor *WGen = new GenRecoMonitor(*p);
-				WGen->PrintGen(true, true);
-				delete WGen;
-			}
-			genTauFromW = 1;
-			W_pt        = p->pt();
-			Wbosons.push_back(p);
-			for (unsigned l = 0; l < p->numberOfDaughters(); l++) {
-				const reco::Candidate* Wdaughter = p->daughter(l);
-				//if (monitoringGen) std::cout << "W_daughter(" << l << ") = " << Wdaughter->pdgId() << std::endl;
-				if (abs(Wdaughter->pdgId()) == pdg_nu_tau) {
-					nu_W = Wdaughter;
-				} else continue;
-			}
-			for (auto p1 = p->mother(); p1; p1 = p1->mother()) {
-				if (abs(p1->pdgId()) == pdg_tquark) {
-					if (monitoringGen) {
-						std::cout << "---------- t-quark 1" << std::endl;
-						GenRecoMonitor *tGen = new GenRecoMonitor(*p1);
-						tGen->PrintGen(true, true);
-						delete tGen;
-					}
-					//FirstTCharge = p1->charge();
-					tquarks.push_back(p1);
-					for (unsigned m = 0; m < p1->numberOfDaughters(); m++) {
-						const reco::Candidate* tdaughter = p1->daughter(m);
-						if (abs(tdaughter->pdgId()) == pdg_bquark) {
-							bquarks.push_back(tdaughter);
-							double bdR1 = sqrt(deltaR2(tdaughter->eta(), tdaughter->phi(), BJet1_eta, BJet1_phi));
-							double bdR2 = sqrt(deltaR2(tdaughter->eta(), tdaughter->phi(), BJet2_eta, BJet2_phi));
-							bquark1dR = TMath::Min(bdR1, bdR2);
-							if (monitoringGen) {
-								std::cout << "---------- b-quark 1" << std::endl;
-								std::cout << "dR(calc) = " << bquark1dR << std::endl;
-								GenRecoMonitor *b1Gen = new GenRecoMonitor(*tdaughter, pdg_bquark, BJet1_pt, BJet1_eta, BJet1_phi);
-								b1Gen->PrintComp(true, true);
-								delete b1Gen;
-								if (BJet2_bprob > 0) {
-									GenRecoMonitor *b2Gen = new GenRecoMonitor(*tdaughter, pdg_bquark, BJet2_pt, BJet2_eta, BJet2_phi);
-									b2Gen->PrintComp(true, true);
-									delete b2Gen;
-								}
-							}
-						} else continue;
-					}
-					break;
+	if (tau) {
+		gentau_pt     = tau->pt();
+		gentau_energy = tau->energy();
+		gentau_eta    = tau->eta();
+		gentau_phi    = tau->phi();
+		gentau_dm     = GenTauDecayMode(*tau);
+		dR           = dRmin;
+		gentau_found = 1;
+		genTauFromW  = 0;
+		genTauFromWFromt = 0;
+		// Look for W which is mother particle for tau
+		for (auto p = tau->mother(); p; p = p->mother()) {
+			genTauMother = p->pdgId();
+			if (abs(p->pdgId()) == pdg_W) {
+				if (monitoringGen) {
+					std::cout << "---------- W-boson (tau mother)" << std::endl;
+					GenRecoMonitor *WGen = new GenRecoMonitor(*p);
+					WGen->PrintGen(true, true);
+					delete WGen;
 				}
-			}
-			break;
-		};
-	};
-
-	if (monitoringGen) std::cout << "Look for second t-quark and its decay products" << std::endl;
-
-	// Look for second t-quark and it's daughter particles among generated particles
-	for (auto& particle: *genParticles) {
-		if (abs(particle.pdgId()) == pdg_tquark) {
-			//if (tquarks.size() > 0 && (*tquarks[0]).charge() * particle.charge() >= 0) continue;
-			const reco::Candidate* tquark = &particle;
-			GetLastDaughter(tquark);
-			bool sametquark = false;
-			if (tquarks.size() > 0) {
-				for (unsigned Nt = 0; Nt < tquarks.size(); Nt++) {
-					double ttdR = sqrt(deltaR2((*tquarks[Nt]).eta(), (*tquarks[Nt]).phi(), particle.eta(), particle.phi()));
-					//if (monitoringGen) std::cout << "ttdR = " << ttdR << std::endl;
-					if (ttdR < 0.4) {
-						sametquark = true;
+				genTauFromW = 1;
+				W_pt        = p->pt();
+				W_eta       = p->eta();
+				W_phi       = p->phi();
+				W_energy    = p->energy();
+				W_charge    = p->charge();
+				for (unsigned l = 0; l < p->numberOfDaughters(); l++) {
+					const reco::Candidate* Wdaughter = p->daughter(l);
+					//if (monitoringGen) std::cout << "W_daughter(" << l << ") = " << Wdaughter->pdgId() << std::endl;
+					if (abs(Wdaughter->pdgId()) == pdg_nu_tau) {
+						nu_W = Wdaughter;
+					} else continue;
+				}
+				for (auto p1 = p->mother(); p1; p1 = p1->mother()) {
+					if (abs(p1->pdgId()) == pdg_tquark) {
+						if (monitoringGen) {
+							std::cout << "---------- t-quark 1" << std::endl;
+							GenRecoMonitor *tGen = new GenRecoMonitor(*p1);
+							tGen->PrintGen(true, true);
+							delete tGen;
+						}
+						genTauFromWFromt = 1;
+						tquark_tau = p1;
 						break;
 					}
 				}
-			}
-			if (sametquark) continue;
-			tquarks.push_back(tquark);
-			if (monitoringGen) {
-				std::cout << "---------- t-quark 2" << std::endl;
-				GenRecoMonitor *tGen = new GenRecoMonitor(particle);
-				tGen->PrintGen(true, true);
-				delete tGen;
-			}
-			for (unsigned l = 0; l < tquark->numberOfDaughters(); l++) {
-				const reco::Candidate* tdaughter = tquark->daughter(l);
-				/*
+				break;
+			};
+		};
+	}
+
+	// Search for secondlepton (mu, ele or tau) and reconstruct the decay chain in reverse direction
+	genLeptonFromW = 0;
+	genLeptonFromWFromt = 0;
+	genb1Fromt = 0;
+	genb2Fromt = 0;
+	// Look for second lepton among generated particles
+	for (auto& particle: *genParticles) {
+		//cut(abs(particle.pdgId()) == pdg_mu || abs(particle.pdgId()) == pdg_electron);
+		if (abs(particle.pdgId()) == pdg_mu || abs(particle.pdgId()) == pdg_electron || abs(particle.pdgId()) == pdg_tau) {
+			double lepdR1 = sqrt(deltaR2(particle.eta(), particle.phi(), lepton1_eta, lepton1_phi));
+			double lepdR2 = sqrt(deltaR2(particle.eta(), particle.phi(), lepton2_eta, lepton2_phi));
+			double dRtau  = sqrt(deltaR2(particle.eta(), particle.phi(), gentau_eta, gentau_phi));
+			double leptondR_ = TMath::Min(lepdR1, lepdR2); 
+			if ( (!lepton || leptondR_ < leptondRmin) && dRtau > 0.4) {
+				lepton = &particle;
+				leptondRmin = leptondR_;
 				if (monitoringGen) {
-					std::cout << "t_daughter(" << l << ") ID = " << tdaughter->pdgId() << std::endl;
+					std::cout << "---------- Lepton" << std::endl;
+					GenRecoMonitor *Lepton1Gen = new GenRecoMonitor(particle, lepton1_flavor, lepton1_pt, lepton1_eta, lepton1_phi);
+					Lepton1Gen->PrintComp(true, true);
+					delete Lepton1Gen;
+					if (lepton2_pt > 0) {
+						GenRecoMonitor *Lepton2Gen = new GenRecoMonitor(particle, lepton2_flavor, lepton2_pt, lepton2_eta, lepton2_phi);
+						Lepton2Gen->PrintComp(true, true);
+						delete Lepton2Gen;
+					}
 				}
-				*/
-				if (abs(tdaughter->pdgId()) == pdg_bquark) {
-					GetLastDaughter(tdaughter);
-					bquarks.push_back(tdaughter);
-					double bdR1 = sqrt(deltaR2(tdaughter->eta(), tdaughter->phi(), BJet1_eta, BJet1_phi));
-					double bdR2 = sqrt(deltaR2(tdaughter->eta(), tdaughter->phi(), BJet2_eta, BJet2_phi));
-					bquark2dR = TMath::Min(bdR1, bdR2);
-					if (monitoringGen) {
-						std::cout << "---------- b-quark 2" << std::endl;
-						std::cout << "dR(calc) = " << bquark2dR << std::endl;
-						GenRecoMonitor *b1Gen = new GenRecoMonitor(*tdaughter, pdg_bquark, BJet1_pt, BJet1_eta, BJet1_phi);
-						b1Gen->PrintComp(true, true);
-						delete b1Gen;
-						if (BJet2_bprob > 0) {
-							GenRecoMonitor *b2Gen = new GenRecoMonitor(*tdaughter, pdg_bquark, BJet2_pt, BJet2_eta, BJet2_phi);
-							b2Gen->PrintComp(true, true);
-							delete b2Gen;
-						}
-					}
-				} else if (abs(tdaughter->pdgId()) == pdg_W) {
-					//Wbosons.push_back(tdaughter);
-					GetLastDaughter(tdaughter);
-					Wbosons.push_back(tdaughter);
-					if (monitoringGen) {
-						std::cout << "---------- W-boson 2" << std::endl;
-						GenRecoMonitor *WGen = new GenRecoMonitor(*tdaughter);
-						WGen->PrintGen(true, true);
-						delete WGen;
-					}
-					for (unsigned m = 0; m < tdaughter->numberOfDaughters(); m++) {
-						const reco::Candidate* Wdaughter = tdaughter->daughter(m);
-						//if (monitoringGen) std::cout << "W_daughter(" << m << ") ID = " << Wdaughter->pdgId() << std::endl;
-						if (abs(Wdaughter->pdgId()) == pdg_electron || abs(Wdaughter->pdgId()) == pdg_mu || abs(Wdaughter->pdgId()) == pdg_tau) {
-							leptons.push_back(Wdaughter);
-							double lepdR1 = sqrt(deltaR2(Wdaughter->eta(), Wdaughter->phi(), lepton1_eta, lepton1_phi));
-							double lepdR2 = sqrt(deltaR2(Wdaughter->eta(), Wdaughter->phi(), lepton2_eta, lepton2_phi));
-							double dRtau  = sqrt(deltaR2(Wdaughter->eta(), Wdaughter->phi(), gentau_eta, gentau_phi));
-							leptondR = TMath::Min(lepdR1, lepdR2); 
-							if (monitoringGen) {
-								std::cout << "---------- Lepton" << std::endl;
-								GenRecoMonitor *Lepton1Gen = new GenRecoMonitor(*Wdaughter, lepton1_flavor, lepton1_pt, lepton1_eta, lepton1_phi);
-								Lepton1Gen->PrintComp(true, true);
-								delete Lepton1Gen;
-								if (lepton2_pt > 0) {
-									GenRecoMonitor *Lepton2Gen = new GenRecoMonitor(*Wdaughter, lepton2_flavor, lepton2_pt, lepton2_eta, lepton2_phi);
-									Lepton2Gen->PrintComp(true, true);
-									delete Lepton2Gen;
-								}
-							}
-						} else continue;
-					}
-				} else continue;
 			}
-			//if (sqrt(deltaR2((*tquarks[0]).eta(), (*tquarks[0]).phi(), particle.eta(), particle.phi())) > 0.5) break;
+		} else continue;
+		//if (monitoringGen) GenTauMonitor(particle);
+	};
+
+	if (lepton) {
+		leptondR = leptondRmin;
+		// Look for W which is mother particle for lepton
+		for (auto p = lepton->mother(); p; p = p->mother()) {
+			genLeptonMother = p->pdgId();
+			//if (monitoringGen) std::cout << "gnetau mother pdg ID = " << genTauMother << std::endl;
+			if (abs(p->pdgId()) == pdg_W) {
+				if (monitoringGen) {
+					std::cout << "---------- W-boson (lepton mother)" << std::endl;
+					GenRecoMonitor *WGen = new GenRecoMonitor(*p);
+					WGen->PrintGen(true, true);
+					delete WGen;
+				}
+				genLeptonFromW = 1;
+				for (auto p1 = p->mother(); p1; p1 = p1->mother()) {
+					if (abs(p1->pdgId()) == pdg_tquark) {
+						if (monitoringGen) {
+							std::cout << "---------- t-quark 2" << std::endl;
+							GenRecoMonitor *tGen = new GenRecoMonitor(*p1);
+							tGen->PrintGen(true, true);
+							delete tGen;
+						}
+						genLeptonFromWFromt = 1;
+						tquark_lep = p1;
+						//FirstTCharge = p1->charge();
+						break;
+					}
+				}
+				break;
+			} else if (abs(p->pdgId()) != abs(lepton->pdgId())) {
+				break;
+			}
+		};
+	}
+
+	// Investigate the gen source of b-quarks
+	for (auto& particle: *genParticles) {
+		if (abs(particle.pdgId()) == pdg_bquark) {
+			double bquark1dR_ = sqrt(deltaR2(particle.eta(), particle.phi(), BJet1_eta, BJet1_phi));
+			if ( !bquark1 || bquark1dR_ < b1dRmin) {
+				bquark1 = &particle;
+				b1dRmin = bquark1dR_;
+				bquark1dR = b1dRmin;
+				if (monitoringGen) {
+					std::cout << "---------- b-quark 1" << std::endl;
+					std::cout << "dR(calc) = " << bquark1dR << std::endl;
+					GenRecoMonitor *b1Gen = new GenRecoMonitor(particle, pdg_bquark, BJet1_pt, BJet1_eta, BJet1_phi);
+					b1Gen->PrintComp(true, true);
+					delete b1Gen;
+				}
+			}
+		} else continue;
+	}
+
+	for (auto& particle: *genParticles) {
+		if (abs(particle.pdgId()) == pdg_bquark) {
+			double bquark2dR_ = sqrt(deltaR2(particle.eta(), particle.phi(), BJet2_eta, BJet2_phi));
+			if ( !bquark2 || bquark2dR_ < b2dRmin) {
+				bquark2 = &particle;
+				b2dRmin = bquark2dR_;
+				bquark2dR = b2dRmin;
+				if (monitoringGen) {
+					std::cout << "---------- b-quark 2" << std::endl;
+					std::cout << "dR(calc) = " << bquark2dR << std::endl;
+					GenRecoMonitor *b2Gen = new GenRecoMonitor(particle, pdg_bquark, BJet2_pt, BJet2_eta, BJet2_phi);
+					b2Gen->PrintComp(true, true);
+					delete b2Gen;
+				}
+			}
+		} else continue;
+	}
+
+	if (bquark1) {
+		for (auto p = bquark1->mother(); p; p = p->mother()) {
+			genb1Mother = p->pdgId();
+			//if (monitoringGen) std::cout << "gnetau mother pdg ID = " << genTauMother << std::endl;
+			if (abs(p->pdgId()) == pdg_tquark) {
+				double t1dR = abs(null) + 1;
+				double t2dR = abs(null) + 1;
+				if (tquark_tau) {
+					t1dR = sqrt(deltaR2(p->eta(), p->phi(), tquark_tau->eta(), tquark_tau->phi()));
+				}
+				if (tquark_lep) {
+					t2dR = sqrt(deltaR2(p->eta(), p->phi(), tquark_lep->eta(), tquark_lep->phi()));
+				}
+				if (t1dR < abs(null) || t2dR < abs(null)) {
+					if (t1dR < t2dR) genb1Fromt = 1;
+					else genb1Fromt = 2;
+				}
+				break;
+			} else if (abs(p->pdgId()) != abs(bquark1->pdgId())) {
+				break;
+			}
 		}
 	}
 
-	leptons.clear();
-	bquarks.clear();
-	Wbosons.clear();
-	tquarks.clear();
+	if (bquark2) {
+		for (auto p = bquark2->mother(); p; p = p->mother()) {
+			genb2Mother = p->pdgId();
+			if (abs(p->pdgId()) == pdg_tquark) {
+				double t1dR = abs(null) + 1;
+				double t2dR = abs(null) + 1;
+				if (tquark_tau) {
+					t1dR = sqrt(deltaR2(p->eta(), p->phi(), tquark_tau->eta(), tquark_tau->phi()));
+				}
+				if (tquark_lep) {
+					t2dR = sqrt(deltaR2(p->eta(), p->phi(), tquark_lep->eta(), tquark_lep->phi()));
+				}
+				if (t1dR < abs(null) || t2dR < abs(null)) {
+					if (t1dR < t2dR) genb2Fromt = 1;
+					else genb2Fromt = 2;
+				}
+				break;
+			} else if (abs(p->pdgId()) != abs(bquark2->pdgId())) {
+				break;
+			}
+		}
+	}
+
+	for (auto& particle: *genParticles) {
+		if ( (abs(particle.pdgId()) == pdg_nu_tau || abs(particle.pdgId()) == pdg_nu_mu || abs(particle.pdgId()) == pdg_nu_ele)
+			&& (particle.pdgId() != particle.mother()->pdgId()) ) {
+			SumNuP4 += particle.p4();
+			nNu++;
+		}
+	}
 
 	if (monitoringGen) std::cout << "gentau Flag 3" << std::endl;
 
@@ -1618,32 +1773,79 @@ bool TTbarTauLepton::FindGenTau(const edm::Event& event) {
 		genPi0_phi    = null;
 	}
 
+	gentau_vis_pt = TauVisP4.pt();
+	gentau_vis_eta = TauVisP4.eta();
+	gentau_vis_phi = TauVisP4.phi();
+	gentau_vis_energy = TauVisP4.energy();
+
+	SumNu_pt = SumNuP4.pt();
+	SumNu_eta = SumNuP4.eta();
+	SumNu_phi = SumNuP4.phi();
+	SumNu_energy = SumNuP4.energy();
+
 	if (monitoringGen) std::cout << "gentau Flag 4" << std::endl;
 
-	if (!nu_W) return false; 
+	//if (!nu_W) return; 
 
 	if (monitoringGen) std::cout << "gentau Flag 5" << std::endl;
 
-	if (genTauFromW > 0) {
-		nuW_pt       = nu_W->pt();
-		nuW_energy   = nu_W->energy();
-		nuW_eta      = nu_W->eta();
-		nuW_phi      = nu_W->phi();
+	if (nu_tau) {
 		nutau_pt     = nu_tau->pt();
 		nutau_energy = nu_tau->energy();
 		nutau_eta    = nu_tau->eta();
 		nutau_phi    = nu_tau->phi();
+	}
+	if (genTauFromW > 0 && nu_W) {
+		nuW_pt       = nu_W->pt();
+		nuW_energy   = nu_W->energy();
+		nuW_eta      = nu_W->eta();
+		nuW_phi      = nu_W->phi();
+	}
+	if (nu_W && nu_tau)  {
 		double nutau_m = nu_tau->mass();
 		double nuW_m = nu_W->mass();
-
 		TLorentzVector gennutau, gennuW;
 		gennutau.SetPtEtaPhiM(nutau_pt, nutau_eta, nutau_phi, nutau_m);
 		gennuW.SetPtEtaPhiM(nuW_pt, nuW_eta, nuW_phi, nuW_m);
 		nunu_pt = (gennutau + gennuW).Pt();
 	}
 
-	return true;
+	//return;
 };
+
+/*
+
+void TTbarTauLepton::AddGenMET(const edm::Event& event) {
+
+	edm::Handle<GenMETCollection> genMetTrue;
+	event.getByToken(tok_GenMetTrue_, genMetTrue);
+
+	if(!isMC) {
+		TrueMetPt = null;
+		TrueMetEta = null;
+		TrueMetPhi = null;
+		TrueMetEnergy = null;
+		return;
+	}
+
+    if (genMetTrue.isValid() && !(*genMetTrue).empty()) {
+        if (monitoring) std::cout << "True MET vector size = " << genMetTrue->size() << std::endl;
+        auto& METTrue = genMetTrue->front();
+        if (monitoringMET) {
+            std::cout << "True MET:" << std::endl;
+            std::cout << "Pt      = " << METTrue.pt() << std::endl
+            << "Eta     = " << METTrue.eta() << std::endl
+            << "Phi     = " << METTrue.phi() << std::endl
+            << "Energy  = " << METTrue.energy() << std::endl;
+        }
+        TrueMetPt = METTrue.pt();
+        TrueMetEta = METTrue.eta();
+        TrueMetPhi = METTrue.phi();
+        TrueMetEnergy = METTrue.energy();
+    }
+
+}
+*/
 
 /*
 void TTbarTauLepton::AddPackedCandidates(const edm::Event& event) {
@@ -1965,6 +2167,8 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
 	lepton1_E        = null;
 	lepton1_trackIso = null;
 	lepton1_sumPuppiIso = null;
+	lepton1_sumPuppiNoLeptonIso = null;
+	lepton1_tauAbsIso = null;
 	lepton2_pt       = null;
 	lepton2_eta      = null;
 	lepton2_phi      = null;
@@ -1974,81 +2178,174 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
 	lepton2_E        = null;
 	lepton2_trackIso = null;
 	lepton2_sumPuppiIso = null;
-	m_ll             = null;
+	lepton2_sumPuppiNoLeptonIso = null;
+	lepton2_tauAbsIso   = null;
+	m_ll                = null;
 
 	edm::Handle<pat::ElectronCollection> electrons;
 	event.getByToken(ElectronCollectionToken_, electrons);
-	if (!electrons.isValid()) return false;
+	//if (!electrons.isValid()) return false;
+	if (monitoringLeptons) {
+		if (electrons.isValid()) {
+			std::cout << "Number of electrons in collection = " << electrons->size() << std::endl;
+		} else {
+			std::cout << "Electrons are not valid" << std::endl;
+		}
+	}
 
 	edm::Handle<pat::MuonCollection> muons;
 	event.getByToken(MuonCollectionToken_, muons);
-	if (!muons.isValid()) return false;
+	if (monitoringLeptons) {
+		if (muons.isValid()) {
+			std::cout << "Number of muons in collection = " << muons->size() << std::endl;
+		} else {
+			std::cout << "Muons are not valid" << std::endl;
+		}
+	}
+	//if (!muons.isValid()) return false;
+
+	edm::Handle<pat::TauCollection> taus;
+	event.getByToken(TauCollectionToken_, taus);
+	if (monitoringLeptons) {
+		if (taus.isValid()) {
+			std::cout << "Number of taus in collection = " << taus->size() << std::endl;
+		} else {
+			std::cout << "Taus are not valid" << std::endl;
+		}
+	}
 
 	std::vector<LeptonCandidate> LepCandidates;
+	int nLeptons = 0;
 
 	// Select electrons and muons which satisfy following criteria
 	// Not in bJets, pt above threshold, eta below threshold
 	if (electrons.isValid() && !(*electrons).empty()) {
 		//
-		//if (monitoringLeptons) std::cout << "Isolated electrons:" << std::endl;
+		if (monitoringLeptons) std::cout << "Isolated electrons:" << std::endl;
 		for (auto& electron: *electrons) {
+			nLeptons++;
+			if (monitoringLeptons) std::cout << "Electron " << nLeptons << std::endl;
 #define cut(condition) if (!(condition)) continue;
 			cut(electron.pt() > MuElePtMin);
 			cut(abs(electron.eta()) < EtaMax);
 			cut((pv_position - electron.vertex()).R() < tauDzMax);
+			if (monitoringLeptons) std::cout << "Passed cuts" << std::endl;
 			double deltaRJet1 = sqrt(deltaR2(BJet1_eta, BJet1_phi, electron.eta(), electron.phi()));
 			double deltaRJet2 = sqrt(deltaR2(BJet2_eta, BJet2_phi, electron.eta(), electron.phi()));
 			double deltaRTau  = sqrt(deltaR2(tau_eta, tau_phi, electron.eta(), electron.phi()));
 
-			if (deltaRTau < 0.3) return false;
-			if (deltaRJet1 > 0.5 && deltaRJet2 > 0.5) {
+			if (deltaRTau < 0.3) {
+				if (monitoringLeptons) std::cout << "In Tau cone: dR = " << deltaRTau << std::endl;
+				return false;
+			}
+			if (deltaRJet1 > 0.4 && deltaRJet2 > 0.4) {
 				bool SameLepton = false;
 				if(!LepCandidates.empty()) {
 					for(unsigned ilep = 0; ilep < LepCandidates.size(); ilep++) {
-						if (abs(LepCandidates[ilep].Phi - electron.phi()) < 0.3) SameLepton = true;
+						if (abs(LepCandidates[ilep].Phi - electron.phi()) < 0.3) {
+							if (monitoringLeptons) std::cout << "Same lepton" << std::endl;
+							SameLepton = true;
+						}
 					}
 				}
 				cut(!SameLepton);
 				nLeptonCandidates++;
 				LeptonCandidate Lepton(electron, pv_position);
 				LepCandidates.push_back(Lepton);
+				if (monitoringLeptons) std::cout << "Added to vector" << std::endl;
 	//delete Lepton;
+			} else if (monitoringLeptons) {
+				std::cout << "Close to b-jets: dR1 = " << deltaRJet1 << ", dR2 = " << deltaRJet2 << std::endl;
 			}
 #undef cut
 		}
 	}
 
 	if (muons.isValid() && !(*muons).empty()) {
-		//if (monitoringLeptons) std::cout << "Isolated muons:" << std::endl;
+		if (monitoringLeptons) std::cout << "Isolated muons:" << std::endl;
 		for (auto& muon: *muons) {
+			nLeptons++;
+			if (monitoringLeptons) std::cout << "Muon " << nLeptons << std::endl;
 #define cut(condition) if (!(condition)) continue;
 			cut(muon.pt() > MuElePtMin);
 			cut(abs(muon.eta()) < EtaMax);
 			cut((pv_position - muon.vertex()).R() < tauDzMax);
+			if (monitoringLeptons) std::cout << "Passed cuts" << std::endl;
 			double deltaRJet1 = sqrt(deltaR2(BJet1_eta, BJet1_phi, muon.eta(), muon.phi()));
 			double deltaRJet2 = sqrt(deltaR2(BJet2_eta, BJet2_phi, muon.eta(), muon.phi()));
 			double deltaRTau  = sqrt(deltaR2(tau_eta, tau_phi, muon.eta(), muon.phi()));
 			//double dphiJet1 = dphi(Jet1_phi, muon.phi());
 			//double dphiJet2 = dphi(Jet2_phi, muon.phi());
-			if (deltaRTau < 0.3) return false;
-			if (deltaRJet1 > 0.5 && deltaRJet2 > 0.5) {
+			if (deltaRTau < 0.3) {
+				if (monitoringLeptons) std::cout << "In Tau cone: dR = " << deltaRTau << std::endl;
+				return false;
+			}
+			if (deltaRJet1 > 0.4 && deltaRJet2 > 0.4) {
 				bool SameLepton = false;
 				if(!LepCandidates.empty()) {
 					for(unsigned ilep = 0; ilep < LepCandidates.size(); ilep++) {
-						if (abs(LepCandidates[ilep].Phi - muon.phi()) < 0.3) SameLepton = true;
+						if (abs(LepCandidates[ilep].Phi - muon.phi()) < 0.3) {
+							if (monitoringLeptons) std::cout << "Same lepton" << std::endl;
+							SameLepton = true;
+						}
 					}
 				}
 				cut(!SameLepton);
 				LeptonCandidate Lepton(muon, pv_position);
 				nLeptonCandidates++;
 				LepCandidates.push_back(Lepton);
+				if (monitoringLeptons) std::cout << "Added to vector" << std::endl;
 	//delete Lepton;
+			} else if (monitoringLeptons) {
+				std::cout << "Close to b-jets: dR1 = " << deltaRJet1 << ", dR2 = " << deltaRJet2 << std::endl;
 			}
 #undef cut
 		}
 	}
 
-	if (nLeptonCandidates < 1) return false;
+	// tau as second lepton candidate
+	if (taus.isValid() && !(*taus).empty()) {
+		//
+		if (monitoringLeptons) std::cout << "Isolated taus:" << std::endl;
+		for (auto& tau: *taus) {
+			nLeptons++;
+			if (monitoringLeptons) std::cout << "Tau " << nLeptons << std::endl;
+#define cut(condition) if (!(condition)) continue;
+			cut(tau.pt() > MuElePtMin);
+			cut(abs(tau.eta()) < EtaMax);
+			cut((pv_position - tau.vertex()).R() < tauDzMax);
+			if (monitoringLeptons) std::cout << "Passed cuts" << std::endl;
+			double deltaRJet1 = sqrt(deltaR2(BJet1_eta, BJet1_phi, tau.eta(), tau.phi()));
+			double deltaRJet2 = sqrt(deltaR2(BJet2_eta, BJet2_phi, tau.eta(), tau.phi()));
+			double deltaRTau  = sqrt(deltaR2(tau_eta, tau_phi, tau.eta(), tau.phi()));
+			cut(deltaRTau > 0.3);
+			if (deltaRJet1 > 0.4 && deltaRJet2 > 0.4) {
+				bool SameLepton = false;
+				if(!LepCandidates.empty()) {
+					for(unsigned ilep = 0; ilep < LepCandidates.size(); ilep++) {
+						if (abs(LepCandidates[ilep].Phi - tau.phi()) < 0.3) {
+							if (monitoringLeptons) std::cout << "Same lepton" << std::endl;
+							SameLepton = true;
+						}
+					}
+				}
+				cut(!SameLepton);
+				nLeptonCandidates++;
+				LeptonCandidate Lepton(tau, pv_position);
+				LepCandidates.push_back(Lepton);
+				if (monitoringLeptons) std::cout << "Added to vector" << std::endl;
+	//delete Lepton;
+			} else if (monitoringLeptons) {
+				std::cout << "Close to b-jets: dR1 = " << deltaRJet1 << ", dR2 = " << deltaRJet2 << std::endl;
+			}
+#undef cut
+		}
+	}
+
+	if (nLeptonCandidates < 1) {
+		if (monitoringLeptons) std::cout << "Number of lepton candiates = " << LepCandidates.size() << ", " << nLeptonCandidates << std::endl;
+		return false;
+	}
 
 	SortLeptons(LepCandidates);
 
@@ -2073,6 +2370,7 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
 	lepton1_trackIso = LepCandidates[0].trackIso;
 	lepton1_sumPuppiIso = LepCandidates[0].puppiChargedHadronIso + LepCandidates[0].puppiNeutralHadronIso + LepCandidates[0].puppiPhotonIso;
 	lepton1_sumPuppiNoLeptonIso = LepCandidates[0].puppiNoLeptonsChargedHadronIso + LepCandidates[0].puppiNoLeptonsNeutralHadronIso + LepCandidates[0].puppiNoLeptonsPhotonIso;
+	lepton1_tauAbsIso = LepCandidates[0].tauAbsIso;
 	if (LepCandidates.size() > 1) {
 		lepton2_pt       = LepCandidates[1].Pt;
 		lepton2_eta      = LepCandidates[1].Eta;
@@ -2084,6 +2382,7 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
 		lepton2_trackIso = LepCandidates[1].trackIso;
 		lepton2_sumPuppiIso = LepCandidates[1].puppiChargedHadronIso + LepCandidates[1].puppiNeutralHadronIso + LepCandidates[1].puppiPhotonIso;
 		lepton2_sumPuppiNoLeptonIso = LepCandidates[1].puppiNoLeptonsChargedHadronIso + LepCandidates[1].puppiNoLeptonsNeutralHadronIso + LepCandidates[1].puppiNoLeptonsPhotonIso;
+		lepton2_tauAbsIso = LepCandidates[1].tauAbsIso;
 		m_ll             = (LepCandidates[0].FourMomentum + LepCandidates[1].FourMomentum).M();
 	}
 

@@ -86,6 +86,7 @@ public :
     float trackIso;
     math::XYZTLorentzVector FourMomentum;
     double Dz;
+    double tauAbsIso;
 
     //--- constructor & destructor
     LeptonCandidate();
@@ -93,16 +94,23 @@ public :
         : Pt(muon.pt()), Eta(muon.eta()), Phi(muon.phi()), Flavor(13), Charge(muon.charge()), caloIso(muon.caloIso()), ecalIso(muon.ecalIso()), hcalIso(muon.hcalIso()),
         puppiChargedHadronIso(muon.puppiChargedHadronIso()), puppiNeutralHadronIso(muon.puppiNeutralHadronIso()), puppiPhotonIso(muon.puppiPhotonIso()),
         puppiNoLeptonsChargedHadronIso(muon.puppiNoLeptonsChargedHadronIso()), puppiNoLeptonsNeutralHadronIso(muon.puppiNoLeptonsNeutralHadronIso()), puppiNoLeptonsPhotonIso(muon.puppiNoLeptonsPhotonIso()),
-        trackIso(muon.trackIso()), FourMomentum(muon.p4()), Dz((pv_position - muon.vertex()).R())
+        trackIso(muon.trackIso()), FourMomentum(muon.p4()), Dz((pv_position - muon.vertex()).R()), tauAbsIso(-10)
     {
     }
     LeptonCandidate(const pat::Electron &electron, math::XYZPoint pv_position) 
         : Pt(electron.pt()), Eta(electron.eta()), Phi(electron.phi()), Flavor(11), Charge(electron.charge()), caloIso(electron.caloIso()), ecalIso(electron.ecalIso()), hcalIso(electron.hcalIso()),
         puppiChargedHadronIso(electron.puppiChargedHadronIso()), puppiNeutralHadronIso(electron.puppiNeutralHadronIso()), puppiPhotonIso(electron.puppiPhotonIso()),
         puppiNoLeptonsChargedHadronIso(electron.puppiNoLeptonsChargedHadronIso()), puppiNoLeptonsNeutralHadronIso(electron.puppiNoLeptonsNeutralHadronIso()), puppiNoLeptonsPhotonIso(electron.puppiNoLeptonsPhotonIso()),
-        trackIso(electron.trackIso()), FourMomentum(electron.p4()),Dz((pv_position - electron.vertex()).R())
+        trackIso(electron.trackIso()), FourMomentum(electron.p4()), Dz((pv_position - electron.vertex()).R()), tauAbsIso(-10)
     {
     } 
+    LeptonCandidate(const pat::Tau &tau, math::XYZPoint pv_position) 
+        : Pt(tau.pt()), Eta(tau.eta()), Phi(tau.phi()), Flavor(15), Charge(tau.charge()), caloIso(-10), ecalIso(-10), hcalIso(-10),
+        puppiChargedHadronIso(-10), puppiNeutralHadronIso(-10), puppiPhotonIso(-10),
+        puppiNoLeptonsChargedHadronIso(-10), puppiNoLeptonsNeutralHadronIso(-10), puppiNoLeptonsPhotonIso(-10),
+        trackIso(-10), FourMomentum(tau.p4()), Dz((pv_position - tau.vertex()).R()), tauAbsIso(tau.tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits"))
+    {
+    }
     void Monitoring();
     //double LepdR (double eta, double phi);
     virtual ~LeptonCandidate();
