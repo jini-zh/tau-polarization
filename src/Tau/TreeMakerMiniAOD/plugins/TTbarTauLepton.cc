@@ -1773,15 +1773,28 @@ void TTbarTauLepton::FindGenTau(const edm::Event& event) {
 		genPi0_phi    = null;
 	}
 
-	gentau_vis_pt = TauVisP4.pt();
-	gentau_vis_eta = TauVisP4.eta();
-	gentau_vis_phi = TauVisP4.phi();
-	gentau_vis_energy = TauVisP4.energy();
-
-	SumNu_pt = SumNuP4.pt();
-	SumNu_eta = SumNuP4.eta();
-	SumNu_phi = SumNuP4.phi();
-	SumNu_energy = SumNuP4.energy();
+	if (tau) {
+		gentau_vis_pt = TauVisP4.pt();
+		gentau_vis_eta = TauVisP4.eta();
+		gentau_vis_phi = TauVisP4.phi();
+		gentau_vis_energy = TauVisP4.energy();
+	} else {
+		gentau_vis_pt = null;
+		gentau_vis_eta = null;
+		gentau_vis_phi = null;
+		gentau_vis_energy = null;
+	}
+	if (nNu > 0) {
+		SumNu_pt = SumNuP4.pt();
+		SumNu_eta = SumNuP4.eta();
+		SumNu_phi = SumNuP4.phi();
+		SumNu_energy = SumNuP4.energy();
+	} else {
+		SumNu_pt = null;
+		SumNu_eta = null;
+		SumNu_phi = null;
+		SumNu_energy = null;
+	}
 
 	if (monitoringGen) std::cout << "gentau Flag 4" << std::endl;
 
