@@ -72,7 +72,7 @@
 #include "Math/LorentzVector.h"
 #include "Math/Point3D.h"
 
-#include "Tau/TauAnalyzer/plugins/MySimpleParticle.h"
+#include "Tau/TreeMakerMiniAOD/plugins/MySimpleParticle.h"
 #include "Tau/TreeMakerMiniAOD/plugins/ParticleMonitor.h"
 
 
