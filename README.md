@@ -12,7 +12,7 @@ Current event selection:
   * byVVVLooseDeepTau2017v2VSe
   * byVVVLooseDeepTau2017v2VSjet
 - At least 2 loose btagged Puppi jets (Pt > 30 GeV, |Eta| < 2.4)
-- At least 1 muon or electron (Pt > 20 GeV, |Eta| < 2.4)
+- At least 1 muon or electron or tau next to examined in order of decreasing AbsIso (Pt > 20 GeV, |Eta| < 2.4)
 
 Output variables:
 - Tau parameters
