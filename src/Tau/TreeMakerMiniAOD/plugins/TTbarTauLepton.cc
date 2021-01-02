@@ -165,7 +165,7 @@ private:
 	std::vector<std::string>  trigNamesBTagMu;
 	std::vector<std::string>  trigNamesSingleMuon;
 	std::vector<std::string>  trigNamesSingleElectron;
-	std::vector<std::string>  trigNamesEmpty;
+	std::vector<std::string>  trigNamesTarget;
 
 	edm::EDGetTokenT<double> TauSpinnerWTToken_;
 	edm::EDGetTokenT<double> TauSpinnerWTFlipToken_;
@@ -422,6 +422,7 @@ private:
 	int nBTagMuTriggers;
 	int nSingleMuonTriggers;
 	int nSingleElectronTriggers;
+	int nTargetTriggers;
 	
 	math::XYZPoint pv_position;
 	math::XYZPoint SV_position;
@@ -439,6 +440,7 @@ private:
 	//////////////////////////////////////////////////////
 	bool isMC;
 	bool useHLT;
+	bool useTargetHLT;
 	bool TauSpinnerOn;
 	double tauPtMin;
 	double piPtMin;
@@ -480,6 +482,7 @@ TTbarTauLepton::TTbarTauLepton(const edm::ParameterSet& iConfig) {
 
 	isMC						= iConfig.getParameter<bool>("isMC");
 	useHLT                      = iConfig.getParameter<bool>("useHLT");
+	useTargetHLT                = iConfig.getParameter<bool>("useTargetHLT");
 	monitoring					= iConfig.getParameter<bool>("monitoring");
 	monitoringHLT				= iConfig.getParameter<bool>("monitoringHLT");
 	monitoringTau				= iConfig.getParameter<bool>("monitoringTau");
@@ -519,7 +522,7 @@ TTbarTauLepton::TTbarTauLepton(const edm::ParameterSet& iConfig) {
 	trigNamesBTagMu                   = iConfig.getParameter<std::vector<std::string>>("BTagMuTriggers");
 	trigNamesSingleMuon               = iConfig.getParameter<std::vector<std::string>>("SingleMuonTriggers");
 	trigNamesSingleElectron           = iConfig.getParameter<std::vector<std::string>>("SingleElectronTriggers");
-	trigNamesEmpty                    = iConfig.getParameter<std::vector<std::string>>("Triggers");
+	trigNamesTarget                   = iConfig.getParameter<std::vector<std::string>>("TriggersTarget");
 	std::string PackedCandidateCollection = iConfig.getParameter<std::string>("PackedCandidateCollection");
 	
 	TauCollectionToken_ 		= consumes<pat::TauCollection>(edm::InputTag(tauCollection));
@@ -906,6 +909,7 @@ void TTbarTauLepton::beginJob() {
 	tree->Branch("nBTagMuTriggers", &nBTagMuTriggers, "nBTagMuTriggers/I");
 	tree->Branch("nSingleMuonTriggers", &nSingleMuonTriggers, "nSingleMuonTriggers/I");
 	tree->Branch("nSingleElectronTriggers", &nSingleElectronTriggers, "nSingleElectronTriggers/I");
+	tree->Branch("nTargetTriggers", &nTargetTriggers, "nTargetTriggers/I");
 	//tree->Branch("WTisValid", &WTisValid, "WTisValid/D")
 	// add more branches
 	
@@ -959,6 +963,7 @@ bool TTbarTauLepton::TriggerOK (const edm::Event& iEvent) {
 	nBTagMuTriggers = 0;
 	nSingleMuonTriggers = 0;
 	nSingleElectronTriggers = 0;
+	nTargetTriggers = 0;
     /////////////////////////////TriggerResults////////////////////////////////////
 	edm::Handle<edm::TriggerResults> triggerResults;
 	iEvent.getByToken(tok_trigRes, triggerResults);
@@ -1011,6 +1016,15 @@ bool TTbarTauLepton::TriggerOK (const edm::Event& iEvent) {
 						if (monitoringHLT) std::cout << "SingleElectron Trigger" << std::endl;
 					}
 				}
+				for ( unsigned int i=0; i<trigNamesTarget.size(); ++i ) {
+					if ( triggerNames_[iHLT].find(trigNamesTarget[i].c_str())!= std::string::npos ) {
+						nTargetTriggers++;
+						if (monitoringHLT) {
+							std::cout << "Target Trigger:" << std::endl;
+							std::cout << triggerNames_[iHLT] << std::endl;
+						}
+					}
+				}
 			}
 		}
 		/*
@@ -1022,7 +1036,11 @@ bool TTbarTauLepton::TriggerOK (const edm::Event& iEvent) {
 		}
 		*/
 	}
-	if (nTauTriggers + nJetHTTriggers + nMETTriggers + nBTagCSVTriggers + nSingleMuonTriggers + nSingleElectronTriggers > 0) triggerOK = true;
+	if (nTauTriggers + nJetHTTriggers + nMETTriggers + nBTagCSVTriggers + nSingleMuonTriggers + nSingleElectronTriggers > 0 && !useTargetHLT) {
+		triggerOK = true;
+	} else if (nTargetTriggers > 0 && useTargetHLT) {
+		triggerOK = true;
+	}
 	if (useHLT) return triggerOK;
 	else return true;
 }
@@ -2030,6 +2048,7 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
 			if (monitoringJets) {
 				std::cout << std::endl;
 				std::cout << "PuppiJet[" << j << "] Pt = " << jet.pt() << std::endl;
+				std::cout << "hoEnergy = " << jet.hoEnergy() << std::endl; 
 			}
 			reco::TrackRefVector JetTracksRef = jet.associatedTracks();
 			std::map <int, int> VertexTracksMap;
