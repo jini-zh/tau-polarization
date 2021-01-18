@@ -32,7 +32,7 @@
 #include "DataFormats/JetReco/interface/CaloJetCollection.h"
 #include "DataFormats/CaloTowers/interface/CaloTowerCollection.h"
 
-#include "Tau/TreeMakerMiniAOD/plugins/MySimpleParticle.h"
+#include "Tau/TauAnalyzer/plugins/MySimpleParticle.h"
 
 #include <cstdio>
 #include <iostream>
@@ -209,8 +209,6 @@ bool DecaychannelMatch(std::vector<MySimpleParticle> &particles, int p1, int p2 
 int GenTauDecayMode (const reco::GenParticle &genParticle) {
 
     int TauDM = -20;
-    //int channel = -10;
-    //int gentau_nPi0 = -10;
 
     int tau_pdgid = genParticle.pdgId();
 
@@ -322,7 +320,7 @@ int GenTauDecayMode (const reco::GenParticle &genParticle) {
             )
         ) {
         //channel = 2;
-        TauDM = -1;
+        TauDM = -2;
     }
     else if( pdgid.size()==4 &&
             (
@@ -331,7 +329,7 @@ int GenTauDecayMode (const reco::GenParticle &genParticle) {
             )
         ) {
         //channel = 2;
-        TauDM = -1;
+        TauDM = -2;
     }
 
     return TauDM;

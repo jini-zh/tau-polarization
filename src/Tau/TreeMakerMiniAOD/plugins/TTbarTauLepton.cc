@@ -36,6 +36,10 @@
 #include "DataFormats/TauReco/interface/PFTauDiscriminator.h"
 #include "DataFormats/JetReco/interface/PFJetCollection.h"
 
+#include "FWCore/Common/interface/TriggerResultsByName.h"
+#include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
+#include "PhysicsTools/Heppy/interface/TriggerBitChecker.h"
+
 #include "FWCore/Common/interface/TriggerNames.h"
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
@@ -100,6 +104,19 @@ void GetLastDaughter(const reco::Candidate* &particle) {
 	} else return;
 }
 
+void SortGenTaus(std::vector <reco::GenParticle> &items) {
+  bool swapped;
+  do {
+    swapped = false;
+    for (unsigned i = 1; i < items.size(); i++) {
+      if (items[i-1].pt() < items[i].pt()) {
+        std::swap(items[i-1], items[i]);
+        swapped = true;
+      }
+    }
+  } while (swapped != false);
+}
+
 //
 // class declaration
 //
@@ -129,11 +146,10 @@ private:
 	void AddWTData         (const edm::Event&);
 	void GenTauDM          (const edm::Event&);
 	bool TriggerOK         (const edm::Event&);
+	void AddEmptyTau       (const edm::Event&);
 
 	virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
 	virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
-	//virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
-	//virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
 	
 	// ----------member data ---------------------------
 
@@ -166,6 +182,21 @@ private:
 	std::vector<std::string>  trigNamesSingleMuon;
 	std::vector<std::string>  trigNamesSingleElectron;
 	std::vector<std::string>  trigNamesTarget;
+	// trigger prescales
+	edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> tok_triggerObjects;
+	edm::EDGetTokenT<pat::PackedTriggerPrescales> tok_triggerPrescales;
+	edm::EDGetTokenT<pat::PackedTriggerPrescales> tok_triggerPrescalesL1min;
+	edm::EDGetTokenT<pat::PackedTriggerPrescales> tok_triggerPrescalesL1max;
+	// To obtain trigger prescale
+	int resultTriggerWeight;
+	int triggerPrescaleHLT;
+	int triggerPrescaleL1max;
+	int triggerPrescaleL1min;
+
+	// new method of trigger prescales exatraction
+	//edm::EDGetTokenT<edm::TriggerResults> triggerBits_;
+    //edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjects_;
+    //edm::EDGetTokenT<pat::PackedTriggerPrescales> triggerPrescales_;
 
 	edm::EDGetTokenT<double> TauSpinnerWTToken_;
 	edm::EDGetTokenT<double> TauSpinnerWTFlipToken_;
@@ -328,9 +359,11 @@ private:
 	double SumNu_pt, SumNu_eta, SumNu_phi, SumNu_energy;
 	double nunu_pt;
 	double gentau_vis_pt, gentau_vis_eta, gentau_vis_phi, gentau_vis_energy;
+	double genLepton_eta, genLepton_phi, genLepton_pt, genLepton_energy;
+	int genLepton_mother, genLepton_flavor;
 
-	double PuppijetPtSum15, PuppijetPtSum20, PuppijetPtSum15PV, PuppijetPtSum20PV;
-	int nPuppiJets20, nPuppiJets20PV;
+	double PuppijetPtSum20, PuppijetPtSum30, PuppijetPtSum20PV, PuppijetPtSum30PV;
+	int nPuppiJets20, nPuppiJets20PV, nPuppiJets30, nPuppiJets30PV;
 	int nLooseBtagedPuppiJets, nMediumBtagedPuppiJets, nTightBtagedPuppiJets;
 	int nLooseBtagedPuppiJetsPV, nMediumBtagedPuppiJetsPV, nTightBtagedPuppiJetsPV;
 	double LeadingJet_pt;
@@ -355,6 +388,10 @@ private:
 	double BJet2_eta;
 	double BJet2_phi;
 	double BJet2_E;
+	double TauJet_pt;
+	double TauJet_eta;
+	double TauJet_phi;
+	double TauJet_E;
 
 	// Leptons
 	double lepton1_pt;
@@ -439,6 +476,7 @@ private:
 
 	//////////////////////////////////////////////////////
 	bool isMC;
+	bool fullMC;
 	bool useHLT;
 	bool useTargetHLT;
 	bool TauSpinnerOn;
@@ -448,6 +486,7 @@ private:
 	double tauDzMax;
 	double METcut;
 	double BJetPtMin;
+	double JetEtaMax;
 	double MuElePtMin;
 	double EtaMax;
 	double null;
@@ -461,8 +500,19 @@ private:
 	bool monitoringMET;
 	bool looseTauID;
 	bool DeepTau;
+	bool UseTau;
+	int NrequiredBJets;
+	int NrequiredJets;
+	int NrequiredLeptons;
 
 	int iT;
+	int nTrigger = 0;
+	int nTau1 = 0;
+	int nTauJet = 0;
+	int nJet = 0;
+	int nLepton = 0;
+	int nEvent = 0;
+	int nPassed = 0;
 };
 
 //
@@ -481,6 +531,7 @@ TTbarTauLepton::TTbarTauLepton(const edm::ParameterSet& iConfig) {
 	iT =0;
 
 	isMC						= iConfig.getParameter<bool>("isMC");
+	fullMC						= iConfig.getParameter<bool>("fullMC");
 	useHLT                      = iConfig.getParameter<bool>("useHLT");
 	useTargetHLT                = iConfig.getParameter<bool>("useTargetHLT");
 	monitoring					= iConfig.getParameter<bool>("monitoring");
@@ -499,10 +550,15 @@ TTbarTauLepton::TTbarTauLepton(const edm::ParameterSet& iConfig) {
 	METcut                      = iConfig.getParameter<double>("METcut");
 	looseTauID					= iConfig.getParameter<bool>("looseTauID");
 	BJetPtMin                   = iConfig.getParameter<double>("BJetPtMin"); // 30
+	JetEtaMax                   = iConfig.getParameter<double>("JetEtaMax");
 	MuElePtMin                  = iConfig.getParameter<double>("MuElePtMin"); // 20
 	EtaMax                      = iConfig.getParameter<double>("EtaMax"); // 2.4
 	DeepTau  					= iConfig.getParameter<bool>("DeepTau");
+	UseTau                      = iConfig.getParameter<bool>("UseTau");
 	null 						= iConfig.getParameter<double>("null");
+	NrequiredBJets              = iConfig.getParameter<int>("NrequiredBJets"); // Loose b-tagged jets (1 or 2 for ttbar)
+	NrequiredJets               = iConfig.getParameter<int>("NrequiredJets"); // at least 2 i think
+	NrequiredLeptons            = iConfig.getParameter<int>("NrequiredLeptons");
 
 	std::string tauCollection         = iConfig.getParameter<std::string>("tauCollection");
 	std::string muonCollection        = iConfig.getParameter<std::string>("muonCollection");
@@ -537,6 +593,10 @@ TTbarTauLepton::TTbarTauLepton(const edm::ParameterSet& iConfig) {
 	TrackToken_			        = consumes<pat::IsolatedTrackCollection>(edm::InputTag(trackCollection));
 	tok_trigRes                 = consumes<edm::TriggerResults>(theTriggerResultsLabel);
 	PackedCandidateCollectionToken_ = consumes<pat::PackedCandidateCollection>(edm::InputTag(PackedCandidateCollection));
+	tok_triggerObjects          = consumes<pat::TriggerObjectStandAloneCollection>(iConfig.getParameter<edm::InputTag>("Triggerobjects"));
+	tok_triggerPrescales        = consumes<pat::PackedTriggerPrescales>(iConfig.getParameter<edm::InputTag>("prescales")); 
+	tok_triggerPrescalesL1min   = consumes<pat::PackedTriggerPrescales>(iConfig.getParameter<edm::InputTag>("prescalesL1min")); 
+	tok_triggerPrescalesL1max   = consumes<pat::PackedTriggerPrescales>(iConfig.getParameter<edm::InputTag>("prescalesL1max"));
 	//tok_GenMetTrue_                 = consumes<reco::GenMETCollection>( iConfig.getParameter<edm::InputTag>("genMetTrue"));
 
 	if (isMC && TauSpinnerOn) {
@@ -565,11 +625,13 @@ TTbarTauLepton::~TTbarTauLepton() {
 void TTbarTauLepton::analyze(const edm::Event& event, const edm::EventSetup&) {
 	t_Run   = event.id().run();
 	t_Event = event.id().event();
+	nEvent++;
 
 	// Operation with triggers (filtering, scaling)
 	if (!TriggerOK(event)) {
+		nTrigger++;
 		if (monitoring) std::cout << "Trigger" << std::endl;
-		return;
+		if (!fullMC) return;
 	}
 	// Primary vertex position
 	if (!AddVertex(event)) {
@@ -582,21 +644,27 @@ void TTbarTauLepton::analyze(const edm::Event& event, const edm::EventSetup&) {
 		return;
 	}
 	// Find the most isolated Tau
+	bool tauFound;
 	if (!AddTau(event)) {
-		if (monitoring) std::cout << "Tau" << std::endl;
-		return;
+		nTau1++;
+		if (!fullMC) {
+			if (monitoring) std::cout << "Tau" << std::endl;
+			return;
+		} else if (isMC) AddEmptyTau(event);
 	}
 	//AddPackedCandidates(event);
 	//
 	CountTracks(event);
-	// Summary of jets parameters
-	if (!JetPtSum(event)) {
-		if (monitoring) std::cout << "Jet" << std::endl;
-		return;
-	}
 	// Find second lepton for ttbar
 	if (!AddLepton(event)) {
+		nLepton++;
 		if (monitoring) std::cout << "Lepton" << std::endl;
+		return;
+	}
+	// Summary of jets parameters
+	if (!JetPtSum(event)) {
+		nJet++;
+		if (monitoring) std::cout << "Jet" << std::endl;
 		return;
 	}
 	// Generated particles parameters
@@ -610,17 +678,26 @@ void TTbarTauLepton::analyze(const edm::Event& event, const edm::EventSetup&) {
 		AddWTData(event);
 	}
 
+	nPassed++;
+
+	std::cout << "Events  = " << nEvent << std::endl;
+	std::cout << "Trigger = " << nTrigger << std::endl;
+	std::cout << "Tau     = " << nTau1 << std::endl;
+	std::cout << "Lepton  = " << nLepton << std::endl;
+	std::cout << "Jet     = " << nJet << std::endl;
+	std::cout << "Passed  = " << nPassed << std::endl;
+
 	TLorentzVector pi0, pi1;
 	pi0.SetPtEtaPhiM(piZero_pt, piZero_eta, piZero_phi, piZero_m);
 	pi1.SetPtEtaPhiM(piChar_pt, piChar_eta, piChar_phi, piChar_m);
 
 	pipiMass = (pi0 + pi1).M();
-//	upsilon  = (pi1.E() - pi0.E()) / tau_pt;
+	//upsilon  = (pi1.E() - pi0.E()) / tau_pt;
 	upsilon  = 2 * piChar_pt / tau_pt - 1;
 	dPhi	        = dphi(tau_phi, met_phi);
 	dPhiPuppimetTau = dphi(tau_phi, Puppimet_phi);
 	m_t             = sqrt(2 * tau_pt * met * (1 - cos(dPhi)));
-
+		
 	tree->Fill();
 };
 
@@ -798,12 +875,14 @@ void TTbarTauLepton::beginJob() {
 	tree->Branch("SumNu_phi",&SumNu_phi,"SumNu_phi/D");
 	tree->Branch("SumNu_energy",&SumNu_energy,"SumNu_energy/D");
 	// PuppiJets
-	tree->Branch("PuppijetPtSum15", &PuppijetPtSum15, "PuppijetPtSum15/D");
+	tree->Branch("PuppijetPtSum30", &PuppijetPtSum30, "PuppijetPtSum30/D");
 	tree->Branch("PuppijetPtSum20", &PuppijetPtSum20, "PuppijetPtSum20/D");
-	tree->Branch("PuppijetPtSum15PV", &PuppijetPtSum15PV, "PuppijetPtSum15PV/D");
+	tree->Branch("PuppijetPtSum30PV", &PuppijetPtSum30PV, "PuppijetPtSum30PV/D");
 	tree->Branch("PuppijetPtSum20PV", &PuppijetPtSum20PV, "PuppijetPtSum20PV/D");
 	tree->Branch("nPuppiJets20", &nPuppiJets20, "nPuppiJets20/I");
 	tree->Branch("nPuppiJets20PV", &nPuppiJets20PV, "nPuppiJets20PV/I");
+	tree->Branch("nPuppiJets30", &nPuppiJets30, "nPuppiJets30/I");
+	tree->Branch("nPuppiJets30PV", &nPuppiJets30PV, "nPuppiJets30PV/I");
 	tree->Branch("nLooseBtagedPuppiJets", &nLooseBtagedPuppiJets, "nLooseBtagedPuppiJets/I");
 	tree->Branch("nMediumBtagedPuppiJets", &nMediumBtagedPuppiJets, "nMediumBtagedPuppiJets/I");
 	tree->Branch("nTightBtagedPuppiJets", &nTightBtagedPuppiJets, "nTightBtagedPuppiJets/I");
@@ -824,40 +903,48 @@ void TTbarTauLepton::beginJob() {
 	tree->Branch("SubLeadingJet_btag", &SubLeadingJet_btag, "SubLeadingJet_btag/D");
 
 	//BJets and leptons
-	tree->Branch("lepton1_pt", &lepton1_pt, "lepton1_pt/D");
-	tree->Branch("lepton1_E", &lepton1_E, "lepton1_E/D");
-	tree->Branch("lepton1_eta", &lepton1_eta, "lepton1_eta/D");
-	tree->Branch("lepton1_phi", &lepton1_phi, "lepton1_phi/D");
-	tree->Branch("lepton1_dz", &lepton1_dz, "lepton1_dz/D");
-	tree->Branch("lepton1_flavor", &lepton1_flavor, "lepton1_flavor/I");
-	tree->Branch("lepton1_charge", &lepton1_charge, "lepton1_charge/I");
-	tree->Branch("lepton1_trackIso", &lepton1_trackIso, "lepton1_trackIso/F");
-	tree->Branch("lepton1_sumPuppiIso", &lepton1_sumPuppiIso, "lepton1_sumPuppiIso/F");
-	tree->Branch("lepton1_tauAbsIso", &lepton1_tauAbsIso, "lepton1_tauAbsIso/D");
-	tree->Branch("lepton1_sumPuppiNoLeptonIso", &lepton1_sumPuppiNoLeptonIso, "lepton1_sumPuppiNoLeptonIso/F");
-	tree->Branch("lepton2_pt", &lepton2_pt, "lepton2_pt/D");
-	tree->Branch("lepton2_E", &lepton2_E, "lepton2_E/D");
-	tree->Branch("lepton2_eta", &lepton2_eta, "lepton2_eta/D");
-	tree->Branch("lepton2_phi", &lepton2_phi, "lepton2_phi/D");
-	tree->Branch("lepton2_dz", &lepton2_dz, "lepton2_dz/D");
-	tree->Branch("lepton2_flavor", &lepton2_flavor, "lepton2_flavor/I");
-	tree->Branch("lepton2_charge", &lepton2_charge, "lepton2_charge/I");
-	tree->Branch("lepton2_trackIso", &lepton2_trackIso, "lepton2_trackIso/F");
-	tree->Branch("lepton2_sumPuppiIso", &lepton2_sumPuppiIso, "lepton2_sumPuppiIso/F");
-	tree->Branch("lepton2_sumPuppiNoLeptonIso", &lepton2_sumPuppiNoLeptonIso, "lepton2_sumPuppiNoLeptonIso/F");
-	tree->Branch("lepton2_tauAbsIso", &lepton2_tauAbsIso, "lepton2_tauAbsIso/D");
-	tree->Branch("m_ll", &m_ll, "m_ll/D");
-	tree->Branch("BJet1_pt", &BJet1_pt, "BJet1_pt/D");
-	tree->Branch("BJet1_E", &BJet1_E, "BJet1_E/D");
-	tree->Branch("BJet1_eta", &BJet1_eta, "BJet1_eta/D");
-	tree->Branch("BJet1_phi", &BJet1_phi, "BJet1_phi/D");
-	tree->Branch("BJet1_bprob", &BJet1_bprob, "BJet1_bprob/D");
-	tree->Branch("BJet2_pt", &BJet2_pt, "BJet2_pt/D");
-	tree->Branch("BJet2_E", &BJet2_E, "BJet2_E/D");
-	tree->Branch("BJet2_eta", &BJet2_eta, "BJet2_eta/D");
-	tree->Branch("BJet2_phi", &BJet2_phi, "BJet2_phi/D");
-	tree->Branch("BJet2_bprob", &BJet2_bprob, "BJet2_bprob/D");
-	//tree->Branch("m_BJet1BJet2", &m_BJet1BJet2, "m_BJet1BJet2/D");
+	if (NrequiredLeptons >= 0) {
+		tree->Branch("lepton1_pt", &lepton1_pt, "lepton1_pt/D");
+		tree->Branch("lepton1_E", &lepton1_E, "lepton1_E/D");
+		tree->Branch("lepton1_eta", &lepton1_eta, "lepton1_eta/D");
+		tree->Branch("lepton1_phi", &lepton1_phi, "lepton1_phi/D");
+		tree->Branch("lepton1_dz", &lepton1_dz, "lepton1_dz/D");
+		tree->Branch("lepton1_flavor", &lepton1_flavor, "lepton1_flavor/I");
+		tree->Branch("lepton1_charge", &lepton1_charge, "lepton1_charge/I");
+		tree->Branch("lepton1_trackIso", &lepton1_trackIso, "lepton1_trackIso/F");
+		tree->Branch("lepton1_sumPuppiIso", &lepton1_sumPuppiIso, "lepton1_sumPuppiIso/F");
+		tree->Branch("lepton1_tauAbsIso", &lepton1_tauAbsIso, "lepton1_tauAbsIso/D");
+		tree->Branch("lepton1_sumPuppiNoLeptonIso", &lepton1_sumPuppiNoLeptonIso, "lepton1_sumPuppiNoLeptonIso/F");
+		tree->Branch("lepton2_pt", &lepton2_pt, "lepton2_pt/D");
+		tree->Branch("lepton2_E", &lepton2_E, "lepton2_E/D");
+		tree->Branch("lepton2_eta", &lepton2_eta, "lepton2_eta/D");
+		tree->Branch("lepton2_phi", &lepton2_phi, "lepton2_phi/D");
+		tree->Branch("lepton2_dz", &lepton2_dz, "lepton2_dz/D");
+		tree->Branch("lepton2_flavor", &lepton2_flavor, "lepton2_flavor/I");
+		tree->Branch("lepton2_charge", &lepton2_charge, "lepton2_charge/I");
+		tree->Branch("lepton2_trackIso", &lepton2_trackIso, "lepton2_trackIso/F");
+		tree->Branch("lepton2_sumPuppiIso", &lepton2_sumPuppiIso, "lepton2_sumPuppiIso/F");
+		tree->Branch("lepton2_sumPuppiNoLeptonIso", &lepton2_sumPuppiNoLeptonIso, "lepton2_sumPuppiNoLeptonIso/F");
+		tree->Branch("lepton2_tauAbsIso", &lepton2_tauAbsIso, "lepton2_tauAbsIso/D");
+		tree->Branch("m_ll", &m_ll, "m_ll/D");
+	}
+	if (NrequiredBJets >= 0) {
+		tree->Branch("BJet1_pt", &BJet1_pt, "BJet1_pt/D");
+		tree->Branch("BJet1_E", &BJet1_E, "BJet1_E/D");
+		tree->Branch("BJet1_eta", &BJet1_eta, "BJet1_eta/D");
+		tree->Branch("BJet1_phi", &BJet1_phi, "BJet1_phi/D");
+		tree->Branch("BJet1_bprob", &BJet1_bprob, "BJet1_bprob/D");
+		tree->Branch("BJet2_pt", &BJet2_pt, "BJet2_pt/D");
+		tree->Branch("BJet2_E", &BJet2_E, "BJet2_E/D");
+		tree->Branch("BJet2_eta", &BJet2_eta, "BJet2_eta/D");
+		tree->Branch("BJet2_phi", &BJet2_phi, "BJet2_phi/D");
+		tree->Branch("BJet2_bprob", &BJet2_bprob, "BJet2_bprob/D");
+	}
+	// Tau Jet
+	tree->Branch("TauJet_pt", &TauJet_pt, "TauJet_pt/D");
+	tree->Branch("TauJet_eta", &TauJet_eta, "TauJet_eta/D");
+	tree->Branch("TauJet_phi", &TauJet_phi, "TauJet_phi/D");
+	tree->Branch("TauJet_E", &TauJet_E, "TauJet_E/D");
 
 	// MET
 	tree->Branch("met", &met, "met/D");
@@ -910,6 +997,11 @@ void TTbarTauLepton::beginJob() {
 	tree->Branch("nSingleMuonTriggers", &nSingleMuonTriggers, "nSingleMuonTriggers/I");
 	tree->Branch("nSingleElectronTriggers", &nSingleElectronTriggers, "nSingleElectronTriggers/I");
 	tree->Branch("nTargetTriggers", &nTargetTriggers, "nTargetTriggers/I");
+	//
+	tree->Branch("resultTriggerWeight",&resultTriggerWeight,"resultTriggerWeight/I");
+	tree->Branch("triggerPrescaleHLT",&triggerPrescaleHLT,"triggerPrescaleHLT/I");
+	tree->Branch("triggerPrescaleL1min",&triggerPrescaleL1min,"triggerPrescaleL1min/I");
+	tree->Branch("triggerPrescaleL1max",&triggerPrescaleL1max,"triggerPrescaleL1max/I");
 	//tree->Branch("WTisValid", &WTisValid, "WTisValid/D")
 	// add more branches
 	
@@ -918,7 +1010,13 @@ void TTbarTauLepton::beginJob() {
 
 // ------------ method called once each job just after ending the event loop  ------------
 void TTbarTauLepton::endJob() {
-
+	std::cout << "Events  = " << nEvent << std::endl;
+	std::cout << "Trigger = " << nTrigger << std::endl;
+	std::cout << "Tau     = " << nTau1 << std::endl;
+	std::cout << "Lepton  = " << nLepton << std::endl;
+	std::cout << "Jet     = " << nJet << std::endl;
+	std::cout << "TauJet  = " << nTauJet << std::endl;
+	std::cout << "Passed  = " << nPassed << std::endl;
 }
 
 // ------------ method called when starting to processes a run  ------------
@@ -955,6 +1053,77 @@ bool TTbarTauLepton::TriggerOK (const edm::Event& iEvent) {
 
 	if (monitoringHLT) std::cout << std::endl << "!!! Triggers !!!" << std::endl;
 
+	resultTriggerWeight = null;
+	triggerPrescaleHLT = null;
+	triggerPrescaleL1max = null;
+	triggerPrescaleL1min = null;
+
+	edm::Handle<pat::TriggerObjectStandAloneCollection> triggerObjects;
+	iEvent.getByToken(tok_triggerObjects, triggerObjects);
+	edm::Handle<pat::PackedTriggerPrescales> triggerPrescales;
+	iEvent.getByToken(tok_triggerPrescales, triggerPrescales);
+	edm::Handle<pat::PackedTriggerPrescales> triggerPrescalesL1min;
+	iEvent.getByToken(tok_triggerPrescalesL1min, triggerPrescalesL1min);
+	edm::Handle<pat::PackedTriggerPrescales> triggerPrescalesL1max;
+	iEvent.getByToken(tok_triggerPrescalesL1max, triggerPrescalesL1max);
+	edm::Handle<edm::TriggerResults> triggerResults;
+	iEvent.getByToken(tok_trigRes, triggerResults);
+
+	/////////////////////////////////// New method //////////////////////////////////////////
+	/*
+	const edm::TriggerNames &names = iEvent.triggerNames(*triggerResults);
+    std::cout << "\n === TRIGGER PATHS === " << std::endl;
+    for (unsigned int i = 0, n = triggerResults->size(); i < n; ++i) {
+        std::cout << "Trigger " << names.triggerName(i) << 
+            ", prescale " << triggerPrescales->getPrescaleForIndex(i) <<
+            ": " << (triggerResults->accept(i) ? "PASS" : "fail (or not run)") 
+            << std::endl;
+    }
+    std::cout << "\n === TRIGGER OBJECTS === " << std::endl;
+    for (pat::TriggerObjectStandAlone obj : *triggerObjects) { // note: not "const &" since we want to call unpackPathNames
+        obj.unpackPathNames(names);
+        std::cout << "\tTrigger object:  pt " << obj.pt() << ", eta " << obj.eta() << ", phi " << obj.phi() << std::endl;
+        // Print trigger object collection and type
+        std::cout << "\t   Collection: " << obj.collection() << std::endl;
+        std::cout << "\t   Type IDs:   ";
+        for (unsigned h = 0; h < obj.filterIds().size(); ++h) std::cout << " " << obj.filterIds()[h] ;
+        std::cout << std::endl;
+        // Print associated trigger filters
+        std::cout << "\t   Filters:    ";
+        for (unsigned h = 0; h < obj.filterLabels().size(); ++h) std::cout << " " << obj.filterLabels()[h];
+        std::cout << std::endl;
+        std::vector<std::string> pathNamesAll  = obj.pathNames(false);
+        std::vector<std::string> pathNamesLast = obj.pathNames(true);
+        // Print all trigger paths, for each one record also if the object is associated to a 'l3' filter (always true for the
+        // definition used in the PAT trigger producer) and if it's associated to the last filter of a successfull path (which
+        // means that this object did cause this trigger to succeed; however, it doesn't work on some multi-object triggers)
+        std::cout << "\t   Paths (" << pathNamesAll.size()<<"/"<<pathNamesLast.size()<<"):    ";
+        for (unsigned h = 0, n = pathNamesAll.size(); h < n; ++h) {
+            bool isBoth = obj.hasPathName( pathNamesAll[h], true, true ); 
+            bool isL3   = obj.hasPathName( pathNamesAll[h], false, true ); 
+            bool isLF   = obj.hasPathName( pathNamesAll[h], true, false ); 
+            bool isNone = obj.hasPathName( pathNamesAll[h], false, false ); 
+            std::cout << "   " << pathNamesAll[h];
+            if (isBoth) std::cout << "(L,3)";
+            if (isL3 && !isBoth) std::cout << "(*,3)";
+            if (isLF && !isBoth) std::cout << "(L,*)";
+            if (isNone && !isBoth && !isL3 && !isLF) std::cout << "(*,*)";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+    */
+
+    /////////////////////////////////////////////////////////////////
+
+	std::vector<std::string> trigNameVec;
+	std::vector<bool> trigPassVec;
+	std::vector<int> trigPsVec;
+	std::vector<int> trigL1minPsVec;
+	std::vector<int> trigL1maxPsVec;
+	std::vector<int> trigPrescaleVec;
+	int finalPrescale = 0;
+
 	bool triggerOK = false;
 	nTauTriggers = 0;
 	nJetHTTriggers = 0;
@@ -965,14 +1134,31 @@ bool TTbarTauLepton::TriggerOK (const edm::Event& iEvent) {
 	nSingleElectronTriggers = 0;
 	nTargetTriggers = 0;
     /////////////////////////////TriggerResults////////////////////////////////////
-	edm::Handle<edm::TriggerResults> triggerResults;
-	iEvent.getByToken(tok_trigRes, triggerResults);
 	if (triggerResults.isValid()) {
 		const edm::TriggerNames & triggerNames = iEvent.triggerNames(*triggerResults);
 		const std::vector<std::string> & triggerNames_ = triggerNames.triggerNames();
 		for ( unsigned int iHLT=0; iHLT<triggerResults->size(); iHLT++ ) {
 			int hlt    = triggerResults->accept(iHLT);
+			//
+			const std::string& trigName = triggerNames.triggerName(iHLT);
+			int ps        = triggerPrescales->getPrescaleForIndex(iHLT);
+			int psL1min   = triggerPrescalesL1min->getPrescaleForIndex(iHLT);
+			int psL1max   = triggerPrescalesL1max->getPrescaleForIndex(iHLT);
+			bool pass     = triggerResults->accept(iHLT);
+			if (hlt > 0 && monitoring) {
+				std::cout << "Name    = " << trigName << std::endl;
+		        std::cout << "ps      = " << ps << std::endl;
+		        std::cout << "psL1min = " << psL1min << std::endl;
+		        std::cout << "psL1max = " << psL1max << std::endl;
+		    }
 			if ( hlt > 0 ) {
+				// Write prescale weights to corresponding vectors
+				trigPsVec.push_back(ps);
+				trigL1minPsVec.push_back(psL1min);
+				trigL1maxPsVec.push_back(psL1max);
+				trigNameVec.push_back(trigName);
+				trigPassVec.push_back(pass);
+				trigPrescaleVec.push_back(ps * psL1min);
 				if (monitoringHLT) std::cout << triggerNames_[iHLT] << std::endl;
 				for ( unsigned int i=0; i<trigNamesTau.size(); ++i ) {
 					if ( triggerNames_[iHLT].find(trigNamesTau[i].c_str())!= std::string::npos ) {
@@ -1007,7 +1193,7 @@ bool TTbarTauLepton::TriggerOK (const edm::Event& iEvent) {
 				for ( unsigned int i=0; i<trigNamesSingleMuon.size(); ++i ) {
 					if ( triggerNames_[iHLT].find(trigNamesSingleMuon[i].c_str())!= std::string::npos ) {
 						nSingleMuonTriggers++;
-						if (monitoringHLT) std::cout << "SingleMuon Trigger" << std::endl;
+						if (monitoringHLT) std::cout << "# " << triggerNames_[iHLT] << std::endl;
 					}
 				}
 				for ( unsigned int i=0; i<trigNamesSingleElectron.size(); ++i ) {
@@ -1019,10 +1205,7 @@ bool TTbarTauLepton::TriggerOK (const edm::Event& iEvent) {
 				for ( unsigned int i=0; i<trigNamesTarget.size(); ++i ) {
 					if ( triggerNames_[iHLT].find(trigNamesTarget[i].c_str())!= std::string::npos ) {
 						nTargetTriggers++;
-						if (monitoringHLT) {
-							std::cout << "Target Trigger:" << std::endl;
-							std::cout << triggerNames_[iHLT] << std::endl;
-						}
+						if (monitoring) std::cout << "# " << triggerNames_[iHLT] << std::endl;
 					}
 				}
 			}
@@ -1036,6 +1219,39 @@ bool TTbarTauLepton::TriggerOK (const edm::Event& iEvent) {
 		}
 		*/
 	}
+
+	int requiredTrigPrescale = 9999999;
+	int requiredTrigIndex = -1;
+	std::string requiredTrigName;
+	// Loop over prescale vectors
+	for(unsigned int l = 0; l < trigPrescaleVec.size(); l++) {
+		if (!trigPassVec[l]) continue;
+		if (trigPrescaleVec[l] < requiredTrigPrescale) {
+			requiredTrigPrescale = trigPrescaleVec[l];
+			requiredTrigIndex = l;
+			requiredTrigName = trigNameVec[l];
+    	}
+    	if (monitoringHLT) {
+			std::cout << "###################" << std::endl;
+			std::cout << "current Index    = " << l << std::endl;
+			std::cout << "current Name     = " << trigNameVec[l] << std::endl;
+			std::cout << "current Prescale = " << trigPrescaleVec[l] << std::endl;
+    	}
+	}
+
+	if (requiredTrigIndex > -1) {
+		resultTriggerWeight = requiredTrigPrescale;
+		triggerPrescaleHLT = trigPsVec[requiredTrigIndex];
+		triggerPrescaleL1max = trigL1maxPsVec[requiredTrigIndex];
+		triggerPrescaleL1min = trigL1minPsVec[requiredTrigIndex];
+	}
+	if (monitoring) {
+		std::cout << "resultTriggerWeight = " << resultTriggerWeight << std::endl
+		<< "triggerPrescaleHLT = " << triggerPrescaleHLT << std::endl
+		<< "triggerPrescaleL1max = " << triggerPrescaleL1max << std::endl
+		<< "triggerPrescaleL1min = " << triggerPrescaleL1min << std::endl;
+	}
+
 	if (nTauTriggers + nJetHTTriggers + nMETTriggers + nBTagCSVTriggers + nSingleMuonTriggers + nSingleElectronTriggers > 0 && !useTargetHLT) {
 		triggerOK = true;
 	} else if (nTargetTriggers > 0 && useTargetHLT) {
@@ -1068,10 +1284,22 @@ bool TTbarTauLepton::AddTau(const edm::Event& event) {
 	size_t index  = taus->size();;
 	//int index_2 = null;
 	//std::map <int, std::pair <double, double>> TauIdMap;
+
+	// Tau index and pass of cuts
+	std::map <int, bool> TauIndexMap;
 	for (size_t i = 0; i < taus->size(); ++i) {
 #define cut(condition) if (!(condition)) continue;
+		TauIndexMap.insert(std::pair<int, bool>(i, false));
 		auto& tau = (*taus)[i];
-		if (monitoringTau) std::cout << "######### Tau candidate number " << i << " ################" << std::endl;
+		if (monitoringTau) {
+			std::cout << "######### Tau candidate number " << i << " ################" << std::endl;
+			std::cout << "pt = " << tau.pt() << ", eta = " << tau.eta() << ", "
+			<< "IsoIdMVA = " << tau.tauID("byIsolationMVArun2v1DBdR03oldDMwLTraw") << ", "
+			<< "Jet = " << tau.tauID("byVVLooseIsolationMVArun2v1DBoldDMwLT") << ", "
+			<< "Ele = " << tau.tauID("againstElectronVLooseMVA6") << ", "
+			<< "Mu = " << tau.tauID("againstMuonLoose3") << ", "
+			<< "dZ = " << (pv_position - tau.vertex()).R() << std::endl;
+		}
 		cut(tau.pt() > tauPtMin); // tau transverse momentum
 		cut(TMath::Abs(tau.eta()) < tauEtaMax); // tau pseudorapidity
 		if (looseTauID && !DeepTau) {
@@ -1091,6 +1319,11 @@ bool TTbarTauLepton::AddTau(const edm::Event& event) {
 		//TauIdMap.insert(std::pair<int, std::pair<double, double>> (i, PairAbsIsoPt));
 
 		cut((pv_position - tau.vertex()).R() < tauDzMax); // tau vertex displacement
+		if (monitoringTau) std::cout << "PV passed" << std::endl;
+		if (monitoringTau) std::cout << "candidate passed cuts" << std::endl;
+		TauIndexMap.erase(i);
+		TauIndexMap.insert(std::pair<int, bool>(i, true));
+		if (monitoringTau) std::cout << "Index map pair inseted" << std::endl;
 
 		if (index < taus->size()) {
 			double iso = (*taus)[i].tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
@@ -1105,6 +1338,18 @@ bool TTbarTauLepton::AddTau(const edm::Event& event) {
 #undef cut
 	};
 
+
+	if (monitoringTau) {
+		std::cout << "Tau index (size) = " << index << "(" << taus->size() << ")" << std::endl;
+		//for (auto iter = TauIndexMap.begin(); iter != TauIndexMap.end(); ++iter) {
+		//	std::cout << "tau index = " << iter->first << ", value = " << iter->second << std::endl;
+		//}
+		for (unsigned l = 0; l < TauIndexMap.size(); l++) {
+			std::cout << "tau index = " << l << ", value = " << TauIndexMap[l] << std::endl;
+		}
+	}
+
+	// I think it's not nesessary because there may be only one tau in collection
 	if (index == taus->size()) return false;
 
 	auto& tau = (*taus)[index];
@@ -1390,6 +1635,102 @@ bool TTbarTauLepton::AddTau(const edm::Event& event) {
 	return true;
 };
 
+
+void TTbarTauLepton::AddEmptyTau(const edm::Event& event) {
+	tau_pt   = null;
+	tau_eta  = null;
+	tau_phi  = null;
+	tau_dm   = null;
+	tau_dz   = null;
+	tau_q    = null;
+	tau_m    = null;
+	
+	tau_absIso                  = null;
+	tau_looseCombinedIso        = null;
+	tau_mediumCombinedIso       = null;
+	tau_tightCombinedIso        = null;
+	tau_VVlooseMvaIso           = null;
+	tau_VlooseMvaIso            = null;
+	tau_looseMvaIso             = null;
+	tau_mediumMvaIso            = null;
+	tau_tightMvaIso             = null;
+	tau_VtightMvaIso            = null;
+	tau_VVtightMvaIso           = null;
+	// New Raw discriminators
+	tau_againstElectronRaw            = null;
+	tau_IsoMVArun2v1DBdR03oldDMwLTraw = null;
+	tau_IsoMVArun2v1DBnewDMwLTraw     = null;
+	tau_IsoMVArun2v1DBoldDMwLTraw     = null;
+	tau_IsoMVArun2v1PWdR03oldDMwLTraw = null;
+	tau_IsoMVArun2v1PWnewDMwLTraw     = null;
+	tau_IsoMVArun2v1PWoldDMwLTraw     = null;
+	//
+	tau_looseMuonRejection      = null;
+	tau_tightMuonRejection      = null;
+	tau_looseElectronRejection  = null;
+	tau_mediumElectronRejection = null;
+	tau_tightElectronRejection  = null;
+	tau_VtightElectronRejection = null;
+	decayModeFindingNewDMs      = null;
+	decayModeFinding            = null;
+
+	tau_Deep2017v2ElectronRejection = null;
+	tau_Deep2017v2MuonRejection     = null;
+	tau_Deep2017v2JetRejection      = null;
+	
+	tau_VVLooseDeepTau2017v2VSjet   = null;
+	tau_VLooseDeepTau2017v2VSjet    = null;
+	tau_LooseDeepTau2017v2VSjet     = null;
+    tau_MediumDeepTau2017v2VSjet    = null;
+    tau_TightDeepTau2017v2VSjet     = null;
+    tau_VTightDeepTau2017v2VSjet    = null;
+    tau_VVTightDeepTau2017v2VSjet   = null;
+
+    tau_LooseDeepTau2017v2VSmu      = null;
+    tau_MediumDeepTau2017v2VSmu     = null;
+    tau_TightDeepTau2017v2VSmu      = null;
+
+    tau_VVLooseDeepTau2017v2VSe     = null;
+    tau_VLooseDeepTau2017v2VSe      = null;
+    tau_LooseDeepTau2017v2VSe       = null;
+    tau_MediumDeepTau2017v2VSe      = null;
+    tau_TightDeepTau2017v2VSe       = null;
+    tau_VTightDeepTau2017v2VSe      = null;
+    tau_VVTightDeepTau2017v2VSe     = null;
+
+	piChar_pt = null;
+	piChar_eta = null;
+	piChar_phi = null;
+	piChar_m = null;
+	piChar_q = null;
+
+    piZero_pt  = null;
+	piZero_eta = null;
+	piZero_phi = null;
+	piZero_m   = null;
+
+	DiPhoton_pt  = null;
+	DiPhoton_eta = null;
+	DiPhoton_phi = null;
+	DiPhoton_m   = null;
+
+	TauPhoton1_pt      = null;
+	TauPhoton1_eta     = null;
+	TauPhoton1_phi     = null;
+	TauPhoton1_energy  = null;
+	TauPhoton2_pt      = null;
+	TauPhoton2_eta     = null;
+	TauPhoton2_phi     = null;
+	TauPhoton2_energy  = null;
+
+	tau_hasSV     = null;
+	tau_SVdR      = null;
+	SV_Chi2       = null;
+	SV_Chi2NDF    = null;
+	tauPVtoSVdPhi = null;
+	tau_dR2       = null;
+}
+
 void TTbarTauLepton::FindGenTau(const edm::Event& event) {
 
 	if (monitoringGen) std::cout << std::endl << "!!! Generated particles !!!" << std::endl;
@@ -1500,6 +1841,8 @@ void TTbarTauLepton::FindGenTau(const edm::Event& event) {
 	math::XYZTLorentzVector TauVisP4;
 	math::XYZTLorentzVector SumNuP4;
 
+	std::vector <reco::GenParticle> GenTauCandidates;
+
 	// Look for tau among generated particles
 	for (auto& particle: *genParticles) {
 #define cut(condition) if (!(condition)) continue;
@@ -1523,13 +1866,11 @@ void TTbarTauLepton::FindGenTau(const edm::Event& event) {
 				nu_tau = daughter;
 		};
 
-		cut(particle.pt() > tauPtMin);
-		//if (monitoringGen) std::cout << "gentau pt" << std::endl;
-		cut(TMath::Abs(particle.eta()) < tauEtaMax);
-		//if (monitoringGen) std::cout << "gentau eta" << std::endl;
-		cut((pv_position - particle.vertex()).R() < tauDzMax);
-		//if (monitoringGen) std::cout << "gentau dz" << std::endl;
-		//cut(pi1->pt() > piPtMin);
+		if (!fullMC) {
+			cut(particle.pt() > tauPtMin);
+			cut(TMath::Abs(particle.eta()) < tauEtaMax);
+			cut((pv_position - particle.vertex()).R() < tauDzMax);
+		}
 
 		double dR_ = null;
 		if (tau_found > 0) {
@@ -1545,10 +1886,42 @@ void TTbarTauLepton::FindGenTau(const edm::Event& event) {
 					std::cout << "decay mode = " << GenTauDecayMode(particle) << std::endl;
 				}
 			};
-		};
+		} else if (fullMC) {
+			if (monitoringGen) {
+				std::cout << "GenTau candidate" << std::endl << "daughters: ";
+				for (unsigned i = 0; i < particle.numberOfDaughters(); ++i) {
+					const reco::Candidate* daughter = particle.daughter(i);
+					std::cout << daughter->pdgId() << ", ";
+				}
+				std::cout << std::endl << "pt = " << particle.pt() << std::endl;
+			}
+			GenTauCandidates.push_back(particle);
+		}
 #undef cut
 		//if (monitoringGen) GenTauMonitor(particle);
 	};
+
+	if (fullMC) {
+		SortGenTaus(GenTauCandidates);
+		for (unsigned n = 0; n < GenTauCandidates.size(); n++) {
+			double lepton1dR = sqrt(deltaR2(GenTauCandidates[n].eta(), GenTauCandidates[n].phi(), lepton1_eta, lepton1_phi));
+			if (lepton1dR < 0.1) {
+				continue;
+			} else {
+				tau = &GenTauCandidates[n];
+				break;
+			}
+		}
+		// Selected tau candidate
+		if (monitoringGen && tau) {
+			std::cout << "GenTau found" << std::endl << "daughters: ";
+			for (unsigned i = 0; i < tau->numberOfDaughters(); ++i) {
+				const reco::Candidate* daughter = tau->daughter(i);
+				std::cout << daughter->pdgId() << ", ";
+			}
+			std::cout << std::endl << "pt = " << tau->pt() << std::endl;
+		}
+	}
 
 	//if (!tau) return;
 	if (!tau && monitoringGen) std::cout << "No tau leptons among gen particles" << std::endl;
@@ -1615,10 +1988,11 @@ void TTbarTauLepton::FindGenTau(const edm::Event& event) {
 	for (auto& particle: *genParticles) {
 		//cut(abs(particle.pdgId()) == pdg_mu || abs(particle.pdgId()) == pdg_electron);
 		if (abs(particle.pdgId()) == pdg_mu || abs(particle.pdgId()) == pdg_electron || abs(particle.pdgId()) == pdg_tau) {
-			double lepdR1 = sqrt(deltaR2(particle.eta(), particle.phi(), lepton1_eta, lepton1_phi));
-			double lepdR2 = sqrt(deltaR2(particle.eta(), particle.phi(), lepton2_eta, lepton2_phi));
+			//double lepdR1 = sqrt(deltaR2(particle.eta(), particle.phi(), lepton1_eta, lepton1_phi));
+			//double lepdR2 = sqrt(deltaR2(particle.eta(), particle.phi(), lepton2_eta, lepton2_phi));
+			//double leptondR_ = TMath::Min(lepdR1, lepdR2);
 			double dRtau  = sqrt(deltaR2(particle.eta(), particle.phi(), gentau_eta, gentau_phi));
-			double leptondR_ = TMath::Min(lepdR1, lepdR2); 
+			double leptondR_ = sqrt(deltaR2(particle.eta(), particle.phi(), lepton1_eta, lepton1_phi));
 			if ( (!lepton || leptondR_ < leptondRmin) && dRtau > 0.4) {
 				lepton = &particle;
 				leptondRmin = leptondR_;
@@ -1674,6 +2048,7 @@ void TTbarTauLepton::FindGenTau(const edm::Event& event) {
 	}
 
 	// Investigate the gen source of b-quarks
+	// if it has been found
 	for (auto& particle: *genParticles) {
 		if (abs(particle.pdgId()) == pdg_bquark) {
 			double bquark1dR_ = sqrt(deltaR2(particle.eta(), particle.phi(), BJet1_eta, BJet1_phi));
@@ -1802,6 +2177,23 @@ void TTbarTauLepton::FindGenTau(const edm::Event& event) {
 		gentau_vis_phi = null;
 		gentau_vis_energy = null;
 	}
+
+	if (lepton) {
+		genLepton_flavor = lepton->pdgId();
+		genLepton_mother = lepton->mother()->pdgId();
+		genLepton_eta    = lepton->eta();
+		genLepton_phi    = lepton->phi();
+		genLepton_pt     = lepton->pt();
+		genLepton_energy = lepton->energy();
+	} else {
+		genLepton_flavor = null;
+		genLepton_mother = null;
+		genLepton_eta    = null;
+		genLepton_phi    = null;
+		genLepton_pt     = null;
+		genLepton_energy = null;
+	}
+
 	if (nNu > 0) {
 		SumNu_pt = SumNuP4.pt();
 		SumNu_eta = SumNuP4.eta();
@@ -1844,59 +2236,6 @@ void TTbarTauLepton::FindGenTau(const edm::Event& event) {
 	//return;
 };
 
-/*
-
-void TTbarTauLepton::AddGenMET(const edm::Event& event) {
-
-	edm::Handle<GenMETCollection> genMetTrue;
-	event.getByToken(tok_GenMetTrue_, genMetTrue);
-
-	if(!isMC) {
-		TrueMetPt = null;
-		TrueMetEta = null;
-		TrueMetPhi = null;
-		TrueMetEnergy = null;
-		return;
-	}
-
-    if (genMetTrue.isValid() && !(*genMetTrue).empty()) {
-        if (monitoring) std::cout << "True MET vector size = " << genMetTrue->size() << std::endl;
-        auto& METTrue = genMetTrue->front();
-        if (monitoringMET) {
-            std::cout << "True MET:" << std::endl;
-            std::cout << "Pt      = " << METTrue.pt() << std::endl
-            << "Eta     = " << METTrue.eta() << std::endl
-            << "Phi     = " << METTrue.phi() << std::endl
-            << "Energy  = " << METTrue.energy() << std::endl;
-        }
-        TrueMetPt = METTrue.pt();
-        TrueMetEta = METTrue.eta();
-        TrueMetPhi = METTrue.phi();
-        TrueMetEnergy = METTrue.energy();
-    }
-
-}
-*/
-
-/*
-void TTbarTauLepton::AddPackedCandidates(const edm::Event& event) {
-
-	edm::Handle<pat::PackedCandidateCollection> PackedCandidates;
-	event.getByToken(PackedCandidateCollectionToken_, PackedCandidates);
-	if (!PackedCandidates.isValid() || PackedCandidates->size() == 0) {
-		std::cout << "Packed candidates are not avalible" << std::endl;
-	}
-
-	std::cout << "Packed candidates close to tau lepton:" << std::endl;
-	int nCand = 0;
-	for (auto& PackedCandidate: *PackedCandidates) {
-		double deltaRTau = sqrt(deltaR2(tau_eta, tau_phi, PackedCandidate.eta(), PackedCandidate.phi()));
-		if (deltaRTau < 0.4) std::cout << "Candidate [" << nCand << "]: pdgId = " << PackedCandidate.pdgId() << "   Pt = " << PackedCandidate.pt() << std::endl;
-		nCand++;
-	}
-
-};
-*/
 
 bool TTbarTauLepton::AddMET(const edm::Event& event) {
 	edm::Handle<pat::METCollection> mets;
@@ -1950,21 +2289,6 @@ bool TTbarTauLepton::AddVertex(const edm::Event& event) {
 	event.getByToken(PVToken_, vertices);
 	if (!vertices.isValid()) return false;
 
-	/*
-
-	edm::Handle<reco::VertexCompositePtrCandidateCollection> SecondaryVertices;
-	event.getByToken(SVToken_, SecondaryVertices);
-
-	if (SecondaryVertices.isValid() && SecondaryVertices->size() > 0) {
-		std::cout << "Number of secondary vertices = " << SecondaryVertices->size() << std::endl;
-		for (unsigned nSV = 0; nSV < SecondaryVertices->size(); nSV++) {
-			std::cout << "SV [" << nSV << "] position = " << "(" << (*vertices)[nSV].position().x() << ", " << (*vertices)[nSV].position().y() << ", " << (*vertices)[nSV].position().z() << ")" << std::endl; 
-		}
-	} else {
-		std::cout << "SV collection is not valid or number of SVs = " << SecondaryVertices->size() << std::endl;
-	}
-	*/
-
 	nVtx = vertices->size();
 	if (nVtx == 0) return false;
 	pv_position = vertices->front().position();
@@ -1978,11 +2302,14 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
 	if (monitoringBJets) std::cout << std::endl << "!!! Jets !!!" << std::endl;
 
 	// Puppi Jets
-	PuppijetPtSum15 = 0;
+	PuppijetPtSum30 = 0;
 	PuppijetPtSum20 = 0;
+	nPuppiJets30    = 0;
 	nPuppiJets20    = 0;
-	PuppijetPtSum15PV = 0;
+	PuppijetPtSum30PV = 0;
 	PuppijetPtSum20PV = 0;
+	nPuppiJets30PV    = 0;
+	int nPuppiJets30PVpassed = 0;
 	nPuppiJets20PV    = 0;
 	nLooseBtagedPuppiJets    = 0;
 	nMediumBtagedPuppiJets   = 0;
@@ -1990,6 +2317,8 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
 	nLooseBtagedPuppiJetsPV  = 0;
 	nMediumBtagedPuppiJetsPV = 0;
 	nTightBtagedPuppiJetsPV  = 0;
+	unsigned NrequiredBJets_unsigned = 0;
+	if (NrequiredBJets > 0) NrequiredBJets_unsigned = NrequiredBJets;
 
 	LeadingJet_pt   = null;
 	LeadingJet_eta  = null;
@@ -2014,6 +2343,11 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
 	BJet2_bprob = null;
 	BJet2_E     = null;
 
+	TauJet_pt = null;
+	TauJet_eta = null;
+	TauJet_phi = null;
+	TauJet_E = null;
+
 	int nLooseBJets = 0;
 
 	// Tracks and vertices
@@ -2026,7 +2360,7 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
 
 	// Working points
 	double WPBTag_loose   = 0.1522;
- 	double WPBTag_medium  = 0.4941; 	 
+ 	double WPBTag_medium  = 0.4941;
  	double WPBTag_tight   = 0.8001;
 
 	// Selection of two bJets for ttbar analysis
@@ -2042,13 +2376,30 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
 	int j = 0;
 	// Lopp over Jets
 	for (auto& jet: *Puppijets) {
-		if (TMath::Abs(jet.eta()) > 3) continue;
-		if (jet.pt() > 15) {
+		if (TMath::Abs(jet.eta()) > JetEtaMax) continue;
+		///if (TMath::Abs(jet.eta()) > 3.) continue;
+		if (jet.pt() > 20) {///
+		///if (jet.pt() > 15) {
 			j++;
 			if (monitoringJets) {
 				std::cout << std::endl;
 				std::cout << "PuppiJet[" << j << "] Pt = " << jet.pt() << std::endl;
-				std::cout << "hoEnergy = " << jet.hoEnergy() << std::endl; 
+			}
+			// Search for tau jet
+			double deltaRTauJet = sqrt(deltaR2(tau_eta, tau_phi, jet.eta(), jet.phi()));
+			if (deltaRTauJet < 0.1) {
+				if (monitoringJets) std::cout << "This is Tau jet, dR = " << deltaRTauJet << std::endl;
+				TauJet_pt = jet.pt();
+				TauJet_eta = jet.eta();
+				TauJet_phi = jet.phi();
+				TauJet_E = jet.energy();
+				//continue; 
+			}
+			// Exclude jets close to lepton 1
+			double deltaRLepton1 = sqrt(deltaR2(jet.eta(), jet.phi(), lepton1_eta, lepton1_phi));
+			if (deltaRLepton1 < 0.1) {
+				if (monitoringJets) std::cout << "Jet with leton inside cond dR < 0.3" << std::endl;
+				///continue; ///
 			}
 			reco::TrackRefVector JetTracksRef = jet.associatedTracks();
 			std::map <int, int> VertexTracksMap;
@@ -2096,10 +2447,17 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
 			}
 
 			// Fill vector of jets with at least loose btag
-			if (jet.bDiscriminator("pfDeepCSVJetTags:probb") + jet.bDiscriminator("pfDeepCSVJetTags:probbb") > WPBTag_loose) {
+			if ((jet.bDiscriminator("pfDeepCSVJetTags:probb") + jet.bDiscriminator("pfDeepCSVJetTags:probbb") > WPBTag_loose) &&
+				(jet.pt() > BJetPtMin) && (TMath::Abs(jet.eta()) < JetEtaMax)) {
+				///if ((jet.bDiscriminator("pfDeepCSVJetTags:probb") + jet.bDiscriminator("pfDeepCSVJetTags:probbb") > WPBTag_loose)) {
 				// BJetFound = true;
-				if (TMath::Abs(jet.eta()) > EtaMax) continue;
-				if (jet.pt() < BJetPtMin) continue;
+				///if (TMath::Abs(jet.eta()) > EtaMax) continue;
+				///if (jet.pt() < BJetPtMin) continue;
+				double deltaRTauJet = sqrt(deltaR2(tau_eta, tau_phi, jet.eta(), jet.phi()));
+				if (deltaRTauJet < 0.1) {
+					nTauJet++;
+					///continue;
+				}
 				nLooseBJets++;
 				BJetCandidate BJet(jet, JetFromPV);
 				looseBJets.push_back(BJet);
@@ -2119,9 +2477,12 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
     		    SubLeadingJet_btag = jet.bDiscriminator("pfDeepCSVJetTags:probb") + jet.bDiscriminator("pfDeepCSVJetTags:probbb");
     		}
 			
-			PuppijetPtSum15 += jet.pt();
+			PuppijetPtSum20 += jet.pt();
+			nPuppiJets20++;
+			if (monitoringJets) std::cout << "Jet added to 20 GeV" << std::endl;
 			if (JetFromPV) {
-				PuppijetPtSum15PV += jet.pt();
+				PuppijetPtSum20PV += jet.pt();
+				nPuppiJets20PV++;
 				if (jet.bDiscriminator("pfDeepCSVJetTags:probb") + jet.bDiscriminator("pfDeepCSVJetTags:probbb") > WPBTag_loose) {
     				nLooseBtagedPuppiJetsPV++;
     				if (jet.bDiscriminator("pfDeepCSVJetTags:probb") + jet.bDiscriminator("pfDeepCSVJetTags:probbb") > WPBTag_medium) {
@@ -2142,16 +2503,26 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
     			}
     		}
 
-			if (jet.pt() > 20) {
-				PuppijetPtSum20 += jet.pt();
-				nPuppiJets20++;
+			if (jet.pt() > 30) {
+				PuppijetPtSum30 += jet.pt();
+				nPuppiJets30++;
 				if (JetFromPV) {
-					nPuppiJets20PV++;
-					PuppijetPtSum20PV += jet.pt();
+					nPuppiJets30PV++;
+					PuppijetPtSum30PV += jet.pt();
+					if (jet.neutralHadronEnergy() / jet.energy() > 0.9) continue;
+					if (jet.neutralEmEnergyFraction() > 0.9) continue;
+					//if (jet.getPFConstituents().size() <= 1) continue;
+					if (jet.muonEnergyFraction() > 0.8) continue;
+					if (jet.chargedHadronEnergyFraction() < 0.001) continue;
+					if (jet.chargedMultiplicity() <= 0) continue;
+					if (jet.chargedEmEnergyFraction() > 0.8) continue;
+					nPuppiJets30PVpassed++;
 				}
 			}
 		}
 	}
+	if (monitoringBJets) std::cout << "number of 30 GeV Jets from PV (passed selections) = " << nPuppiJets30PV
+	<< "(" << nPuppiJets30PV << ")" << std::endl;
 
 	if (monitoringBJets) std::cout << std::endl << "!!! bTagged Jets !!!" << std::endl;
 
@@ -2165,19 +2536,30 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
 		}
 	}
 
-	if (looseBJets.size() < 2) return false;
+	if (looseBJets.size() < NrequiredBJets_unsigned) {
+		std::cout << "Loose b-jets required " << NrequiredBJets_unsigned << ", found " << looseBJets.size() << std::endl;
+		return false;
+	}
 
-	ttbarEvent  = 1;
-	BJet1_pt    = looseBJets[0].Pt;
-	BJet1_eta   = looseBJets[0].Eta;
-	BJet1_phi   = looseBJets[0].Phi;
-	BJet1_bprob = looseBJets[0].Bprob;
-	BJet1_E     = looseBJets[0].FourMomentum.E();
-	BJet2_pt    = looseBJets[1].Pt;
-	BJet2_eta   = looseBJets[1].Eta;
-	BJet2_phi   = looseBJets[1].Phi;
-	BJet2_bprob = looseBJets[1].Bprob;
-	BJet2_E     = looseBJets[1].FourMomentum.E();
+	if (looseBJets.size() > 1) {
+		ttbarEvent  = 1;
+		BJet1_pt    = looseBJets[0].Pt;
+		BJet1_eta   = looseBJets[0].Eta;
+		BJet1_phi   = looseBJets[0].Phi;
+		BJet1_bprob = looseBJets[0].Bprob;
+		BJet1_E     = looseBJets[0].FourMomentum.E();
+		BJet2_pt    = looseBJets[1].Pt;
+		BJet2_eta   = looseBJets[1].Eta;
+		BJet2_phi   = looseBJets[1].Phi;
+		BJet2_bprob = looseBJets[1].Bprob;
+		BJet2_E     = looseBJets[1].FourMomentum.E();
+    } else if (looseBJets.size() > 0) {
+    	BJet1_pt    = looseBJets[0].Pt;
+		BJet1_eta   = looseBJets[0].Eta;
+		BJet1_phi   = looseBJets[0].Phi;
+		BJet1_bprob = looseBJets[0].Bprob;
+		BJet1_E     = looseBJets[0].FourMomentum.E();
+    }
 
 	looseBJets.clear();
 
@@ -2186,7 +2568,7 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
 
 bool TTbarTauLepton::AddLepton (const edm::Event& event) {
 
-	if (monitoringLeptons) std::cout << std::endl << "!!! Leptons !!!:" << std::endl;
+	if (monitoringLeptons) std::cout << std::endl << "!!! Leptons !!!" << std::endl;
 
 	nLeptonCandidates = 0;
 
@@ -2259,18 +2641,34 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
 			if (monitoringLeptons) std::cout << "Electron " << nLeptons << std::endl;
 #define cut(condition) if (!(condition)) continue;
 			cut(electron.pt() > MuElePtMin);
+			// Discard events with electron with pt > 15 GeV
+			if (NrequiredLeptons < 0) return false;
 			cut(abs(electron.eta()) < EtaMax);
-			cut((pv_position - electron.vertex()).R() < tauDzMax);
+			//cut((pv_position - electron.vertex()).R() < tauDzMax);
+			reco::TrackRef trackRef;
+			trackRef = electron.track();
+			if (trackRef.isNonnull()) {
+				if (abs(electron.eta()) < 1.3) {
+					cut(std::abs(trackRef->dxy(pv_position)) <= 0.05);
+					cut(std::abs(trackRef->dz(pv_position)) <= 0.1);
+				} else {
+					cut(std::abs(trackRef->dxy(pv_position)) <= 0.1);
+					cut(std::abs(trackRef->dz(pv_position)) <= 0.2);
+				}
+			}
+			cut(electron.electronID("cutBasedElectronID-Fall17-94X-V1-loose")); // loose for a start (MVA id is also availible)
+			//
 			if (monitoringLeptons) std::cout << "Passed cuts" << std::endl;
-			double deltaRJet1 = sqrt(deltaR2(BJet1_eta, BJet1_phi, electron.eta(), electron.phi()));
-			double deltaRJet2 = sqrt(deltaR2(BJet2_eta, BJet2_phi, electron.eta(), electron.phi()));
+			//double deltaRJet1 = sqrt(deltaR2(BJet1_eta, BJet1_phi, electron.eta(), electron.phi()));
+			//double deltaRJet2 = sqrt(deltaR2(BJet2_eta, BJet2_phi, electron.eta(), electron.phi()));
 			double deltaRTau  = sqrt(deltaR2(tau_eta, tau_phi, electron.eta(), electron.phi()));
 
 			if (deltaRTau < 0.3) {
 				if (monitoringLeptons) std::cout << "In Tau cone: dR = " << deltaRTau << std::endl;
 				return false;
 			}
-			if (deltaRJet1 > 0.4 && deltaRJet2 > 0.4) {
+			//if (deltaRJet1 > 0.4 && deltaRJet2 > 0.4) {
+			if (deltaRTau > 0.3) {
 				bool SameLepton = false;
 				if(!LepCandidates.empty()) {
 					for(unsigned ilep = 0; ilep < LepCandidates.size(); ilep++) {
@@ -2286,13 +2684,12 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
 				LepCandidates.push_back(Lepton);
 				if (monitoringLeptons) std::cout << "Added to vector" << std::endl;
 	//delete Lepton;
-			} else if (monitoringLeptons) {
-				std::cout << "Close to b-jets: dR1 = " << deltaRJet1 << ", dR2 = " << deltaRJet2 << std::endl;
 			}
 #undef cut
 		}
 	}
 
+	// Muons, minor cuts commented
 	if (muons.isValid() && !(*muons).empty()) {
 		if (monitoringLeptons) std::cout << "Isolated muons:" << std::endl;
 		for (auto& muon: *muons) {
@@ -2300,19 +2697,28 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
 			if (monitoringLeptons) std::cout << "Muon " << nLeptons << std::endl;
 #define cut(condition) if (!(condition)) continue;
 			cut(muon.pt() > MuElePtMin);
+			// Discard events with muon with pt > 15 GeV
+			if (NrequiredLeptons < 0) return false;
 			cut(abs(muon.eta()) < EtaMax);
-			cut((pv_position - muon.vertex()).R() < tauDzMax);
+			cut(muon.isPFMuon());
+			cut(muon.isGlobalMuon());
+			cut(muon.numberOfMatchedStations() > 1);
+			// check muon dXY and dZ
+			reco::TrackRef trackRef;
+			trackRef = muon.innerTrack();
+			if (trackRef.isNonnull()) {
+				cut(std::abs(trackRef->dxy(pv_position)) <= 0.05);
+				cut(std::abs(trackRef->dz(pv_position)) <= 0.1);
+				//cut(trackRef->found() > 5);  // more than 5 hits in inner tracker
+			}
+			//cut(muon.passed(reco::Muon::PFIsoLoose)); // I_rel < 0.25 (particle flow)
 			if (monitoringLeptons) std::cout << "Passed cuts" << std::endl;
-			double deltaRJet1 = sqrt(deltaR2(BJet1_eta, BJet1_phi, muon.eta(), muon.phi()));
-			double deltaRJet2 = sqrt(deltaR2(BJet2_eta, BJet2_phi, muon.eta(), muon.phi()));
 			double deltaRTau  = sqrt(deltaR2(tau_eta, tau_phi, muon.eta(), muon.phi()));
-			//double dphiJet1 = dphi(Jet1_phi, muon.phi());
-			//double dphiJet2 = dphi(Jet2_phi, muon.phi());
 			if (deltaRTau < 0.3) {
 				if (monitoringLeptons) std::cout << "In Tau cone: dR = " << deltaRTau << std::endl;
 				return false;
 			}
-			if (deltaRJet1 > 0.4 && deltaRJet2 > 0.4) {
+			if (deltaRTau > 0.3) {
 				bool SameLepton = false;
 				if(!LepCandidates.empty()) {
 					for(unsigned ilep = 0; ilep < LepCandidates.size(); ilep++) {
@@ -2328,15 +2734,13 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
 				LepCandidates.push_back(Lepton);
 				if (monitoringLeptons) std::cout << "Added to vector" << std::endl;
 	//delete Lepton;
-			} else if (monitoringLeptons) {
-				std::cout << "Close to b-jets: dR1 = " << deltaRJet1 << ", dR2 = " << deltaRJet2 << std::endl;
 			}
 #undef cut
 		}
 	}
 
 	// tau as second lepton candidate
-	if (taus.isValid() && !(*taus).empty()) {
+	if (taus.isValid() && !(*taus).empty() && UseTau) {
 		//
 		if (monitoringLeptons) std::cout << "Isolated taus:" << std::endl;
 		for (auto& tau: *taus) {
@@ -2347,11 +2751,12 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
 			cut(abs(tau.eta()) < EtaMax);
 			cut((pv_position - tau.vertex()).R() < tauDzMax);
 			if (monitoringLeptons) std::cout << "Passed cuts" << std::endl;
-			double deltaRJet1 = sqrt(deltaR2(BJet1_eta, BJet1_phi, tau.eta(), tau.phi()));
-			double deltaRJet2 = sqrt(deltaR2(BJet2_eta, BJet2_phi, tau.eta(), tau.phi()));
+			//double deltaRJet1 = sqrt(deltaR2(BJet1_eta, BJet1_phi, tau.eta(), tau.phi()));
+			//double deltaRJet2 = sqrt(deltaR2(BJet2_eta, BJet2_phi, tau.eta(), tau.phi()));
 			double deltaRTau  = sqrt(deltaR2(tau_eta, tau_phi, tau.eta(), tau.phi()));
 			cut(deltaRTau > 0.3);
-			if (deltaRJet1 > 0.4 && deltaRJet2 > 0.4) {
+			//if (deltaRJet1 > 0.4 && deltaRJet2 > 0.4) {
+			if (deltaRTau > 0.3) {
 				bool SameLepton = false;
 				if(!LepCandidates.empty()) {
 					for(unsigned ilep = 0; ilep < LepCandidates.size(); ilep++) {
@@ -2367,14 +2772,12 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
 				LepCandidates.push_back(Lepton);
 				if (monitoringLeptons) std::cout << "Added to vector" << std::endl;
 	//delete Lepton;
-			} else if (monitoringLeptons) {
-				std::cout << "Close to b-jets: dR1 = " << deltaRJet1 << ", dR2 = " << deltaRJet2 << std::endl;
 			}
 #undef cut
 		}
 	}
 
-	if (nLeptonCandidates < 1) {
+	if (nLeptonCandidates < NrequiredLeptons) {
 		if (monitoringLeptons) std::cout << "Number of lepton candiates = " << LepCandidates.size() << ", " << nLeptonCandidates << std::endl;
 		return false;
 	}
@@ -2386,23 +2789,25 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
 		if (monitoringLeptons) {
 			std::cout << "lepton " << ilep << std::endl;
 			LepCandidates[ilep].Monitoring();
-			std::cout << "delta(BJet1) = " << sqrt(deltaR2(BJet1_eta, BJet1_phi, LepCandidates[ilep].Eta, LepCandidates[ilep].Phi)) << std::endl;
-			std::cout << "delta(BJet2) = " << sqrt(deltaR2(BJet2_eta, BJet2_phi, LepCandidates[ilep].Eta, LepCandidates[ilep].Phi)) << std::endl;
+			//std::cout << "delta(BJet1) = " << sqrt(deltaR2(BJet1_eta, BJet1_phi, LepCandidates[ilep].Eta, LepCandidates[ilep].Phi)) << std::endl;
+			//std::cout << "delta(BJet2) = " << sqrt(deltaR2(BJet2_eta, BJet2_phi, LepCandidates[ilep].Eta, LepCandidates[ilep].Phi)) << std::endl;
 			std::cout << "delta(Tau)   = " << sqrt(deltaR2(tau_eta, tau_phi, LepCandidates[ilep].Eta, LepCandidates[ilep].Phi)) << std::endl;
 		}
 	}
 
-	lepton1_pt       = LepCandidates[0].Pt;
-	lepton1_eta      = LepCandidates[0].Eta;
-	lepton1_phi      = LepCandidates[0].Phi;
-	lepton1_dz       = LepCandidates[0].Dz;
-	lepton1_flavor   = LepCandidates[0].Flavor;
-	lepton1_charge   = LepCandidates[0].Charge;
-	lepton1_E        = LepCandidates[0].FourMomentum.E();
-	lepton1_trackIso = LepCandidates[0].trackIso;
-	lepton1_sumPuppiIso = LepCandidates[0].puppiChargedHadronIso + LepCandidates[0].puppiNeutralHadronIso + LepCandidates[0].puppiPhotonIso;
-	lepton1_sumPuppiNoLeptonIso = LepCandidates[0].puppiNoLeptonsChargedHadronIso + LepCandidates[0].puppiNoLeptonsNeutralHadronIso + LepCandidates[0].puppiNoLeptonsPhotonIso;
-	lepton1_tauAbsIso = LepCandidates[0].tauAbsIso;
+	if (LepCandidates.size() > 0) {
+		lepton1_pt       = LepCandidates[0].Pt;
+		lepton1_eta      = LepCandidates[0].Eta;
+		lepton1_phi      = LepCandidates[0].Phi;
+		lepton1_dz       = LepCandidates[0].Dz;
+		lepton1_flavor   = LepCandidates[0].Flavor;
+		lepton1_charge   = LepCandidates[0].Charge;
+		lepton1_E        = LepCandidates[0].FourMomentum.E();
+		lepton1_trackIso = LepCandidates[0].trackIso;
+		lepton1_sumPuppiIso = LepCandidates[0].puppiChargedHadronIso + LepCandidates[0].puppiNeutralHadronIso + LepCandidates[0].puppiPhotonIso;
+		lepton1_sumPuppiNoLeptonIso = LepCandidates[0].puppiNoLeptonsChargedHadronIso + LepCandidates[0].puppiNoLeptonsNeutralHadronIso + LepCandidates[0].puppiNoLeptonsPhotonIso;
+		lepton1_tauAbsIso = LepCandidates[0].tauAbsIso;
+	}
 	if (LepCandidates.size() > 1) {
 		lepton2_pt       = LepCandidates[1].Pt;
 		lepton2_eta      = LepCandidates[1].Eta;
@@ -2420,7 +2825,8 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
 
 	LepCandidates.clear();
 
-	return (nLeptonCandidates > 0);
+	//return (nLeptonCandidates >= NrequiredLeptons);
+	return true;
 };
 
 void TTbarTauLepton::CountTracks(const edm::Event& event) {
