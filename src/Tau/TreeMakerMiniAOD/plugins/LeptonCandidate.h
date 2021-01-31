@@ -189,3 +189,116 @@ void SortLeptons(std::vector<LeptonCandidate>& items) {
     }
   } while (swapped != false);
 }
+
+void SortElectrons(std::vector<pat::Electron>& items) {
+  bool swapped;
+  do {
+    swapped = false;
+    for (unsigned i = 1; i < items.size(); i++) {
+      if (items[i-1].pt() < items[i].pt()) {
+        std::swap(items[i-1], items[i]);
+        swapped = true;
+      }
+    }
+  } while (swapped != false);
+}
+
+void SortMuons(std::vector<pat::Muon>& items) {
+  bool swapped;
+  do {
+    swapped = false;
+    for (unsigned i = 1; i < items.size(); i++) {
+      if (items[i-1].pt() < items[i].pt()) {
+        std::swap(items[i-1], items[i]);
+        swapped = true;
+      }
+    }
+  } while (swapped != false);
+}
+
+void SortTaus(std::vector<pat::Tau>& items) {
+  bool swapped;
+  do {
+    swapped = false;
+    for (unsigned i = 1; i < items.size(); i++) {
+      if (items[i-1].pt() < items[i].pt()) {
+        std::swap(items[i-1], items[i]);
+        swapped = true;
+      }
+    }
+  } while (swapped != false);
+}
+
+void printElectronCandidate(pat::Electron &electron) {
+    std::cout << "Electron parameters" << std::endl
+    << "pt     = " << electron.pt() << std::endl
+    << "eta    = " << electron.eta() << std::endl
+    << "phi    = " << electron.phi() << std::endl
+    << "energy = " << electron.energy() << std::endl
+    << "caloIso                        = " << electron.caloIso() << std::endl
+    << "ecalIso                        = " << electron.ecalIso() << std::endl
+    << "hcalIso                        = " << electron.hcalIso() << std::endl
+    << "puppiChargedHadronIso          = " << electron.puppiChargedHadronIso() << std::endl
+    << "puppiNeutralHadronIso          = " << electron.puppiNeutralHadronIso() << std::endl
+    << "puppiPhotonIso                 = " << electron.puppiPhotonIso() << std::endl
+    << "puppiNoLeptonsChargedHadronIso = " << electron.puppiNoLeptonsChargedHadronIso() << std::endl
+    << "puppiNoLeptonsNeutralHadronIso = " << electron.puppiNoLeptonsNeutralHadronIso() << std::endl
+    << "puppiNoLeptonsPhotonIso        = " << electron.puppiNoLeptonsPhotonIso() << std::endl
+    << "trackIso                       = " << electron.trackIso() << std::endl
+    << "cutBasedElectronID-Fall17-94X-V1-loose  = " << electron.electronID("cutBasedElectronID-Fall17-94X-V1-loose") << std::endl
+    << "cutBasedElectronID-Fall17-94X-V1-medium = " << electron.electronID("cutBasedElectronID-Fall17-94X-V1-medium") << std::endl
+    << "cutBasedElectronID-Fall17-94X-V1-tight  = " << electron.electronID("cutBasedElectronID-Fall17-94X-V1-tight") << std::endl
+    << "cutBasedElectronID-Fall17-94X-V1-veto   = " << electron.electronID("cutBasedElectronID-Fall17-94X-V1-veto") << std::endl
+    << "mvaEleID-Fall17-iso-V1-wp80      = " << electron.electronID("mvaEleID-Fall17-iso-V1-wp80") << std::endl
+    << "mvaEleID-Fall17-iso-V1-wp90      = " << electron.electronID("mvaEleID-Fall17-iso-V1-wp90") << std::endl
+    << "mvaEleID-Fall17-iso-V1-wpLoose   = " << electron.electronID("mvaEleID-Fall17-iso-V1-wpLoose") << std::endl
+    //<< "mvaEleID-Fall17-iso-V2-wp80      = " << electron.electronID("mvaEleID-Fall17-iso-V2-wp80") << std::endl
+    //<< "mvaEleID-Fall17-iso-V2-wp90      = " << electron.electronID("mvaEleID-Fall17-iso-V2-wp90") << std::endl
+    //<< "mvaEleID-Fall17-iso-V2-wpLoose   = " << electron.electronID("mvaEleID-Fall17-iso-V2-wpLoose") << std::endl
+    << "mvaEleID-Fall17-noIso-V1-wp80    = " << electron.electronID("mvaEleID-Fall17-noIso-V1-wp80") << std::endl
+    << "mvaEleID-Fall17-noIso-V1-wp90    = " << electron.electronID("mvaEleID-Fall17-noIso-V1-wp90") << std::endl
+    << "mvaEleID-Fall17-noIso-V1-wpLoose = " << electron.electronID("mvaEleID-Fall17-noIso-V1-wpLoose") << std::endl;
+    //<< "mvaEleID-Fall17-noIso-V2-wp80    = " << electron.electronID("mvaEleID-Fall17-noIso-V2-wp80") << std::endl
+    //<< "mvaEleID-Fall17-noIso-V2-wp90    = " << electron.electronID("mvaEleID-Fall17-noIso-V2-wp90") << std::endl;
+    //<< "mvaEleID-Fall17-noIso-V2-wpLoose = " << electron.electronID("mvaEleID-Fall17-noIso-V2-wpLoose") << std::endl;
+}
+
+void printMuonCandidate(pat::Muon &muon) {
+    std::cout << "Muon parameters" << std::endl
+    << "pt     = " << muon.pt() << std::endl
+    << "eta    = " << muon.eta() << std::endl
+    << "phi    = " << muon.phi() << std::endl
+    << "energy = " << muon.energy() << std::endl
+    << "caloIso                        = " << muon.caloIso() << std::endl
+    << "ecalIso                        = " << muon.ecalIso() << std::endl
+    << "hcalIso                        = " << muon.hcalIso() << std::endl
+    << "puppiChargedHadronIso          = " << muon.puppiChargedHadronIso() << std::endl
+    << "puppiNeutralHadronIso          = " << muon.puppiNeutralHadronIso() << std::endl
+    << "puppiPhotonIso                 = " << muon.puppiPhotonIso() << std::endl
+    << "puppiNoLeptonsChargedHadronIso = " << muon.puppiNoLeptonsChargedHadronIso() << std::endl
+    << "puppiNoLeptonsNeutralHadronIso = " << muon.puppiNoLeptonsNeutralHadronIso() << std::endl
+    << "puppiNoLeptonsPhotonIso        = " << muon.puppiNoLeptonsPhotonIso() << std::endl
+    << "trackIso                       = " << muon.trackIso() << std::endl
+    << "CutBasedIdLoose            = " << muon.passed(reco::Muon::CutBasedIdLoose) << std::endl
+    << "CutBasedIdMedium           = " << muon.passed(reco::Muon::CutBasedIdMedium) << std::endl
+    << "CutBasedIdTight            = " << muon.passed(reco::Muon::CutBasedIdTight) << std::endl
+    << "CutBasedIdGlobalHighPt     = " << muon.passed(reco::Muon::CutBasedIdGlobalHighPt) << std::endl
+    << "CutBasedIdTrkHighPt        = " << muon.passed(reco::Muon::CutBasedIdTrkHighPt) << std::endl
+    << "PFIsoLoose                 = " << muon.passed(reco::Muon::PFIsoLoose) << std::endl
+    << "PFIsoMedium                = " << muon.passed(reco::Muon::PFIsoMedium) << std::endl
+    << "PFIsoTight                 = " << muon.passed(reco::Muon::PFIsoTight) << std::endl
+    << "TkIsoLoose                 = " << muon.passed(reco::Muon::TkIsoLoose) << std::endl
+    << "TkIsoTight                 = " << muon.passed(reco::Muon::TkIsoTight) << std::endl
+    << "SoftCutBasedId             = " << muon.passed(reco::Muon::SoftCutBasedId) << std::endl
+    << "SoftMvaId                  = " << muon.passed(reco::Muon::SoftMvaId) << std::endl
+    << "MiniIsoLoose               = " << muon.passed(reco::Muon::MiniIsoLoose) << std::endl
+    << "MiniIsoMedium              = " << muon.passed(reco::Muon::MiniIsoMedium) << std::endl
+    << "MiniIsoTight               = " << muon.passed(reco::Muon::MiniIsoTight) << std::endl
+    //<< "MultiIsoLoose              = " << muon.passed(reco::Muon::MultiIsoLoose) << std::endl
+    //<< "PuppiIsoLoose              = " << muon.passed(reco::Muon::PuppiIsoLoose) << std::endl
+    << "MvaLoose                   = " << muon.passed(reco::Muon::MvaLoose) << std::endl
+    << "MvaMedium                  = " << muon.passed(reco::Muon::MvaMedium) << std::endl
+    << "MvaTight                   = " << muon.passed(reco::Muon::MvaTight) << std::endl;
+    //<< "MvaVTight                  = " << muon.passed(reco::Muon::MvaVTight) << std::endl
+    //<< "MvaVVTight                 = " << muon.passed(reco::Muon::MvaVVTight) << std::endl;
+}
