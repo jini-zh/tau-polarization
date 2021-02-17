@@ -2831,7 +2831,7 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
         std::cout << "Jets required " << NrequiredJets_unsigned << ", found " << Jets.size() << std::endl;
         std::cout << "b-Jets required " << NrequiredBJets_unsigned << ", found " << looseBJets.size() << std::endl;
     } 
-    if (NrequiredJets > 0) return (Jets.size() >= NrequiredJets_unsigned);
+    if (NrequiredJets > 0) return (Jets.size() + looseBJets.size() >= NrequiredJets_unsigned);
     else return true;
 };
 
