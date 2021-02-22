@@ -79,7 +79,7 @@ void TauMonitor (const pat::Tau &tau, bool DeepTau, const math::XYZPoint &pv_pos
         << "byIsolationMVArun2v1PWoldDMwLTraw        = " << tau.tauID("byIsolationMVArun2v1PWoldDMwLTraw") << std::endl   
         << "againstElectronMVA6Raw                   = " << tau.tauID("againstElectronMVA6Raw") << std::endl
         // temp
-        << "byVVLooseIsolationMVArun2v1DBoldDMwLT = " << tau.tauID("byVVLooseIsolationMVArun2v1DBoldDMwLT") << std::endl
+        << "byVLooseIsolationMVArun2v1DBoldDMwLT = " << tau.tauID("byVLooseIsolationMVArun2v1DBoldDMwLT") << std::endl
         << "againstElectronVLooseMVA6             = " << tau.tauID("againstElectronVLooseMVA6") << std::endl
         << "againstMuonLoose3                     = " << tau.tauID("againstMuonLoose3") << std::endl;
     }
@@ -167,4 +167,13 @@ void METMonitor (const pat::MET &MET) {
     << "phi          = " << MET.phi() << std::endl
     << "energy       = " << MET.energy() << std::endl
     << "significance = " << MET.significance() << std::endl;
+};
+
+void JetMonitor (const pat::Jet &Jet) {
+
+    std::cout << "pt           = " << Jet.pt() << std::endl
+    << "eta          = " << Jet.eta() << std::endl
+    << "phi          = " << Jet.phi() << std::endl
+    << "energy       = " << Jet.energy() << std::endl
+    << "bprob        = " << Jet.bDiscriminator("pfDeepCSVJetTags:probb") + Jet.bDiscriminator("pfDeepCSVJetTags:probb") << std::endl;
 };
