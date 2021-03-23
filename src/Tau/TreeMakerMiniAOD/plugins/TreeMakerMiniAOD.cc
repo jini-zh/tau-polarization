@@ -10,12 +10,6 @@
  Implementation:
 		 [Notes on implementation]
 */
-//
-// Original Author:  Dmitry Kondratyev
-//         Created:  Wed, 19 Sep 2016
-//
-//
-
 
 // system include files
 #include <memory>
@@ -71,11 +65,15 @@
 #include "RecoTauTag/RecoTau/interface/PFTauDecayModeTools.h"
 #include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/Common/interface/Association.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
 #include <Math/Vector3D.h>
 #include "Math/LorentzVector.h"
 #include "Math/Point3D.h"
-#include "Tau/TauAnalyzer/plugins/MySimpleParticle.h"
+
+#include "Tau/TreeMakerMiniAOD/plugins/MySimpleParticle.h"
+#include "Tau/TreeMakerMiniAOD/plugins/ParticleMonitor.h"
 
 
 static inline double sqr(double x) {
@@ -117,9 +115,10 @@ private:
 	void AddWTData         (const edm::Event&);
 	bool DecaychannelMatch (std::vector<MySimpleParticle> &particles, int p1, int p2=0, int p3=0, int p4=0, int p5=0, int p6=0);
 	void GenTauDM          (const edm::Event&);
+	bool TriggerOK         (const edm::Event&);
 
 	virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
-	//virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
+	virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
 	//virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
 	//virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
 	
@@ -136,6 +135,15 @@ private:
 	edm::EDGetTokenT<reco::GenParticleCollection> GenParticleToken_;
 	
 	edm::EDGetTokenT<pat::IsolatedTrackCollection> TrackToken_;
+	edm::EDGetTokenT<GenEventInfoProduct> GenEventInfoToken_;
+	edm::EDGetTokenT<GenRunInfoProduct> GenRunInfoToken_;
+	// HLT
+	edm::InputTag theTriggerResultsLabel;
+	edm::EDGetTokenT<edm::TriggerResults> tok_trigRes;
+	std::vector<std::string>  trigNamesTau;
+	std::vector<std::string>  trigNamesJetHT;
+	std::vector<std::string>  trigNamesMET;
+	std::vector<std::string>  trigNamesEmpty;
 
 	edm::EDGetTokenT<double> TauSpinnerWTToken_;
 	edm::EDGetTokenT<double> TauSpinnerWTFlipToken_;
@@ -170,6 +178,27 @@ private:
 	double tau_Deep2017v2ElectronRejection;
 	double tau_Deep2017v2MuonRejection;
 	double tau_Deep2017v2JetRejection;
+
+	double tau_VVLooseDeepTau2017v2VSjet;
+	double tau_VLooseDeepTau2017v2VSjet;
+	double tau_LooseDeepTau2017v2VSjet;
+	double tau_MediumDeepTau2017v2VSjet;
+	double tau_TightDeepTau2017v2VSjet;
+	double tau_VTightDeepTau2017v2VSjet;
+	double tau_VVTightDeepTau2017v2VSjet;
+
+	double tau_LooseDeepTau2017v2VSmu;
+	double tau_MediumDeepTau2017v2VSmu;
+	double tau_TightDeepTau2017v2VSmu;
+
+	double tau_VVLooseDeepTau2017v2VSe;
+	double tau_VLooseDeepTau2017v2VSe;
+	double tau_LooseDeepTau2017v2VSe;
+	double tau_MediumDeepTau2017v2VSe;
+	double tau_TightDeepTau2017v2VSe;
+	double tau_VTightDeepTau2017v2VSe;
+	double tau_VVTightDeepTau2017v2VSe;
+
 	
 	double tau_looseCombinedIso;
 	double tau_mediumCombinedIso;
@@ -186,6 +215,7 @@ private:
 	double tau_looseElectronRejection;
 	double tau_mediumElectronRejection;
 	double tau_tightElectronRejection;
+	double tau_VtightElectronRejection;
 	double decayModeFindingNewDMs;
 	double decayModeFinding;
 	
@@ -206,6 +236,14 @@ private:
 	double genTauFromW;
 	int genTauMother;
 	double W_pt;
+
+	// Generated tau parameters
+	double gentau_pt, gentau_px, gentau_py, gentau_pz, gentau_eta, gentau_phi;
+	double genPiChar_pt, genPiChar_px, genPiChar_py, genPiChar_pz, genPiChar_eta, genPiChar_phi;
+	double genPi0_pt, genPi0_px, genPi0_py, genPi0_pz, genPi0_eta, genPi0_phi;
+	double nuW_pt, nuW_px, nuW_py, nuW_pz, nuW_eta, nuW_phi;
+	double nutau_pt, nutau_px, nutau_py, nutau_pz, nutau_eta, nutau_phi;
+	double nunu_pt;
 
 	double piChar_pt;
 	double piChar_eta;
@@ -256,13 +294,21 @@ private:
 	double met;
 	double met_phi;
 	double met_eta;
+	double met_energy;
+	double tauMET_mass;
 	double met_significance;
 	double met_mEtSig;
 	
-	
 	double m_t;
-	
 	double dPhi;
+
+	// Trigger matching
+	int nTauTriggers;
+	int nJetHTTriggers;
+	int nMETTriggers;
+	int TauHLT;
+	int JetHTHLT;
+	int METHLT;
 	
 	math::XYZPoint pv_position;
 
@@ -306,12 +352,12 @@ TreeMakerMiniAOD::TreeMakerMiniAOD(const edm::ParameterSet& iConfig) {
 
 	isMC						= iConfig.getParameter<bool>("isMC");
 	monitoring					= iConfig.getParameter<bool>("monitoring");
-	TauSpinnerOn					= iConfig.getParameter<bool>("TauSpinnerOn");
+	TauSpinnerOn                = iConfig.getParameter<bool>("TauSpinnerOn");
 	tauPtMin 					= iConfig.getParameter<double>("tauPtMin");
 	piPtMin 					= iConfig.getParameter<double>("piPtMin");
 	tauEtaMax 					= iConfig.getParameter<double>("tauEtaMax");
 	tauDzMax 					= iConfig.getParameter<double>("tauDzMax");
-	METcut						= iConfig.getParameter<double>("METcut");
+	METcut                      = iConfig.getParameter<double>("METcut");
 	looseTauID					= iConfig.getParameter<bool>("looseTauID");
 	DeepTau  					= iConfig.getParameter<bool>("DeepTau");
 	null 						= iConfig.getParameter<double>("null");
@@ -325,17 +371,23 @@ TreeMakerMiniAOD::TreeMakerMiniAOD(const edm::ParameterSet& iConfig) {
 	std::string vertexCollection      = iConfig.getParameter<std::string>("vertexCollection");
 	std::string genParticleCollection = iConfig.getParameter<std::string>("genParticleCollection");
 	std::string trackCollection       = iConfig.getParameter<std::string>("trackCollection");
+	theTriggerResultsLabel		      = edm::InputTag("TriggerResults","","HLT");
+	trigNamesTau                      = iConfig.getParameter<std::vector<std::string>>("TauTriggers");
+	trigNamesJetHT                    = iConfig.getParameter<std::vector<std::string>>("JetHTTriggers");
+	trigNamesMET                      = iConfig.getParameter<std::vector<std::string>>("METTriggers");
+	trigNamesEmpty                    = iConfig.getParameter<std::vector<std::string>>("Triggers");
 	
 	TauCollectionToken_ 		= consumes<pat::TauCollection>(edm::InputTag(tauCollection));
 	MuonCollectionToken_ 		= consumes<pat::MuonCollection>(edm::InputTag(muonCollection));
 	ElectronCollectionToken_	= consumes<pat::ElectronCollection>(edm::InputTag(electronCollection));
 	JetCollectionToken_ 		= consumes<pat::JetCollection>(edm::InputTag(jetCollection));
-	PuppiJetCollectionToken_        = consumes<pat::JetCollection>(edm::InputTag(PuppijetCollection));
+	PuppiJetCollectionToken_    = consumes<pat::JetCollection>(edm::InputTag(PuppijetCollection));
 	MetCollectionToken_ 		= consumes<pat::METCollection>(edm::InputTag(metCollection));
-	PVToken_ 			= consumes<reco::VertexCollection>(edm::InputTag(vertexCollection));
+	PVToken_ 			        = consumes<reco::VertexCollection>(edm::InputTag(vertexCollection));
 	//GenParticleToken_ 		= consumes<pat::PackedCandidateCollection>(edm::InputTag(genParticleCollection));
 	GenParticleToken_           = consumes<reco::GenParticleCollection>(edm::InputTag(genParticleCollection));
-	TrackToken_			= consumes<pat::IsolatedTrackCollection>(edm::InputTag(trackCollection));
+	TrackToken_			        = consumes<pat::IsolatedTrackCollection>(edm::InputTag(trackCollection));
+	tok_trigRes                 = consumes<edm::TriggerResults>(theTriggerResultsLabel);
 
 	if (isMC && TauSpinnerOn) {
 		TauSpinnerWTToken_        = consumes<double>(iConfig.getParameter<edm::InputTag>("WTCollection"));
@@ -364,6 +416,10 @@ void TreeMakerMiniAOD::analyze(const edm::Event& event, const edm::EventSetup&) 
 	t_Run   = event.id().run();
 	t_Event = event.id().event();
 
+	if (!TriggerOK(event)) {
+		if (monitoring) std::cout << "Trigger" << std::endl;
+		return;
+	}
 	if (!AddVertex(event)) {
 		if (monitoring) std::cout << "Vertex" << std::endl;
 		return;
@@ -419,7 +475,8 @@ void TreeMakerMiniAOD::beginJob() {
 	
 	tree->Branch("t_Run",  &t_Run,  "t_Run/I");
 	tree->Branch("t_Event",&t_Event,"t_Event/I");
-	
+
+	// Tau kinematic parameters
 	tree->Branch("tau_pt",&tau_pt,"tau_pt/D");
 	tree->Branch("tau_eta",&tau_eta,"tau_eta/D");
 	tree->Branch("tau_phi",&tau_phi,"tau_phi/D");
@@ -430,6 +487,8 @@ void TreeMakerMiniAOD::beginJob() {
 	tree->Branch("decayModeFinding",&decayModeFinding,"decayModeFinding/D");
 	tree->Branch("tau_dz",&tau_dz,"tau_dz/D");
 	tree->Branch("tau_absIso",&tau_absIso,"tau_absIso/D");
+
+	// Discriminators
 	tree->Branch("tau_looseCombinedIso",&tau_looseCombinedIso,"tau_looseCombinedIso/D");
 	tree->Branch("tau_mediumCombinedIso",&tau_mediumCombinedIso,"tau_mediumCombinedIso/D");
 	tree->Branch("tau_tightCombinedIso",&tau_tightCombinedIso,"tau_tightCombinedIso/D");
@@ -445,12 +504,33 @@ void TreeMakerMiniAOD::beginJob() {
 	tree->Branch("tau_looseElectronRejection",&tau_looseElectronRejection,"tau_looseElectronRejection/D");
 	tree->Branch("tau_mediumElectronRejection",&tau_mediumElectronRejection,"tau_mediumElectronRejection/D");
 	tree->Branch("tau_tightElectronRejection",&tau_tightElectronRejection,"tau_tightElectronRejection/D");
+	tree->Branch("tau_VtightElectronRejection",&tau_VtightElectronRejection,"tau_VtightElectronRejection/D");
 
 	// Deep 2017v2
 	tree->Branch("tau_Deep2017v2ElectronRejection",&tau_Deep2017v2ElectronRejection,"tau_Deep2017v2ElectronRejection/D");
 	tree->Branch("tau_Deep2017v2MuonRejection",&tau_Deep2017v2MuonRejection,"tau_Deep2017v2MuonRejection/D");
 	tree->Branch("tau_Deep2017v2JetRejection",&tau_Deep2017v2JetRejection,"tau_Deep2017v2JetRejection/D");
 
+	tree->Branch("tau_VVLooseDeepTau2017v2VSjet",&tau_VVLooseDeepTau2017v2VSjet,"tau_VVLooseDeepTau2017v2VSjet/D");
+	tree->Branch("tau_VLooseDeepTau2017v2VSjet",&tau_VLooseDeepTau2017v2VSjet,"tau_VLooseDeepTau2017v2VSjet/D");
+	tree->Branch("tau_LooseDeepTau2017v2VSjet",&tau_LooseDeepTau2017v2VSjet,"tau_LooseDeepTau2017v2VSjet/D");
+	tree->Branch("tau_MediumDeepTau2017v2VSjet",&tau_MediumDeepTau2017v2VSjet,"tau_MediumDeepTau2017v2VSjet/D");
+	tree->Branch("tau_TightDeepTau2017v2VSjet",&tau_TightDeepTau2017v2VSjet,"tau_TightDeepTau2017v2VSjet/D");
+	tree->Branch("tau_VTightDeepTau2017v2VSjet",&tau_VTightDeepTau2017v2VSjet,"tau_VTightDeepTau2017v2VSjet/D");
+	tree->Branch("tau_VVTightDeepTau2017v2VSjet",&tau_VVTightDeepTau2017v2VSjet,"tau_VVTightDeepTau2017v2VSjet/D");
+	tree->Branch("tau_LooseDeepTau2017v2VSmu",&tau_LooseDeepTau2017v2VSmu,"tau_LooseDeepTau2017v2VSmu/D");
+	tree->Branch("tau_MediumDeepTau2017v2VSmu",&tau_MediumDeepTau2017v2VSmu,"tau_MediumDeepTau2017v2VSmu/D");
+	tree->Branch("tau_TightDeepTau2017v2VSmu",&tau_TightDeepTau2017v2VSmu,"tau_TightDeepTau2017v2VSmu/D");
+
+	tree->Branch("tau_VVLooseDeepTau2017v2VSe",&tau_VVLooseDeepTau2017v2VSe,"tau_VVLooseDeepTau2017v2VSe/D");
+	tree->Branch("tau_VLooseDeepTau2017v2VSe",&tau_VLooseDeepTau2017v2VSe,"tau_VLooseDeepTau2017v2VSe/D");
+	tree->Branch("tau_LooseDeepTau2017v2VSe",&tau_LooseDeepTau2017v2VSe,"tau_LooseDeepTau2017v2VSe/D");
+	tree->Branch("tau_MediumDeepTau2017v2VSe",&tau_MediumDeepTau2017v2VSe,"tau_MediumDeepTau2017v2VSe/D");
+	tree->Branch("tau_TightDeepTau2017v2VSe",&tau_TightDeepTau2017v2VSe,"tau_TightDeepTau2017v2VSe/D");
+	tree->Branch("tau_VTightDeepTau2017v2VSe",&tau_VTightDeepTau2017v2VSe,"tau_VTightDeepTau2017v2VSe/D");
+	tree->Branch("tau_VVTightDeepTau2017v2VSe",&tau_VVTightDeepTau2017v2VSe,"tau_VVTightDeepTau2017v2VSe/D");
+
+	// Second tau parameters
 	tree->Branch("tau2_pt",&tau2_pt,"tau2_pt/D");
 	tree->Branch("tau2_eta",&tau2_eta,"tau2_eta/D");
 	tree->Branch("tau2_phi",&tau2_phi,"tau2_phi/D");
@@ -459,18 +539,21 @@ void TreeMakerMiniAOD::beginJob() {
 	tree->Branch("tau2_dm",&tau2_dm,"tau2_dm/D");
 	tree->Branch("tau2_dz",&tau2_dz,"tau2_dz/D");
 	tree->Branch("tau2_absIso",&tau2_absIso,"tau2_absIso/D");
-	
+
+	// Charged Pi parameters
 	tree->Branch("piChar_pt", &piChar_pt, "piChar_pt/D");
 	tree->Branch("piChar_eta", &piChar_eta, "piChar_eta/D");
 	tree->Branch("piChar_phi", &piChar_phi, "piChar_phi/D");
 	tree->Branch("piChar_q", &piChar_q, "piChar_q/D");
 	tree->Branch("piChar_m", &piChar_m, "piChar_m/D");
 
+	// Neutral Pi parameters
 	tree->Branch("piZero_pt", &piZero_pt, "piZero_pt/D");
 	tree->Branch("piZero_eta", &piZero_eta, "piZero_eta/D");
 	tree->Branch("piZero_phi", &piZero_phi, "piZero_phi/D");
 	tree->Branch("piZero_m", &piZero_m, "piZero_m/D");
 
+	// Combinated Photons (Pi0 candidate)
 	tree->Branch("DiPhoton_pt", &DiPhoton_pt, "DiPhoton_pt/D");
 	tree->Branch("DiPhoton_eta", &DiPhoton_eta, "DiPhoton_eta/D");
 	tree->Branch("DiPhoton_phi", &DiPhoton_phi, "DiPhoton_phi/D");
@@ -479,6 +562,7 @@ void TreeMakerMiniAOD::beginJob() {
 	tree->Branch("pipiMass", &pipiMass, "pipiMass/D");
 	tree->Branch("upsilon", &upsilon, "upsilon/D");
 
+	// Generated particles
 	tree->Branch("tau_found",&tau_found, "tau_found/D");
 	tree->Branch("gentau_found",&gentau_found, "gentau_found/D");
 	tree->Branch("gentau_firstDM",&gentau_firstDM, "gentau_firstDM/D");
@@ -488,6 +572,12 @@ void TreeMakerMiniAOD::beginJob() {
 	tree->Branch("genTauMother", &genTauMother, "genTauMother/I");
 	tree->Branch("gentau_dm",&gentau_dm,"gentau_dm/D");
 	tree->Branch("gentau_nPi0",&gentau_nPi0,"gentau_nPi0/D");
+	tree->Branch("gentau_pt",&gentau_pt,"gentau_pt/D");
+	tree->Branch("genPiChar_pt",&genPiChar_pt,"genPiChar_pt/D");
+	tree->Branch("genPi0_pt",&genPi0_pt,"genPi0_pt/D");
+	tree->Branch("nutau_pt",&nutau_pt,"nutau_pt/D");
+	tree->Branch("nuW_pt",&nuW_pt,"nuW_pt/D");
+	tree->Branch("nunu_pt",&nunu_pt,"nunu_pt/D");
 
 	// Jets
 	tree->Branch("jetPtSum15", &jetPtSum15, "jetPtSum15/D");
@@ -517,6 +607,7 @@ void TreeMakerMiniAOD::beginJob() {
 	tree->Branch("nMediumBtagedPuppiJetsPV", &nMediumBtagedPuppiJetsPV, "nMediumBtagedPuppiJetsPV/I");
 	tree->Branch("nTightBtagedPuppiJetsPV", &nTightBtagedPuppiJetsPV, "nTightBtagedPuppiJetsPV/I");
 
+	// Leading, subleading, bJet parameters
 	tree->Branch("LeadingJet_pt", &LeadingJet_pt, "LeadingJet_pt/D");
 	tree->Branch("LeadingJet_eta", &LeadingJet_eta, "LeadingJet_eta/D");
 	tree->Branch("LeadingJet_phi", &LeadingJet_phi, "LeadingJet_phi/D");
@@ -532,15 +623,19 @@ void TreeMakerMiniAOD::beginJob() {
 	tree->Branch("BJet_phi", &BJet_phi, "BJet_phi/D");
 	tree->Branch("BJet_m", &BJet_m, "BJet_m/D");
 	tree->Branch("BJet_btag", &BJet_btag, "BJet_btag/D");
-	
+
+	// MET
 	tree->Branch("met", &met, "met/D");
 	tree->Branch("met_phi", &met_phi, "met_phi/D");
 	tree->Branch("met_eta", &met_eta, "met_eta/D");
 	tree->Branch("met_significance", &met_significance, "met_significance/D");
 	tree->Branch("met_mEtSig", &met_mEtSig, "met_mEtSig/D");
+	tree->Branch("met_energy", &met_energy, "met_energy/D");
+	tree->Branch("tauMET_mass", &tauMET_mass, "tauMET_mass/D");
 	tree->Branch("m_t", &m_t, "m_t/D");
 	tree->Branch("dPhi", &dPhi, "dPhi/D");
 	
+	// Vertices, tracks, tau candidates
 	tree->Branch("nVtx",&nVtx,"nVtx/I");
 	tree->Branch("nTrks",&nTrks,"nTrks/I");
 	tree->Branch("nTau",&nTau,"nTau/I");
@@ -550,11 +645,16 @@ void TreeMakerMiniAOD::beginJob() {
 	tree->Branch("nGamma",&nGamma,"nGamma/I");
 	tree->Branch("nPhotons",&nPhotons,"nPhotons/I");
 
+	// TauSpinner
 	tree->Branch("WT", &WT, "WT/D");
 	tree->Branch("WTFlip", &WTFlip, "WTFlip/D");
 	tree->Branch("WThminus", &WThminus, "WThminus/D");
 	tree->Branch("WThplus", &WThplus, "WThplus/D");
 	tree->Branch("TauSpinnerMother", &TauSpinnerMother, "TauSpinnerMother/I");
+	tree->Branch("nTauTriggers", &nTauTriggers, "nTauTriggers/I");
+	tree->Branch("nJetHTTriggers", &nJetHTTriggers, "nJetHTTriggers/I");
+	tree->Branch("nMETTriggers", &nMETTriggers, "nMETTriggers/I");
+
 	//tree->Branch("WTisValid", &WTisValid, "WTisValid/D")
 	// add more branches
 	
@@ -572,12 +672,12 @@ void TreeMakerMiniAOD::beginRun(const edm::Run& Run, const edm::EventSetup& Setu
 }
 
 // ------------ method called when ending the processing of a run  ------------
-/*
+
 void
-TreeMakerMiniAOD::endRun(edm::Run const&, edm::EventSetup const&)
+TreeMakerMiniAOD::endRun(edm::Run const& Run, edm::EventSetup const&)
 {
+
 }
-*/
 
 // ------------ method called when starting to processes a luminosity block  ------------
 /*
@@ -594,6 +694,45 @@ TreeMakerMiniAOD::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetu
 {
 }
 */
+
+//---------------------------------TRIGGER-------------------------------------------------
+bool TreeMakerMiniAOD::TriggerOK(const edm::Event& iEvent){
+	nTauTriggers = 0;
+	nJetHTTriggers = 0;
+	nMETTriggers = 0;
+    /////////////////////////////TriggerResults////////////////////////////////////
+	edm::Handle<edm::TriggerResults> triggerResults;
+	iEvent.getByToken(tok_trigRes, triggerResults);
+	if (triggerResults.isValid()) {
+		const edm::TriggerNames & triggerNames = iEvent.triggerNames(*triggerResults);
+		const std::vector<std::string> & triggerNames_ = triggerNames.triggerNames();
+		for ( unsigned int iHLT=0; iHLT<triggerResults->size(); iHLT++ ) {
+			int hlt    = triggerResults->accept(iHLT);
+			if ( hlt > 0 ) {
+				if (monitoring) std::cout << triggerNames_[iHLT] << std::endl;
+				for ( unsigned int i=0; i<trigNamesTau.size(); ++i ) {
+					if ( triggerNames_[iHLT].find(trigNamesTau[i].c_str())!= std::string::npos ) {
+						nTauTriggers++;
+						if (monitoring) std::cout << "Tau Trigger" << std::endl;
+					}
+				}
+				for ( unsigned int i=0; i<trigNamesJetHT.size(); ++i ) {
+					if ( triggerNames_[iHLT].find(trigNamesJetHT[i].c_str())!= std::string::npos ) {
+						nJetHTTriggers++;
+						if (monitoring) std::cout << "JetHT Trigger" << std::endl;
+					}
+				}
+				for ( unsigned int i=0; i<trigNamesMET.size(); ++i ) {
+					if ( triggerNames_[iHLT].find(trigNamesMET[i].c_str())!= std::string::npos ) {
+						nMETTriggers++;
+						if (monitoring) std::cout << "MET Trigger" << std::endl;
+					}
+				}
+			}
+		}
+	}
+	return true;
+}
 
 //-----------------------------------------------------------------------------------------
 
@@ -618,23 +757,23 @@ bool TreeMakerMiniAOD::AddTau(const edm::Event& event) {
 		cut(tau.pt() > tauPtMin); // tau transverse momentum
 		cut(TMath::Abs(tau.eta()) < tauEtaMax); // tau pseudorapidity
 		if (looseTauID && !DeepTau) {
-			cut((*taus)[i].tauID("byLooseIsolationMVArun2v1DBoldDMwLT")); // at least loose Iso MVA
-			cut((*taus)[i].tauID("againstElectronLooseMVA6")); // at least loose Iso MVA
+			cut((*taus)[i].tauID("byVVLooseIsolationMVArun2v1DBoldDMwLT")); // at least VVloose Iso MVA
+			cut((*taus)[i].tauID("againstElectronVLooseMVA6")); // at least loose Iso MVA
 			cut((*taus)[i].tauID("againstMuonLoose3")); // at least loose Iso MVA
-			cut((*taus)[i].tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits")); // at least loose Iso MVA
+			//cut((*taus)[i].tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits")); // at least loose Iso MVA
 		} else if (DeepTau) {
 			cut((*taus)[i].tauID("byVLooseDeepTau2017v2VSmu"));
-			cut((*taus)[i].tauID("byVLooseDeepTau2017v2VSe"));
-			cut((*taus)[i].tauID("byVLooseDeepTau2017v2VSjet"));
+			cut((*taus)[i].tauID("byVVVLooseDeepTau2017v2VSe"));
+			cut((*taus)[i].tauID("byVVVLooseDeepTau2017v2VSjet"));
 		}
 
 		const reco::CandidatePtr leadPiCh = tau.leadChargedHadrCand();
-		const reco::CandidatePtr leadPi0  = tau.leadNeutralCand();
 		reco::CandidatePtrVector VectorPi0 = tau.signalNeutrHadrCands();
 		reco::CandidatePtrVector VectorPiCh = tau.signalChargedHadrCands();
 		reco::CandidatePtrVector VectorSignalCands = tau.signalCands(); 
 
 		//cut(tau.decayMode() == 1);
+		/*
 		if (monitoring) {
 		  std::cout << "######### Tau number " << i << " ################" << std::endl;
 		  std::cout << "tau Pt                      = " << tau.pt() << std::endl;
@@ -645,10 +784,17 @@ bool TreeMakerMiniAOD::AddTau(const edm::Event& event) {
 		  std::cout << "Size of PiCh vector         = " << VectorPiCh.size() << std::endl;
 		  std::cout << "Size of signalNeutrHadrCands   = " << tau.signalNeutrHadrCands().size() << std::endl;
 		  std::cout << "Size of signalGammaCands       = " << tau.signalGammaCands().size() << std::endl;
+		  //byCombinedIsolationDeltaBetaCorrRaw3Hits
 		  std::cout << "byCombinedIsolationDeltaBetaCorrRaw3Hits = " << (*taus)[i].tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits") << std::endl;
 		  std::cout << "chargedIsoPtSum                          = " << (*taus)[i].tauID("chargedIsoPtSum") << std::endl;
 		  std::cout << "byIsolationMVArun2v1DBnewDMwLTraw        = " << (*taus)[i].tauID("byIsolationMVArun2v1DBnewDMwLTraw") << std::endl;
 		  std::cout << "byIsolationMVArun2v1PWnewDMwLTraw        = " << (*taus)[i].tauID("byIsolationMVArun2v1PWnewDMwLTraw") << std::endl;
+		  std::cout << "byIsolationMVArun2v1DBdR03oldDMwLTraw    = " << (*taus)[i].tauID("byIsolationMVArun2v1DBdR03oldDMwLTraw") << std::endl;
+		  std::cout << "byIsolationMVArun2v1DBoldDMwLTraw        = " << (*taus)[i].tauID("byIsolationMVArun2v1DBoldDMwLTraw") << std::endl;
+		  std::cout << "byIsolationMVArun2v1PWdR03oldDMwLTraw    = " << (*taus)[i].tauID("byIsolationMVArun2v1PWdR03oldDMwLTraw") << std::endl;
+		  std::cout << "byIsolationMVArun2v1PWoldDMwLTraw        = " << (*taus)[i].tauID("byIsolationMVArun2v1PWoldDMwLTraw") << std::endl;
+		  
+		  std::cout << "againstElectronMVA6Raw                   = " << (*taus)[i].tauID("againstElectronMVA6Raw") << std::endl;
 		  if (DeepTau) {
 		  	std::cout << "byDeepTau2017v2VSeraw                    = " << (*taus)[i].tauID("byDeepTau2017v2VSeraw") << std::endl;
 		    std::cout << "byDeepTau2017v2VSmuraw                   = " << (*taus)[i].tauID("byDeepTau2017v2VSmuraw") << std::endl;
@@ -658,23 +804,6 @@ bool TreeMakerMiniAOD::AddTau(const edm::Event& event) {
 		    std::cout << "byLooseDeepTau2017v2VSjet                = " << (*taus)[i].tauID("byLooseDeepTau2017v2VSjet") << std::endl;
 		  }
 		}
-
-		const std::vector<reco::PFCandidatePtr>& VectorNeutralPF = tau.signalPFNeutrHadrCands();
-		//const std::vector< reco::RecoTauPiZero>& VectorPi0PF = tau.signalPiZeroCandidates();
-
-		//reco::CandidatePtrVector NeutralHadrCands =	tau.signalNeutralHadrCandPtrs_;
-
-        //reco::CandidatePtrVector VectorPi0_v1 = tau.isolationNeutrHadrCands();
-		//reco::CandidatePtrVector VectorPiCh_v1 = tau.isolationChargedHadrCands();
-
-		//const std::vector<reco::PFCandidatePtr>& isolationPFNeutrHadrCands();
-
-		//std::cout << "Size of PiCh_v1 vector = " << VectorPiCh_v1.size() << std::endl;
-		//std::cout << "Size of Pi0_v1 vector  = " << VectorPi0_v1.size() << std::endl;
-		//if (monitoring) std::cout << "ecalStripSumEOverPLead  = " << tau.ecalStripSumEOverPLead() << std::endl;
-		//std::cout << "Size of SignaNeutralHadrCands vector  = " << VectorSignalCands.size() << std::endl;
-		//std::cout << "Size of VectorNeutralPF  = " << VectorNeutralPF.size() << std::endl;
-		//std::cout << "Size of VectorPi0PF      = " << VectorPi0PF.size() << std::endl;
 
         if (monitoring) {
           std::cout << "Pt_PiCh_lead   = " << leadPiCh->pt() << std::endl;
@@ -701,16 +830,19 @@ bool TreeMakerMiniAOD::AddTau(const edm::Event& event) {
 			std::cout << "mass  = " << VectorSignalCands[l]->mass() << std::endl;
 		  }
 		}
+		*/
+
+		if (monitoring) TauMonitor (tau, DeepTau, pv_position);
 
 		reco::CandidatePtrVector VectorSignalCands_Photons;
 		VectorSignalCands_Photons.clear();
 
 		if (VectorSignalCands.size() > 0) {
-		  for (unsigned l = 0; l < VectorSignalCands.size(); l++) {
-		  	if (VectorSignalCands[l]->pdgId() == 22) {
-		  	  VectorSignalCands_Photons.push_back(VectorSignalCands[l]);
-		  	}
-		  }
+			for (unsigned l = 0; l < VectorSignalCands.size(); l++) {
+		 		if (VectorSignalCands[l]->pdgId() == 22) {
+		  			VectorSignalCands_Photons.push_back(VectorSignalCands[l]);
+				}
+			}
 		}
 
 		//cut(VectorSignalCands_Photons.size() <= 2);
@@ -720,35 +852,25 @@ bool TreeMakerMiniAOD::AddTau(const edm::Event& event) {
 		double InvaMass_temp = null;
 
 		if (VectorSignalCands_Photons.size() > 0) {
-		  for (unsigned l = 0; l < VectorSignalCands_Photons.size(); l++) {
-		  	Photons_p4 += VectorSignalCands_Photons[l]->p4();
-		  	for (unsigned n = l; n < VectorSignalCands_Photons.size(); n++) {
-		  	  if (n == l) continue;
-		  	  double InvaMass_pi0 = (VectorSignalCands_Photons[l]->p4() + VectorSignalCands_Photons[n]->p4()).M();
-		  	  double Pt_pi0       = (VectorSignalCands_Photons[l]->p4() + VectorSignalCands_Photons[n]->p4()).Pt();
-		  	  if (monitoring) std::cout << "mass Photon [" << l <<"][" << n << "] = " << InvaMass_pi0 << std::endl;
-		  	  if (l == 0 && n == 1) {
-		  	  	InvaMass_temp = InvaMass_pi0;
-		  	  	DiPhoton_p4 = VectorSignalCands_Photons[l]->p4() + VectorSignalCands_Photons[n]->p4();
-		  	  } else if (abs(InvaMass_pi0 - 0.135) < abs(InvaMass_temp - 0.135)) {
-		  	  	InvaMass_temp = InvaMass_pi0;
-		  	  	DiPhoton_p4 = VectorSignalCands_Photons[l]->p4() + VectorSignalCands_Photons[n]->p4();
-		  	  }
-		  	}
-		  }
+			for (unsigned l = 0; l < VectorSignalCands_Photons.size(); l++) {
+				Photons_p4 += VectorSignalCands_Photons[l]->p4();
+				for (unsigned n = l; n < VectorSignalCands_Photons.size(); n++) {
+					if (n == l) continue;
+					double InvaMass_pi0 = (VectorSignalCands_Photons[l]->p4() + VectorSignalCands_Photons[n]->p4()).M();
+					double Pt_pi0       = (VectorSignalCands_Photons[l]->p4() + VectorSignalCands_Photons[n]->p4()).Pt();
+					if (monitoring) std::cout << "mass Photon [" << l <<"][" << n << "] = " << InvaMass_pi0 << std::endl;
+					if (l == 0 && n == 1) {
+						InvaMass_temp = InvaMass_pi0;
+						DiPhoton_p4 = VectorSignalCands_Photons[l]->p4() + VectorSignalCands_Photons[n]->p4();
+					} else if (abs(InvaMass_pi0 - 0.135) < abs(InvaMass_temp - 0.135)) {
+		  				InvaMass_temp = InvaMass_pi0;
+						DiPhoton_p4 = VectorSignalCands_Photons[l]->p4() + VectorSignalCands_Photons[n]->p4();
+		  			}
+				}
+			}
 		}
 
 		nPhotons_temp = VectorSignalCands_Photons.size();
-
-		if (VectorPiCh.size() > 0 && monitoring) {
-		  for (unsigned l = 0; l < VectorPiCh.size(); l++) {
-		  	std::cout << "PiCh number " << l << std::endl;
-			std::cout << "Pt_PiCh   = " << VectorPiCh[l]->pt() << std::endl;
-			std::cout << "eta_PiCh  = " << VectorPiCh[l]->eta() << std::endl;
-			std::cout << "phi_PiCh  = " << VectorPiCh[l]->phi() << std::endl;
-			std::cout << "mass_PiCh = " << VectorPiCh[l]->mass() << std::endl;
-		  }
-		}
 
 		/*
 		if (tau.decayMode() == 1) {
@@ -847,12 +969,33 @@ bool TreeMakerMiniAOD::AddTau(const edm::Event& event) {
 	tau_looseElectronRejection  = tau.tauID("againstElectronLooseMVA6");
 	tau_mediumElectronRejection = tau.tauID("againstElectronMediumMVA6");
 	tau_tightElectronRejection  = tau.tauID("againstElectronTightMVA6");
+	tau_VtightElectronRejection  = tau.tauID("againstElectronVTightMVA6");
 	decayModeFindingNewDMs      = tau.tauID("decayModeFindingNewDMs");
 	decayModeFinding            = tau.tauID("decayModeFinding");
 	if (DeepTau) {
 		tau_Deep2017v2ElectronRejection = tau.tauID("byDeepTau2017v2VSeraw");
 		tau_Deep2017v2MuonRejection     = tau.tauID("byDeepTau2017v2VSmuraw");
 		tau_Deep2017v2JetRejection      = tau.tauID("byDeepTau2017v2VSjetraw");
+		
+		tau_VVLooseDeepTau2017v2VSjet   = tau.tauID("byVVLooseDeepTau2017v2VSjet");
+		tau_VLooseDeepTau2017v2VSjet    = tau.tauID("byVLooseDeepTau2017v2VSjet");
+		tau_LooseDeepTau2017v2VSjet     = tau.tauID("byLooseDeepTau2017v2VSjet");
+	    tau_MediumDeepTau2017v2VSjet    = tau.tauID("byMediumDeepTau2017v2VSjet");
+	    tau_TightDeepTau2017v2VSjet     = tau.tauID("byTightDeepTau2017v2VSjet");
+	    tau_VTightDeepTau2017v2VSjet    = tau.tauID("byVTightDeepTau2017v2VSjet");
+	    tau_VVTightDeepTau2017v2VSjet   = tau.tauID("byVVTightDeepTau2017v2VSjet");
+
+	    tau_LooseDeepTau2017v2VSmu      = tau.tauID("byLooseDeepTau2017v2VSmu");
+	    tau_MediumDeepTau2017v2VSmu     = tau.tauID("byMediumDeepTau2017v2VSmu");
+	    tau_TightDeepTau2017v2VSmu      = tau.tauID("byTightDeepTau2017v2VSmu");
+
+	    tau_VVLooseDeepTau2017v2VSe     = tau.tauID("byVVLooseDeepTau2017v2VSe");
+	    tau_VLooseDeepTau2017v2VSe      = tau.tauID("byVLooseDeepTau2017v2VSe");
+	    tau_LooseDeepTau2017v2VSe       = tau.tauID("byLooseDeepTau2017v2VSe");
+	    tau_MediumDeepTau2017v2VSe      = tau.tauID("byMediumDeepTau2017v2VSe");
+	    tau_TightDeepTau2017v2VSe       = tau.tauID("byTightDeepTau2017v2VSe");
+	    tau_VTightDeepTau2017v2VSe      = tau.tauID("byVTightDeepTau2017v2VSe");
+	    tau_VVTightDeepTau2017v2VSe     = tau.tauID("byVVTightDeepTau2017v2VSe");
 	} else {
 		tau_Deep2017v2ElectronRejection = null;
 		tau_Deep2017v2MuonRejection     = null;
@@ -922,6 +1065,13 @@ bool TreeMakerMiniAOD::FindGenTau(const edm::Event& event) {
 	genTauMother  = null;
 	dR            = null;
 	W_pt          = null;
+	gentau_pt     = null;
+	genPiChar_pt  = null;
+	genPi0_pt     = null;
+	nutau_pt      = null;
+	nuW_pt        = null;
+	nunu_pt       = null;
+	double nuW_m  = 0.;
 
 	if (monitoring) std::cout << "gentau Flag 0" << std::endl;
 
@@ -932,13 +1082,19 @@ bool TreeMakerMiniAOD::FindGenTau(const edm::Event& event) {
 
 	if (monitoring) std::cout << "gentau Flag 1" << std::endl;
 
-	const int pdg_tau = 15;
-	const int pdg_pi0 = 111;
-	const int pdg_pi1 = 211;
-	const int pdg_W   = 24;
+	const int pdg_tau    = 15;
+	const int pdg_pi0    = 111;
+	const int pdg_pi1    = 211;
+	const int pdg_W      = 24;
+	const int pdg_nu_tau = 16;
 
-	const reco::Candidate* tau = nullptr;
+	const reco::Candidate* tau    = nullptr;
+	const reco::Candidate* nu_W   = nullptr;
+	const reco::Candidate* nu_tau = nullptr;
+	const reco::Candidate* pi0 = nullptr;
+	const reco::Candidate* pi1 = nullptr;
 	double dRmin = null;
+
 	for (auto& particle: *genParticles) {
 		// look for the tau -> pi+ pi0 neutrino decay most oriented towards
 		// the reconstructed tau (if present)
@@ -947,8 +1103,6 @@ bool TreeMakerMiniAOD::FindGenTau(const edm::Event& event) {
 		if (monitoring) std::cout << "Gentau in GP was found" << std::endl;
 		//cut(particle.numberOfDaughters() == 3);
 
-		const reco::Candidate* pi0 = nullptr;
-		const reco::Candidate* pi1 = nullptr;
 		for (unsigned i = 0; i < particle.numberOfDaughters(); ++i) {
 			const reco::Candidate* daughter = particle.daughter(i);
 			int id = abs(daughter->pdgId());
@@ -956,6 +1110,8 @@ bool TreeMakerMiniAOD::FindGenTau(const edm::Event& event) {
 				pi0 = daughter;
 			else if (id == pdg_pi1)
 				pi1 = daughter;
+			else if (id == pdg_nu_tau)
+				nu_tau = daughter;
 		};
 		//cut(pi0 && pi1);
 		if (particle.numberOfDaughters() == 3 && (pi0 && pi1)) gentau_firstDM = 1;
@@ -980,23 +1136,103 @@ bool TreeMakerMiniAOD::FindGenTau(const edm::Event& event) {
 			};
 		};
 #undef cut
-	if (monitoring) std::cout << "gentau dRmin = " << std::endl;
+	if (monitoring) std::cout << "gentau dRmin = " << dRmin << std::endl;
 	};
 	if (!tau) return false;
 
 	if (monitoring) std::cout << "gentau Flag 2" << std::endl;
+
+	gentau_pt  = tau->pt();
+	gentau_px  = tau->px();
+	gentau_py  = tau->py();
+	gentau_pz  = tau->pz();
+	gentau_eta = tau->eta();
+	gentau_phi = tau->phi();
 
 	dR           = dRmin;
 	gentau_found = 1;
 	genTauFromW  = 0;
 	for (auto p = tau->mother(); p; p = p->mother()) {
 		genTauMother = p->pdgId();
+		if (monitoring) std::cout << "gnetau mother pdg ID = " << genTauMother << std::endl;
 		if (abs(p->pdgId()) == pdg_W) {
 			genTauFromW = 1;
 			W_pt        = p->pt();
+			for (unsigned l = 0; l < p->numberOfDaughters(); l++) {
+				const reco::Candidate* Wdaughter = p->daughter(l);
+				if (monitoring) std::cout << "W_daughter(" << l << ") = " << Wdaughter->pdgId() << std::endl;
+				if (abs(Wdaughter->pdgId()) == pdg_nu_tau) {
+					nu_W = Wdaughter;
+				} else continue;
+			}
 			break;
 		};
 	};
+
+	if (monitoring) std::cout << "gentau Flag 3" << std::endl;
+
+	if (pi1) {
+		genPiChar_pt  = pi1->pt();
+		genPiChar_px  = pi1->px();
+		genPiChar_py  = pi1->py();
+		genPiChar_pz  = pi1->pz();
+		genPiChar_eta = pi1->eta();
+		genPiChar_phi = pi1->phi();
+	} else {
+		genPiChar_pt  = null;
+		genPiChar_px  = null;
+		genPiChar_py  = null;
+		genPiChar_pz  = null;
+		genPiChar_eta = null;
+		genPiChar_phi = null;
+	}
+
+	double genPi0_m;
+
+	if (pi0) {
+		genPi0_pt  = pi0->pt();
+		genPi0_px  = pi0->px();
+		genPi0_py  = pi0->py();
+		genPi0_pz  = pi0->pz();
+		genPi0_eta = pi0->eta();
+		genPi0_phi = pi0->phi();
+	} else {
+		genPi0_pt  = null;
+		genPi0_px  = null;
+		genPi0_py  = null;
+		genPi0_pz  = null;
+		genPi0_eta = null;
+		genPi0_phi = null;
+	}
+
+	if (monitoring) std::cout << "gentau Flag 4" << std::endl;
+
+	if (!nu_W) return false; 
+
+	if (monitoring) std::cout << "gentau Flag 5" << std::endl;
+
+	if (genTauFromW > 0) {
+		nuW_pt  = nu_W->pt();
+		nuW_px  = nu_W->px();
+		nuW_py  = nu_W->py();
+		nuW_pz  = nu_W->pz();
+		nuW_eta = nu_W->eta();
+		nuW_phi = nu_W->phi();
+		nutau_pt  = nu_tau->pt();
+		nutau_px  = nu_tau->px();
+		nutau_py  = nu_tau->py();
+		nutau_pz  = nu_tau->pz();
+		nutau_eta = nu_tau->eta();
+		nutau_phi = nu_tau->phi();
+		double nutau_m = nu_tau->mass();
+		double nuW_m = nu_W->mass();
+
+		TLorentzVector gennutau, gennuW;
+		gennutau.SetPtEtaPhiM(nutau_pt, nutau_eta, nutau_phi, nutau_m);
+		gennuW.SetPtEtaPhiM(nuW_pt, nuW_eta, nuW_phi, nuW_m);
+		nunu_pt = (gennutau + gennuW).Pt();
+	}
+
 	return true;
 };
 
@@ -1194,8 +1430,15 @@ bool TreeMakerMiniAOD::AddMET(const edm::Event& event) {
 	met = MET.pt();
 	met_phi = MET.phi();
 	met_eta = MET.eta();
+	met_energy = MET.energy();
 	met_significance = MET.significance();
 	met_mEtSig       = MET.mEtSig();
+
+	TLorentzVector METp4, tau_p4;
+	METp4.SetPtEtaPhiE(met, met_eta, met_phi, met_energy);
+	tau_p4.SetPtEtaPhiM(tau_pt, tau_eta, tau_phi, tau_m);
+	tauMET_mass = (METp4 + tau_p4).M();
+
 	if (met < METcut) return false;
 	return true;
 }

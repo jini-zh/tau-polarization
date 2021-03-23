@@ -36,9 +36,11 @@
 <use   name="RecoVertex/AdaptiveVertexFit"/>
 <use   name="CommonTools/TriggerUtils"/>
 <use   name="HLTrigger/HLTanalyzers"/>
+<use   name="CondFormats/BTauObjects"/>
+<use   name="CondTools/BTau"/>
 <use   name="Tau/TreeMakerOld"/>
 <flags   EDM_PLUGIN="1"/>
 <library   name="TreeMakerMiniAOD" file="TreeMakerMiniAOD.cc"> </library>
-
+<library   name="TTbarTauLepton" file="TTbarTauLepton.cc"> </library>
 
 <flags EDM_PLUGIN="1"/>
