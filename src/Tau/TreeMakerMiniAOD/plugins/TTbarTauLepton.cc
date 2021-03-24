@@ -1071,7 +1071,7 @@ void TTbarTauLepton::beginJob() {
     tree->Branch("Jet1_pt", &Jet1_pt, "Jet1_pt/D");
     tree->Branch("Jet1_eta", &Jet1_eta, "Jet1_eta/D");
     tree->Branch("Jet1_phi", &Jet1_phi, "Jet1_phi/D");
-    tree->Branch("Jet1_m", &Jet1_m, "Jet1_m/D");
+    tree->Branch("Jet1_E", &Jet1_E, "Jet1_E/D");
     tree->Branch("Jet1_bprob", &Jet1_bprob, "Jet1_bprob/D");
     tree->Branch("Jet1_bbprob", &Jet1_bbprob, "Jet1_bbprob/D");
     tree->Branch("Jet1_hadronFlavour", &Jet1_hadronFlavour, "Jet1_hadronFlavour/I");
@@ -1085,7 +1085,7 @@ void TTbarTauLepton::beginJob() {
     tree->Branch("Jet2_pt", &Jet2_pt, "Jet2_pt/D");
     tree->Branch("Jet2_eta", &Jet2_eta, "Jet2_eta/D");
     tree->Branch("Jet2_phi", &Jet2_phi, "Jet2_phi/D");
-    tree->Branch("Jet2_m", &Jet2_m, "Jet2_m/D");
+    tree->Branch("Jet2_E", &Jet2_E, "Jet2_E/D");
     tree->Branch("Jet2_bprob", &Jet2_bprob, "Jet2_bprob/D");
     tree->Branch("Jet2_bbprob", &Jet2_bbprob, "Jet2_bbprob/D");
     tree->Branch("Jet2_hadronFlavour", &Jet2_hadronFlavour, "Jet2_hadronFlavour/I");
@@ -1099,7 +1099,7 @@ void TTbarTauLepton::beginJob() {
     tree->Branch("Jet3_pt", &Jet3_pt, "Jet3_pt/D");
     tree->Branch("Jet3_eta", &Jet3_eta, "Jet3_eta/D");
     tree->Branch("Jet3_phi", &Jet3_phi, "Jet3_phi/D");
-    tree->Branch("Jet3_m", &Jet3_m, "Jet3_m/D");
+    tree->Branch("Jet3_E", &Jet3_E, "Jet3_E/D");
     tree->Branch("Jet3_bprob", &Jet3_bprob, "Jet3_bprob/D");
     tree->Branch("Jet3_bbprob", &Jet3_bbprob, "Jet3_bbprob/D");
     tree->Branch("Jet3_hadronFlavour", &Jet3_hadronFlavour, "Jet3_hadronFlavour/I");
@@ -1113,7 +1113,7 @@ void TTbarTauLepton::beginJob() {
     tree->Branch("Jet4_pt", &Jet4_pt, "Jet4_pt/D");
     tree->Branch("Jet4_eta", &Jet4_eta, "Jet4_eta/D");
     tree->Branch("Jet4_phi", &Jet4_phi, "Jet4_phi/D");
-    tree->Branch("Jet4_m", &Jet4_m, "Jet4_m/D");
+    tree->Branch("Jet4_E", &Jet4_E, "Jet4_E/D");
     tree->Branch("Jet4_bprob", &Jet4_bprob, "Jet4_bprob/D");
     tree->Branch("Jet4_bbprob", &Jet4_bbprob, "Jet4_bbprob/D");
     tree->Branch("Jet4_hadronFlavour", &Jet4_hadronFlavour, "Jet4_hadronFlavour/I");
@@ -1127,7 +1127,7 @@ void TTbarTauLepton::beginJob() {
     tree->Branch("Jet5_pt", &Jet5_pt, "Jet5_pt/D");
     tree->Branch("Jet5_eta", &Jet5_eta, "Jet5_eta/D");
     tree->Branch("Jet5_phi", &Jet5_phi, "Jet5_phi/D");
-    tree->Branch("Jet5_m", &Jet5_m, "Jet5_m/D");
+    tree->Branch("Jet5_E", &Jet5_E, "Jet5_E/D");
     tree->Branch("Jet5_bprob", &Jet5_bprob, "Jet5_bprob/D");
     tree->Branch("Jet5_bbprob", &Jet5_bbprob, "Jet5_bbprob/D");
     tree->Branch("Jet5_hadronFlavour", &Jet5_hadronFlavour, "Jet5_hadronFlavour/I");
@@ -1141,7 +1141,7 @@ void TTbarTauLepton::beginJob() {
     tree->Branch("Jet6_pt", &Jet6_pt, "Jet6_pt/D");
     tree->Branch("Jet6_eta", &Jet6_eta, "Jet6_eta/D");
     tree->Branch("Jet6_phi", &Jet6_phi, "Jet6_phi/D");
-    tree->Branch("Jet6_m", &Jet6_m, "Jet6_m/D");
+    tree->Branch("Jet6_E", &Jet6_E, "Jet6_E/D");
     tree->Branch("Jet6_bprob", &Jet6_bprob, "Jet6_bprob/D");
     tree->Branch("Jet6_bbprob", &Jet6_bbprob, "Jet6_bbprob/D");
     tree->Branch("Jet6_hadronFlavour", &Jet6_hadronFlavour, "Jet6_hadronFlavour/I");
@@ -2391,6 +2391,11 @@ void TTbarTauLepton::FindGenTau(const edm::Event& event) {
     looseBJetsCopy.clear();
 
     if (bquark1) {
+        genb1_flavor = bquark1->pdgId();
+        genb1_pt = bquark1->pt();
+        genb1_eta = bquark1->eta();
+        genb1_phi = bquark1->phi();
+        genb1_energy = bquark1->energy();
         for (auto p = bquark1->mother(); p; p = p->mother()) {
             genb1Mother = p->pdgId();
             //if (monitoringGen) std::cout << "gnetau mother pdg ID = " << genTauMother << std::endl;
@@ -2415,6 +2420,11 @@ void TTbarTauLepton::FindGenTau(const edm::Event& event) {
     }
 
     if (bquark2) {
+        genb2_flavor = bquark2->pdgId();
+        genb2_pt = bquark2->pt();
+        genb2_eta = bquark2->eta();
+        genb2_phi = bquark2->phi();
+        genb2_energy = bquark2->energy();
         for (auto p = bquark2->mother(); p; p = p->mother()) {
             genb2Mother = p->pdgId();
             if (abs(p->pdgId()) == pdg_tquark) {
@@ -2742,6 +2752,7 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
     // Btag calibration
     BTagCalibration calib("csvv1", "DeepCSV_94XSF_V5_B_F.csv");
     // operating point, central sys type, other sys types
+    /*
     BTagCalibrationReader reader(BTagEntry::OP_LOOSE, "central", {"up", "down"});
     // calibration instance, btag flavour, measurement type = "comb" (need "ttbar"?)
     reader.load(calib, BTagEntry::FLAV_B, "comb");
@@ -2762,6 +2773,7 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
     readerReshaping.load(calib, BTagEntry::FLAV_B, "iterativefit");
     readerReshaping.load(calib, BTagEntry::FLAV_C, "iterativefit");
     readerReshaping.load(calib, BTagEntry::FLAV_UDSG, "iterativefit");
+    */
     
     // Tracks and vertices
     edm::Handle<pat::IsolatedTrackCollection> tracks;
@@ -2825,21 +2837,23 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
                 continue; 
             }
             // Exclude jets close to lepton 1
-            double deltaRLepton1 = sqrt(deltaR2(jet.eta(), jet.phi(), lepton1_eta, lepton1_phi));
-            //deltaRLepton1 = sqrt(deltaR2(jet.eta(), jet.phi(), electron_eta, electron_phi));
-            //deltaRLepton1 = sqrt(deltaR2(jet.eta(), jet.phi(), muon_eta, muon_phi));
-            if (deltaRLepton1 < 0.4 && deltaRLepton1 < deltaRLepton1JetMin) {
-                deltaRLepton1JetMin = deltaRLepton1;
-                if (monitoringJets) {
-                    std::cout << "Jet with lepton inside cone dR < 0.4" << std::endl;
-                    std::cout << "dR = " << deltaRLepton1 << std::endl;
+            if (lepton1_pt > 0) {
+                double deltaRLepton1 = sqrt(deltaR2(jet.eta(), jet.phi(), lepton1_eta, lepton1_phi));
+                //deltaRLepton1 = sqrt(deltaR2(jet.eta(), jet.phi(), electron_eta, electron_phi));
+                //deltaRLepton1 = sqrt(deltaR2(jet.eta(), jet.phi(), muon_eta, muon_phi));
+                if (deltaRLepton1 < 0.4 && deltaRLepton1 < deltaRLepton1JetMin) {
+                    deltaRLepton1JetMin = deltaRLepton1;
+                    if (monitoringJets) {
+                        std::cout << "Jet with lepton inside cone dR < 0.4" << std::endl;
+                        std::cout << "dR = " << deltaRLepton1 << std::endl;
+                    }
+                    lepton1Jet_pt = jet.pt();
+                    lepton1Jet_eta = jet.eta();
+                    lepton1Jet_phi = jet.phi();
+                    lepton1Jet_E = jet.energy();
+                    lepton1Jet_bprob = jet.bDiscriminator("pfDeepCSVJetTags:probb") + jet.bDiscriminator("pfDeepCSVJetTags:probbb");
+                    continue; ///
                 }
-                lepton1Jet_pt = jet.pt();
-                lepton1Jet_eta = jet.eta();
-                lepton1Jet_phi = jet.phi();
-                lepton1Jet_E = jet.energy();
-                lepton1Jet_bprob = jet.bDiscriminator("pfDeepCSVJetTags:probb") + jet.bDiscriminator("pfDeepCSVJetTags:probbb");
-                continue; ///
             }
             reco::TrackRefVector JetTracksRef = jet.associatedTracks();
             std::map <int, int> VertexTracksMap;
