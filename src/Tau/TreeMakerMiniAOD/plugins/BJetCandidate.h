@@ -91,6 +91,21 @@ public :
             SFTight = 1.;
         }
     }
+    BJetCandidate(const pat::Jet &jet, bool IsFromPV)
+        : Pt(jet.pt()), E(jet.energy()), Eta(jet.eta()), Phi(jet.phi()), FourMomentum(jet.p4()),
+        Bprob(jet.bDiscriminator("pfDeepCSVJetTags:probb")),
+        BBprob(jet.bDiscriminator("pfDeepCSVJetTags:probbb")), HadronFlavour(jet.hadronFlavour()),
+        FromPV(IsFromPV)
+    {
+        // No btag scales in analyser
+        SFReshaping = 1;
+        SFReshaping_up = 1;
+        SFReshaping_down = 1;
+        SFLoose = 1;
+        SFMedium = 1;
+        SFTight = 1;
+    }
+
     void Monitoring();
     virtual ~BJetCandidate();
 

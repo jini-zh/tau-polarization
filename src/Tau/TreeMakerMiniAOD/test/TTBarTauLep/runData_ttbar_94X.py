@@ -12,11 +12,11 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
 
 # Single Electron 2016 17 Jul 2018 data
-process.GlobalTag.globaltag='94X_mc2017_realistic_v14'
+process.GlobalTag.globaltag='94X_dataRun2_v10'
 
 
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
@@ -24,11 +24,11 @@ process.source = cms.Source("PoolSource",
     #'/store/data/Run2017B/JetHT/MINIAOD/09Aug2019_UL2017-v1/130000/B6EC130B-9D55-8140-AC2E-154EB59E3BBC.root'
     #'root://cms-xrd-global.cern.ch//store/mc/RunIIFall17MiniAODv2/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/100000/186120D6-C6A7-E811-9271-FA163E809085.root'
     #'/store/mc/RunIIFall17MiniAODv2/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/40000/F296B7FF-629F-E811-86FE-F4E9D4AF0AF0.root'
-    #'root://cms-xrd-global.cern.ch//store/data/Run2017B/SingleMuon/MINIAOD/31Mar2018-v1/90000/E40B3455-5939-E811-94C5-0CC47A7C34C8.root'
+    'root://cms-xrd-global.cern.ch//store/data/Run2017B/SingleMuon/MINIAOD/31Mar2018-v1/90000/E40B3455-5939-E811-94C5-0CC47A7C34C8.root'
     #'root://cms-xrd-global.cern.ch//store/data/Run2017B/SingleElectron/MINIAOD/31Mar2018-v1/30000/E2A2C81B-0638-E811-89CE-008CFAC93EA8.root'
     #'root://cms-xrd-global.cern.ch//store/data/Run2017D/Tau/MINIAOD/31Mar2018-v1/00000/12F092A0-3F37-E811-AD27-7845C4F92C96.root'
     #'root://cms-xrd-global.cern.ch//store/data/Run2016C/SingleMuon/MINIAOD/17Jul2018-v1/20000/065D2BF3-9198-E811-844D-90E2BAC9B7A8.root'
-    'root://cms-xrd-global.cern.ch//store/mc/RunIIFall17MiniAODv2/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/100000/186120D6-C6A7-E811-9271-FA163E809085.root'
+    #'root://cms-xrd-global.cern.ch//store/mc/RunIIFall17MiniAODv2/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/100000/186120D6-C6A7-E811-9271-FA163E809085.root'
     ),
     dropDescendantsOfDroppedBranches=cms.untracked.bool(False),
 )
@@ -62,7 +62,7 @@ process.TTbarTauLepton = cms.EDAnalyzer("TTbarTauLepton",
     monitoringBJets   = cms.bool(True),
     monitoringLeptons = cms.bool(True),
     monitoringMET     = cms.bool(False),
-    isMC = cms.bool(True),
+    isMC = cms.bool(False),
     #fullMC = cms.bool(False),
     #useHLT = cms.bool(False),
     #useTargetHLT = cms.bool(False),
@@ -245,7 +245,7 @@ process.TTbarTauLepton = cms.EDAnalyzer("TTbarTauLepton",
 #process.load('Tau.TreeMaker.treeMaker_Data-MET_cfi')
 
 process.TFileService = cms.Service("TFileService",
-  fileName = cms.string('MC_TTo2L2Nu.root')
+  fileName = cms.string('Data_SingleMuon.root')
 )
 
 process.p = cms.Path(process.TTbarTauLepton)

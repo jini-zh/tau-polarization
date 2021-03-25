@@ -384,12 +384,6 @@ private:
     double Jet1_E;
     double Jet1_bprob, Jet1_bbprob;
     int Jet1_hadronFlavour;
-    double Jet1_SFreshaping;
-    double Jet1_SFreshaping_up;
-    double Jet1_SFreshaping_down;
-    double Jet1_SFloose;
-    double Jet1_SFmedium;
-    double Jet1_SFtight;
     //
     double Jet2_pt;
     double Jet2_eta;
@@ -398,12 +392,6 @@ private:
     double Jet2_E;
     double Jet2_bprob, Jet2_bbprob;
     int Jet2_hadronFlavour;
-    double Jet2_SFreshaping;
-    double Jet2_SFreshaping_up;
-    double Jet2_SFreshaping_down;
-    double Jet2_SFloose;
-    double Jet2_SFmedium;
-    double Jet2_SFtight;
     //
     double Jet3_pt;
     double Jet3_eta;
@@ -412,12 +400,6 @@ private:
     double Jet3_E;
     double Jet3_bprob, Jet3_bbprob;
     int Jet3_hadronFlavour;
-    double Jet3_SFreshaping;
-    double Jet3_SFreshaping_up;
-    double Jet3_SFreshaping_down;
-    double Jet3_SFloose;
-    double Jet3_SFmedium;
-    double Jet3_SFtight;
     //
     double Jet4_pt;
     double Jet4_eta;
@@ -426,12 +408,6 @@ private:
     double Jet4_E;
     double Jet4_bprob, Jet4_bbprob;
     int Jet4_hadronFlavour;
-    double Jet4_SFreshaping;
-    double Jet4_SFreshaping_up;
-    double Jet4_SFreshaping_down;
-    double Jet4_SFloose;
-    double Jet4_SFmedium;
-    double Jet4_SFtight;
     //
     double Jet5_pt;
     double Jet5_eta;
@@ -440,12 +416,6 @@ private:
     double Jet5_E;
     double Jet5_bprob, Jet5_bbprob;
     int Jet5_hadronFlavour;
-    double Jet5_SFreshaping;
-    double Jet5_SFreshaping_up;
-    double Jet5_SFreshaping_down;
-    double Jet5_SFloose;
-    double Jet5_SFmedium;
-    double Jet5_SFtight;
     //
     double Jet6_pt;
     double Jet6_eta;
@@ -454,12 +424,6 @@ private:
     double Jet6_E;
     double Jet6_bprob, Jet6_bbprob;
     int Jet6_hadronFlavour;
-    double Jet6_SFreshaping;
-    double Jet6_SFreshaping_up;
-    double Jet6_SFreshaping_down;
-    double Jet6_SFloose;
-    double Jet6_SFmedium;
-    double Jet6_SFtight;
 
     // Tau jet
     double TauJet_pt;
@@ -486,111 +450,147 @@ private:
     double lepton1Jet_phi;
     double lepton1Jet_E;
     double lepton1Jet_bprob;
+    int    lepton1_electron_cutBasedID_loose;
+    int    lepton1_electron_cutBasedID_medium;
+    int    lepton1_electron_cutBasedID_tight;
+    int    lepton1_electron_mvaNoIsoID_loose;
+    int    lepton1_electron_mvaNoIsoID_wp80;
+    int    lepton1_electron_mvaNoIsoID_wp90;
+    int    lepton1_muon_CutBasedIdLoose;
+    int    lepton1_muon_CutBasedIdMedium;
+    int    lepton1_muon_CutBasedIdTight;
+    int    lepton1_muon_CutBasedIdGlobalHighPt;
+    int    lepton1_muon_CutBasedIdTrkHighPt;
+    int    lepton1_muon_PFIsoLoose;
+    int    lepton1_muon_PFIsoMedium;
+    int    lepton1_muon_PFIsoTight;
+    int    lepton1_muon_TkIsoLoose;
+    int    lepton1_muon_TkIsoTight;
+    int    lepton1_muon_MvaLoose;
+    int    lepton1_muon_MvaMedium;
+    int    lepton1_muon_MvaTight;
+    double lepton1_tau_dm;
+    double lepton1_tau_m;
+    double lepton1_tau_absIso;
+    // Raw
+    double lepton1_tau_againstElectronRaw;
+    double lepton1_tau_IsoMVArun2v1DBdR03oldDMwLTraw;
+    // Deep raw
+    double lepton1_tau_Deep2017v2ElectronRejection;
+    double lepton1_tau_Deep2017v2MuonRejection;
+    double lepton1_tau_Deep2017v2JetRejection;
+    // Deep WP
+    int    lepton1_tau_VVLooseDeepTau2017v2VSjet;
+    int    lepton1_tau_VLooseDeepTau2017v2VSjet;
+    int    lepton1_tau_LooseDeepTau2017v2VSjet;
+    int    lepton1_tau_MediumDeepTau2017v2VSjet;
+    int    lepton1_tau_TightDeepTau2017v2VSjet;
+    int    lepton1_tau_VTightDeepTau2017v2VSjet;
+    int    lepton1_tau_VVTightDeepTau2017v2VSjet;
+    int    lepton1_tau_LooseDeepTau2017v2VSmu;
+    int    lepton1_tau_MediumDeepTau2017v2VSmu;
+    int    lepton1_tau_TightDeepTau2017v2VSmu;
+    int    lepton1_tau_VVLooseDeepTau2017v2VSe;
+    int    lepton1_tau_VLooseDeepTau2017v2VSe;
+    int    lepton1_tau_LooseDeepTau2017v2VSe;
+    int    lepton1_tau_MediumDeepTau2017v2VSe;
+    int    lepton1_tau_TightDeepTau2017v2VSe;
+    int    lepton1_tau_VTightDeepTau2017v2VSe;
+    int    lepton1_tau_VVTightDeepTau2017v2VSe;
+    // MVA WP
+    int    lepton1_tau_looseCombinedIso;
+    int    lepton1_tau_tightCombinedIso;
+    int    lepton1_tau_looseMvaIso;
+    int    lepton1_tau_mediumMvaIso;
+    int    lepton1_tau_tightMvaIso;
+    int    lepton1_tau_VtightMvaIso;
+    int    lepton1_tau_VVtightMvaIso;
+    int    lepton1_tau_tightMuonRejection;
+    int    lepton1_tau_looseElectronRejection;
+    int    lepton1_tau_mediumElectronRejection;
+    int    lepton1_tau_tightElectronRejection;
+    int    lepton1_tau_VtightElectronRejection;
+    // lepton 2
+    double lepton2_pt;
+    double lepton2_eta;
+    double lepton2_phi;
+    double lepton2_E;
+    double lepton2_dz;
+    int    lepton2_flavor;
+    int    lepton2_charge;
+    float  lepton2_trackIso;
+    float  lepton2_sumPuppiIso;
+    float  lepton2_sumPuppiNoLeptonIso;
+    // Jet in cone dR = 0.4
+    double lepton2Jet_pt;
+    double lepton2Jet_eta;
+    double lepton2Jet_phi;
+    double lepton2Jet_E;
+    double lepton2Jet_bprob;
+    int    lepton2_electron_cutBasedID_loose;
+    int    lepton2_electron_cutBasedID_medium;
+    int    lepton2_electron_cutBasedID_tight;
+    int    lepton2_electron_mvaNoIsoID_loose;
+    int    lepton2_electron_mvaNoIsoID_wp80;
+    int    lepton2_electron_mvaNoIsoID_wp90;
+    int    lepton2_muon_CutBasedIdLoose;
+    int    lepton2_muon_CutBasedIdMedium;
+    int    lepton2_muon_CutBasedIdTight;
+    int    lepton2_muon_CutBasedIdGlobalHighPt;
+    int    lepton2_muon_CutBasedIdTrkHighPt;
+    int    lepton2_muon_PFIsoLoose;
+    int    lepton2_muon_PFIsoMedium;
+    int    lepton2_muon_PFIsoTight;
+    int    lepton2_muon_TkIsoLoose;
+    int    lepton2_muon_TkIsoTight;
+    int    lepton2_muon_MvaLoose;
+    int    lepton2_muon_MvaMedium;
+    int    lepton2_muon_MvaTight;
+    double lepton2_tau_dm;
+    double lepton2_tau_m;
+    double lepton2_tau_absIso;
+    // Raw
+    double lepton2_tau_againstElectronRaw;
+    double lepton2_tau_IsoMVArun2v1DBdR03oldDMwLTraw;
+    // Deep raw
+    double lepton2_tau_Deep2017v2ElectronRejection;
+    double lepton2_tau_Deep2017v2MuonRejection;
+    double lepton2_tau_Deep2017v2JetRejection;
+    // Deep WP
+    int    lepton2_tau_VVLooseDeepTau2017v2VSjet;
+    int    lepton2_tau_VLooseDeepTau2017v2VSjet;
+    int    lepton2_tau_LooseDeepTau2017v2VSjet;
+    int    lepton2_tau_MediumDeepTau2017v2VSjet;
+    int    lepton2_tau_TightDeepTau2017v2VSjet;
+    int    lepton2_tau_VTightDeepTau2017v2VSjet;
+    int    lepton2_tau_VVTightDeepTau2017v2VSjet;
+    int    lepton2_tau_LooseDeepTau2017v2VSmu;
+    int    lepton2_tau_MediumDeepTau2017v2VSmu;
+    int    lepton2_tau_TightDeepTau2017v2VSmu;
+    int    lepton2_tau_VVLooseDeepTau2017v2VSe;
+    int    lepton2_tau_VLooseDeepTau2017v2VSe;
+    int    lepton2_tau_LooseDeepTau2017v2VSe;
+    int    lepton2_tau_MediumDeepTau2017v2VSe;
+    int    lepton2_tau_TightDeepTau2017v2VSe;
+    int    lepton2_tau_VTightDeepTau2017v2VSe;
+    int    lepton2_tau_VVTightDeepTau2017v2VSe;
+    // MVA WP
+    int    lepton2_tau_looseCombinedIso;
+    int    lepton2_tau_tightCombinedIso;
+    int    lepton2_tau_looseMvaIso;
+    int    lepton2_tau_mediumMvaIso;
+    int    lepton2_tau_tightMvaIso;
+    int    lepton2_tau_VtightMvaIso;
+    int    lepton2_tau_VVtightMvaIso;
+    int    lepton2_tau_tightMuonRejection;
+    int    lepton2_tau_looseElectronRejection;
+    int    lepton2_tau_mediumElectronRejection;
+    int    lepton2_tau_tightElectronRejection;
+    int    lepton2_tau_VtightElectronRejection;
+    //
     int    nLeptonCandidates;
     int    VetoLeptons;
     int    VetoTaus;
-
-    // Electron candidate
-    double electron_pt;
-    double electron_eta;
-    double electron_phi;
-    double electron_E;
-    int    electron_charge;
-    float  electron_trackIso;
-    float  electron_sumPuppiIso;
-    float  electron_sumPuppiNoLeptonIso;
-    float  electron_caloIso;
-    int    electron_cutBasedID_loose;
-    int    electron_cutBasedID_medium;
-    int    electron_cutBasedID_tight;
-    int    electron_mvaNoIsoID_loose;
-    int    electron_mvaNoIsoID_wp80;
-    int    electron_mvaNoIsoID_wp90;
-
-    // Muon candidate
-    double muon_pt;
-    double muon_eta;
-    double muon_phi;
-    double muon_E;
-    int    muon_charge;
-    float  muon_trackIso;
-    float  muon_sumPuppiIso;
-    float  muon_sumPuppiNoLeptonIso;
-    float  muon_caloIso;
-    int    muon_CutBasedIdLoose;
-    int    muon_CutBasedIdMedium;
-    int    muon_CutBasedIdTight;
-    int    muon_CutBasedIdGlobalHighPt;
-    int    muon_CutBasedIdTrkHighPt;
-    int    muon_PFIsoLoose;
-    int    muon_PFIsoMedium;
-    int    muon_PFIsoTight;
-    int    muon_TkIsoLoose;
-    int    muon_TkIsoTight;
-    int    muon_MvaLoose;
-    int    muon_MvaMedium;
-    int    muon_MvaTight;
-
-    // tau 2
-    double tau2_pt;
-    double tau2_eta;
-    double tau2_phi;
-    double tau2_dm;
-    double tau2_q;
-    double tau2_m;
-    double tau2_dz;
-    
-    // MVA raw
-    double tau2_absIso;
-    double tau2_againstElectronRaw;
-    double tau2_IsoMVArun2v1DBdR03oldDMwLTraw;
-    /*
-    double tau2_IsoMVArun2v1DBnewDMwLTraw;
-    double tau2_IsoMVArun2v1DBoldDMwLTraw;
-    double tau2_IsoMVArun2v1PWdR03oldDMwLTraw;
-    double tau2_IsoMVArun2v1PWnewDMwLTraw;
-    double tau2_IsoMVArun2v1PWoldDMwLTraw;
-    */
-
-    // Deep raw
-    double tau2_Deep2017v2ElectronRejection;
-    double tau2_Deep2017v2MuonRejection;
-    double tau2_Deep2017v2JetRejection;
-
-    // Deep WP
-    int tau2_VVLooseDeepTau2017v2VSjet;
-    int tau2_VLooseDeepTau2017v2VSjet;
-    int tau2_LooseDeepTau2017v2VSjet;
-    int tau2_MediumDeepTau2017v2VSjet;
-    int tau2_TightDeepTau2017v2VSjet;
-    int tau2_VTightDeepTau2017v2VSjet;
-    int tau2_VVTightDeepTau2017v2VSjet;
-
-    int tau2_LooseDeepTau2017v2VSmu;
-    int tau2_MediumDeepTau2017v2VSmu;
-    int tau2_TightDeepTau2017v2VSmu;
-
-    int tau2_VVLooseDeepTau2017v2VSe;
-    int tau2_VLooseDeepTau2017v2VSe;
-    int tau2_LooseDeepTau2017v2VSe;
-    int tau2_MediumDeepTau2017v2VSe;
-    int tau2_TightDeepTau2017v2VSe;
-    int tau2_VTightDeepTau2017v2VSe;
-    int tau2_VVTightDeepTau2017v2VSe;
-
-    // MVA WP
-    int tau2_looseCombinedIso;
-    int tau2_tightCombinedIso;
-    int tau2_looseMvaIso;
-    int tau2_mediumMvaIso;
-    int tau2_tightMvaIso;
-    int tau2_VtightMvaIso;
-    int tau2_VVtightMvaIso;
-    int tau2_tightMuonRejection;
-    int tau2_looseElectronRejection;
-    int tau2_mediumElectronRejection;
-    int tau2_tightElectronRejection;
-    int tau2_VtightElectronRejection;
 
     int nPhotons;
     int nGamma;
@@ -834,13 +834,15 @@ void TTbarTauLepton::analyze(const edm::Event& event, const edm::EventSetup&) {
 
     nPassed++;
 
-    std::cout << "Events  = " << nEvent << std::endl;
-    std::cout << "Trigger = " << nTrigger << std::endl;
-    std::cout << "Tau     = " << nTau1 << std::endl;
-    std::cout << "Lepton  = " << nLepton << std::endl;
-    std::cout << "Jet     = " << nJet << std::endl;
-    std::cout << "TauJets = " << nTauJetInEvent << std::endl;
-    std::cout << "Passed  = " << nPassed << std::endl;
+    if (monitoring) {
+        std::cout << "Events  = " << nEvent << std::endl;
+        std::cout << "Trigger = " << nTrigger << std::endl;
+        std::cout << "Tau     = " << nTau1 << std::endl;
+        std::cout << "Lepton  = " << nLepton << std::endl;
+        std::cout << "Jet     = " << nJet << std::endl;
+        std::cout << "TauJets = " << nTauJetInEvent << std::endl;
+        std::cout << "Passed  = " << nPassed << std::endl;
+    }
 
     TLorentzVector pi0, pi1;
     pi0.SetPtEtaPhiM(piZero_pt, piZero_eta, piZero_phi, piZero_m);
@@ -1075,12 +1077,6 @@ void TTbarTauLepton::beginJob() {
     tree->Branch("Jet1_bprob", &Jet1_bprob, "Jet1_bprob/D");
     tree->Branch("Jet1_bbprob", &Jet1_bbprob, "Jet1_bbprob/D");
     tree->Branch("Jet1_hadronFlavour", &Jet1_hadronFlavour, "Jet1_hadronFlavour/I");
-    tree->Branch("Jet1_SFreshaping", &Jet1_SFreshaping, "Jet1_SFreshaping/D");
-    tree->Branch("Jet1_SFreshaping_up", &Jet1_SFreshaping_up, "Jet1_SFreshaping_up/D");
-    tree->Branch("Jet1_SFreshaping_down", &Jet1_SFreshaping_down, "Jet1_SFreshaping_down/D");
-    tree->Branch("Jet1_SFloose", &Jet1_SFloose, "Jet1_SFloose/D");
-    tree->Branch("Jet1_SFmedium", &Jet1_SFmedium, "Jet1_SFmedium/D");
-    tree->Branch("Jet1_SFtight", &Jet1_SFtight, "Jet1_SFtight/D");
     //
     tree->Branch("Jet2_pt", &Jet2_pt, "Jet2_pt/D");
     tree->Branch("Jet2_eta", &Jet2_eta, "Jet2_eta/D");
@@ -1089,12 +1085,6 @@ void TTbarTauLepton::beginJob() {
     tree->Branch("Jet2_bprob", &Jet2_bprob, "Jet2_bprob/D");
     tree->Branch("Jet2_bbprob", &Jet2_bbprob, "Jet2_bbprob/D");
     tree->Branch("Jet2_hadronFlavour", &Jet2_hadronFlavour, "Jet2_hadronFlavour/I");
-    tree->Branch("Jet2_SFreshaping", &Jet2_SFreshaping, "Jet2_SFreshaping/D");
-    tree->Branch("Jet2_SFreshaping_up", &Jet2_SFreshaping_up, "Jet2_SFreshaping_up/D");
-    tree->Branch("Jet2_SFreshaping_down", &Jet2_SFreshaping_down, "Jet2_SFreshaping_down/D");
-    tree->Branch("Jet2_SFloose", &Jet2_SFloose, "Jet2_SFloose/D");
-    tree->Branch("Jet2_SFmedium", &Jet2_SFmedium, "Jet2_SFmedium/D");
-    tree->Branch("Jet2_SFtight", &Jet2_SFtight, "Jet2_SFtight/D");
     //
     tree->Branch("Jet3_pt", &Jet3_pt, "Jet3_pt/D");
     tree->Branch("Jet3_eta", &Jet3_eta, "Jet3_eta/D");
@@ -1103,12 +1093,6 @@ void TTbarTauLepton::beginJob() {
     tree->Branch("Jet3_bprob", &Jet3_bprob, "Jet3_bprob/D");
     tree->Branch("Jet3_bbprob", &Jet3_bbprob, "Jet3_bbprob/D");
     tree->Branch("Jet3_hadronFlavour", &Jet3_hadronFlavour, "Jet3_hadronFlavour/I");
-    tree->Branch("Jet3_SFreshaping", &Jet3_SFreshaping, "Jet3_SFreshaping/D");
-    tree->Branch("Jet3_SFreshaping_up", &Jet3_SFreshaping_up, "Jet3_SFreshaping_up/D");
-    tree->Branch("Jet3_SFreshaping_down", &Jet3_SFreshaping_down, "Jet3_SFreshaping_down/D");
-    tree->Branch("Jet3_SFloose", &Jet3_SFloose, "Jet3_SFloose/D");
-    tree->Branch("Jet3_SFmedium", &Jet3_SFmedium, "Jet3_SFmedium/D");
-    tree->Branch("Jet3_SFtight", &Jet3_SFtight, "Jet3_SFtight/D");
     //
     tree->Branch("Jet4_pt", &Jet4_pt, "Jet4_pt/D");
     tree->Branch("Jet4_eta", &Jet4_eta, "Jet4_eta/D");
@@ -1117,12 +1101,6 @@ void TTbarTauLepton::beginJob() {
     tree->Branch("Jet4_bprob", &Jet4_bprob, "Jet4_bprob/D");
     tree->Branch("Jet4_bbprob", &Jet4_bbprob, "Jet4_bbprob/D");
     tree->Branch("Jet4_hadronFlavour", &Jet4_hadronFlavour, "Jet4_hadronFlavour/I");
-    tree->Branch("Jet4_SFreshaping", &Jet4_SFreshaping, "Jet4_SFreshaping/D");
-    tree->Branch("Jet4_SFreshaping_up", &Jet4_SFreshaping_up, "Jet4_SFreshaping_up/D");
-    tree->Branch("Jet4_SFreshaping_down", &Jet4_SFreshaping_down, "Jet4_SFreshaping_down/D");
-    tree->Branch("Jet4_SFloose", &Jet4_SFloose, "Jet4_SFloose/D");
-    tree->Branch("Jet4_SFmedium", &Jet4_SFmedium, "Jet4_SFmedium/D");
-    tree->Branch("Jet4_SFtight", &Jet4_SFtight, "Jet4_SFtight/D");
     //
     tree->Branch("Jet5_pt", &Jet5_pt, "Jet5_pt/D");
     tree->Branch("Jet5_eta", &Jet5_eta, "Jet5_eta/D");
@@ -1131,12 +1109,6 @@ void TTbarTauLepton::beginJob() {
     tree->Branch("Jet5_bprob", &Jet5_bprob, "Jet5_bprob/D");
     tree->Branch("Jet5_bbprob", &Jet5_bbprob, "Jet5_bbprob/D");
     tree->Branch("Jet5_hadronFlavour", &Jet5_hadronFlavour, "Jet5_hadronFlavour/I");
-    tree->Branch("Jet5_SFreshaping", &Jet5_SFreshaping, "Jet5_SFreshaping/D");
-    tree->Branch("Jet5_SFreshaping_up", &Jet5_SFreshaping_up, "Jet5_SFreshaping_up/D");
-    tree->Branch("Jet5_SFreshaping_down", &Jet5_SFreshaping_down, "Jet5_SFreshaping_down/D");
-    tree->Branch("Jet5_SFloose", &Jet5_SFloose, "Jet5_SFloose/D");
-    tree->Branch("Jet5_SFmedium", &Jet5_SFmedium, "Jet5_SFmedium/D");
-    tree->Branch("Jet5_SFtight", &Jet5_SFtight, "Jet5_SFtight/D");
     //
     tree->Branch("Jet6_pt", &Jet6_pt, "Jet6_pt/D");
     tree->Branch("Jet6_eta", &Jet6_eta, "Jet6_eta/D");
@@ -1145,12 +1117,6 @@ void TTbarTauLepton::beginJob() {
     tree->Branch("Jet6_bprob", &Jet6_bprob, "Jet6_bprob/D");
     tree->Branch("Jet6_bbprob", &Jet6_bbprob, "Jet6_bbprob/D");
     tree->Branch("Jet6_hadronFlavour", &Jet6_hadronFlavour, "Jet6_hadronFlavour/I");
-    tree->Branch("Jet6_SFreshaping", &Jet6_SFreshaping, "Jet6_SFreshaping/D");
-    tree->Branch("Jet6_SFreshaping_up", &Jet6_SFreshaping_up, "Jet6_SFreshaping_up/D");
-    tree->Branch("Jet6_SFreshaping_down", &Jet6_SFreshaping_down, "Jet6_SFreshaping_down/D");
-    tree->Branch("Jet6_SFloose", &Jet6_SFloose, "Jet6_SFloose/D");
-    tree->Branch("Jet6_SFmedium", &Jet6_SFmedium, "Jet6_SFmedium/D");
-    tree->Branch("Jet6_SFtight", &Jet6_SFtight, "Jet6_SFtight/D");
 
     //Leptons
     tree->Branch("nLeptonCandidates", &nLeptonCandidates, "nLeptonCandidates/I");
@@ -1169,116 +1135,185 @@ void TTbarTauLepton::beginJob() {
     tree->Branch("lepton1Jet_phi", &lepton1Jet_phi, "lepton1Jet_phi/D");
     tree->Branch("lepton1Jet_E", &lepton1Jet_E, "lepton1Jet_E/D");
     tree->Branch("lepton1Jet_bprob", &lepton1Jet_bprob, "lepton1Jet_bprob/D");
+    // electron
+    //tree->Branch("lepton1_electron_caloIso", &lepton1_electron_caloIso, "lepton1_electron_caloIso/F");
+    tree->Branch("lepton1_electron_cutBasedID_loose", &lepton1_electron_cutBasedID_loose, "lepton1_electron_cutBasedID_loose/I");
+    tree->Branch("lepton1_electron_cutBasedID_medium", &lepton1_electron_cutBasedID_medium, "lepton1_electron_cutBasedID_medium/I");
+    tree->Branch("lepton1_electron_cutBasedID_tight", &lepton1_electron_cutBasedID_tight, "lepton1_electron_cutBasedID_tight/I");
+    tree->Branch("lepton1_electron_mvaNoIsoID_loose", &lepton1_electron_mvaNoIsoID_loose, "lepton1_electron_mvaNoIsoID_loose/I");
+    tree->Branch("lepton1_electron_mvaNoIsoID_wp80", &lepton1_electron_mvaNoIsoID_wp80, "lepton1_electron_mvaNoIsoID_wp80/I");
+    tree->Branch("lepton1_electron_mvaNoIsoID_wp90", &lepton1_electron_mvaNoIsoID_wp90, "electron_mvaNoIsoID_wp90/I");
+    // muon
+    //tree->Branch("lepton1_muon_caloIso", &lepton1_muon_caloIso, "lepton1_muon_caloIso/F");
+    tree->Branch("lepton1_muon_CutBasedIdLoose", &lepton1_muon_CutBasedIdLoose, "lepton1_muon_CutBasedIdLoose/I");
+    tree->Branch("lepton1_muon_CutBasedIdMedium", &lepton1_muon_CutBasedIdMedium, "lepton1_muon_CutBasedIdMedium/I");
+    tree->Branch("lepton1_muon_CutBasedIdTight", &lepton1_muon_CutBasedIdTight, "lepton1_muon_CutBasedIdTight/I");
+    tree->Branch("lepton1_muon_CutBasedIdGlobalHighPt", &lepton1_muon_CutBasedIdGlobalHighPt, "lepton1_muon_CutBasedIdGlobalHighPt/I");
+    tree->Branch("lepton1_muon_CutBasedIdTrkHighPt", &lepton1_muon_CutBasedIdTrkHighPt, "lepton1_muon_CutBasedIdTrkHighPt/I");
+    tree->Branch("lepton1_muon_PFIsoLoose", &lepton1_muon_PFIsoLoose, "lepton1_muon_PFIsoLoose/I");
+    tree->Branch("lepton1_muon_PFIsoMedium", &lepton1_muon_PFIsoMedium, "lepton1_muon_PFIsoMedium/I");
+    tree->Branch("lepton1_muon_PFIsoTight", &lepton1_muon_PFIsoTight, "lepton1_muon_PFIsoTight/I");
+    tree->Branch("lepton1_muon_TkIsoLoose", &lepton1_muon_TkIsoLoose, "lepton1_muon_TkIsoLoose/I");
+    tree->Branch("lepton1_muon_MvaLoose", &lepton1_muon_MvaLoose, "lepton1_muon_MvaLoose/I");
+    tree->Branch("lepton1_muon_MvaMedium", &lepton1_muon_MvaMedium, "lepton1_muon_MvaMedium/I");
+    tree->Branch("lepton1_muon_MvaTight", &lepton1_muon_MvaTight, "lepton1_muon_MvaTight/I");
+    // Second tau lepton
+    if (UseTau) {
+        // Tau kinematic parameters
+        tree->Branch("lepton1_tau_m",&lepton1_tau_m,"lepton1_tau_m/D");
+        tree->Branch("lepton1_tau_dm",&lepton1_tau_dm,"lepton1_tau_dm/D");
+        // Raw discriminators
+        tree->Branch("lepton1_tau_absIso",&lepton1_tau_absIso,"lepton1_tau_absIso/D");
+        tree->Branch("lepton1_tau_againstElectronRaw",&lepton1_tau_againstElectronRaw,"lepton1_tau_againstElectronRaw/D");
+        tree->Branch("lepton1_tau_IsoMVArun2v1DBdR03oldDMwLTraw",&lepton1_tau_IsoMVArun2v1DBdR03oldDMwLTraw,"lepton1_tau_IsoMVArun2v1DBdR03oldDMwLTraw/D");
+        /*
+        tree->Branch("lepton1_tau_IsoMVArun2v1DBnewDMwLTraw",&lepton1_tau_IsoMVArun2v1DBnewDMwLTraw,"lepton1_tau_IsoMVArun2v1DBnewDMwLTraw/D");
+        tree->Branch("lepton1_tau_IsoMVArun2v1DBoldDMwLTraw",&lepton1_tau_IsoMVArun2v1DBoldDMwLTraw,"lepton1_tau_IsoMVArun2v1DBoldDMwLTraw/D");
+        tree->Branch("lepton1_tau_IsoMVArun2v1PWdR03oldDMwLTraw",&lepton1_tau_IsoMVArun2v1PWdR03oldDMwLTraw,"lepton1_tau_IsoMVArun2v1PWdR03oldDMwLTraw/D");
+        tree->Branch("lepton1_tau_IsoMVArun2v1PWnewDMwLTraw",&lepton1_tau_IsoMVArun2v1PWnewDMwLTraw,"lepton1_tau_IsoMVArun2v1PWnewDMwLTraw/D");
+        tree->Branch("lepton1_tau_IsoMVArun2v1PWoldDMwLTraw",&lepton1_tau_IsoMVArun2v1PWoldDMwLTraw,"lepton1_tau_IsoMVArun2v1PWoldDMwLTraw/D");
+        */
 
+        // Discriminators
+        tree->Branch("lepton1_tau_looseCombinedIso",&lepton1_tau_looseCombinedIso,"lepton1_tau_looseCombinedIso/I");
+        //tree->Branch("lepton1_tau_mediumCombinedIso",&lepton1_tau_mediumCombinedIso,"lepton1_tau_mediumCombinedIso/I");
+        tree->Branch("lepton1_tau_tightCombinedIso",&lepton1_tau_tightCombinedIso,"lepton1_tau_tightCombinedIso/I");
+        tree->Branch("lepton1_tau_looseMvaIso",&lepton1_tau_looseMvaIso,"lepton1_tau_looseMvaIso/I");
+        tree->Branch("lepton1_tau_mediumMvaIso",&lepton1_tau_mediumMvaIso,"lepton1_tau_mediumMvaIso/I");
+        tree->Branch("lepton1_tau_tightMvaIso",&lepton1_tau_tightMvaIso,"lepton1_tau_tightMvaIso/I");
+        tree->Branch("lepton1_tau_VtightMvaIso",&lepton1_tau_VtightMvaIso,"lepton1_tau_VtightMvaIso/I");
+        tree->Branch("lepton1_tau_VVtightMvaIso",&lepton1_tau_VVtightMvaIso,"lepton1_tau_VVtightMvaIso/I");
+        tree->Branch("lepton1_tau_tightMuonRejection",&lepton1_tau_tightMuonRejection,"lepton1_tau_tightMuonRejection/I");
+        tree->Branch("lepton1_tau_looseElectronRejection",&lepton1_tau_looseElectronRejection,"lepton1_tau_looseElectronRejection/I");
+        tree->Branch("lepton1_tau_mediumElectronRejection",&lepton1_tau_mediumElectronRejection,"lepton1_tau_mediumElectronRejection/I");
+        tree->Branch("lepton1_tau_tightElectronRejection",&lepton1_tau_tightElectronRejection,"lepton1_tau_tightElectronRejection/I");
+        tree->Branch("lepton1_tau_VtightElectronRejection",&lepton1_tau_VtightElectronRejection,"lepton1_tau_VtightElectronRejection/I");
+
+        // Deep 2017v2
+        if (DeepTau) {
+            tree->Branch("lepton1_tau_Deep2017v2ElectronRejection",&lepton1_tau_Deep2017v2ElectronRejection,"lepton1_tau_Deep2017v2ElectronRejection/D");
+            tree->Branch("lepton1_tau_Deep2017v2MuonRejection",&lepton1_tau_Deep2017v2MuonRejection,"lepton1_tau_Deep2017v2MuonRejection/D");
+            tree->Branch("lepton1_tau_Deep2017v2JetRejection",&lepton1_tau_Deep2017v2JetRejection,"lepton1_tau_Deep2017v2JetRejection/D");
+
+            tree->Branch("lepton1_tau_VVLooseDeepTau2017v2VSjet",&lepton1_tau_VVLooseDeepTau2017v2VSjet,"lepton1_tau_VVLooseDeepTau2017v2VSjet/I");
+            tree->Branch("lepton1_tau_VLooseDeepTau2017v2VSjet",&lepton1_tau_VLooseDeepTau2017v2VSjet,"lepton1_tau_VLooseDeepTau2017v2VSjet/I");
+            tree->Branch("lepton1_tau_LooseDeepTau2017v2VSjet",&lepton1_tau_LooseDeepTau2017v2VSjet,"lepton1_tau_LooseDeepTau2017v2VSjet/I");
+            tree->Branch("lepton1_tau_MediumDeepTau2017v2VSjet",&lepton1_tau_MediumDeepTau2017v2VSjet,"lepton1_tau_MediumDeepTau2017v2VSjet/I");
+            tree->Branch("lepton1_tau_TightDeepTau2017v2VSjet",&lepton1_tau_TightDeepTau2017v2VSjet,"lepton1_tau_TightDeepTau2017v2VSjet/I");
+            tree->Branch("lepton1_tau_VTightDeepTau2017v2VSjet",&lepton1_tau_VTightDeepTau2017v2VSjet,"lepton1_tau_VTightDeepTau2017v2VSjet/I");
+            tree->Branch("lepton1_tau_VVTightDeepTau2017v2VSjet",&lepton1_tau_VVTightDeepTau2017v2VSjet,"lepton1_tau_VVTightDeepTau2017v2VSjet/I");
+            tree->Branch("lepton1_tau_LooseDeepTau2017v2VSmu",&lepton1_tau_LooseDeepTau2017v2VSmu,"lepton1_tau_LooseDeepTau2017v2VSmu/I");
+            tree->Branch("lepton1_tau_MediumDeepTau2017v2VSmu",&lepton1_tau_MediumDeepTau2017v2VSmu,"lepton1_tau_MediumDeepTau2017v2VSmu/I");
+            tree->Branch("lepton1_tau_TightDeepTau2017v2VSmu",&lepton1_tau_TightDeepTau2017v2VSmu,"lepton1_tau_TightDeepTau2017v2VSmu/I");
+
+            tree->Branch("lepton1_tau_VVLooseDeepTau2017v2VSe",&lepton1_tau_VVLooseDeepTau2017v2VSe,"lepton1_tau_VVLooseDeepTau2017v2VSe/I");
+            tree->Branch("lepton1_tau_VLooseDeepTau2017v2VSe",&lepton1_tau_VLooseDeepTau2017v2VSe,"lepton1_tau_VLooseDeepTau2017v2VSe/I");
+            tree->Branch("lepton1_tau_LooseDeepTau2017v2VSe",&lepton1_tau_LooseDeepTau2017v2VSe,"lepton1_tau_LooseDeepTau2017v2VSe/I");
+            tree->Branch("lepton1_tau_MediumDeepTau2017v2VSe",&lepton1_tau_MediumDeepTau2017v2VSe,"lepton1_tau_MediumDeepTau2017v2VSe/I");
+            tree->Branch("lepton1_tau_TightDeepTau2017v2VSe",&lepton1_tau_TightDeepTau2017v2VSe,"lepton1_tau_TightDeepTau2017v2VSe/I");
+            tree->Branch("lepton1_tau_VTightDeepTau2017v2VSe",&lepton1_tau_VTightDeepTau2017v2VSe,"lepton1_tau_VTightDeepTau2017v2VSe/I");
+            tree->Branch("lepton1_tau_VVTightDeepTau2017v2VSe",&lepton1_tau_VVTightDeepTau2017v2VSe,"lepton1_tau_VVTightDeepTau2017v2VSe/I");
+        }
+    }
+    tree->Branch("lepton2_pt", &lepton2_pt, "lepton2_pt/D");
+    tree->Branch("lepton2_E", &lepton2_E, "lepton2_E/D");
+    tree->Branch("lepton2_eta", &lepton2_eta, "lepton2_eta/D");
+    tree->Branch("lepton2_phi", &lepton2_phi, "lepton2_phi/D");
+    tree->Branch("lepton2_dz", &lepton2_dz, "lepton2_dz/D");
+    tree->Branch("lepton2_flavor", &lepton2_flavor, "lepton2_flavor/I");
+    tree->Branch("lepton2_charge", &lepton2_charge, "lepton2_charge/I");
+    tree->Branch("lepton2_trackIso", &lepton2_trackIso, "lepton2_trackIso/F");
+    tree->Branch("lepton2_sumPuppiIso", &lepton2_sumPuppiIso, "lepton2_sumPuppiIso/F");
+    tree->Branch("lepton2_sumPuppiNoLeptonIso", &lepton2_sumPuppiNoLeptonIso, "lepton2_sumPuppiNoLeptonIso/F");
+    tree->Branch("lepton2Jet_pt", &lepton2Jet_pt, "lepton2Jet_pt/D");
+    tree->Branch("lepton2Jet_eta", &lepton2Jet_eta, "lepton2Jet_eta/D");
+    tree->Branch("lepton2Jet_phi", &lepton2Jet_phi, "lepton2Jet_phi/D");
+    tree->Branch("lepton2Jet_E", &lepton2Jet_E, "lepton2Jet_E/D");
+    tree->Branch("lepton2Jet_bprob", &lepton2Jet_bprob, "lepton2Jet_bprob/D");
+    // electron
+    //tree->Branch("lepton2_electron_caloIso", &lepton2_electron_caloIso, "lepton2_electron_caloIso/F");
+    tree->Branch("lepton2_electron_cutBasedID_loose", &lepton2_electron_cutBasedID_loose, "lepton2_electron_cutBasedID_loose/I");
+    tree->Branch("lepton2_electron_cutBasedID_medium", &lepton2_electron_cutBasedID_medium, "lepton2_electron_cutBasedID_medium/I");
+    tree->Branch("lepton2_electron_cutBasedID_tight", &lepton2_electron_cutBasedID_tight, "lepton2_electron_cutBasedID_tight/I");
+    tree->Branch("lepton2_electron_mvaNoIsoID_loose", &lepton2_electron_mvaNoIsoID_loose, "lepton2_electron_mvaNoIsoID_loose/I");
+    tree->Branch("lepton2_electron_mvaNoIsoID_wp80", &lepton2_electron_mvaNoIsoID_wp80, "lepton2_electron_mvaNoIsoID_wp80/I");
+    tree->Branch("lepton2_electron_mvaNoIsoID_wp90", &lepton2_electron_mvaNoIsoID_wp90, "electron_mvaNoIsoID_wp90/I");
+    // muon
+    //tree->Branch("lepton2_muon_caloIso", &lepton2_muon_caloIso, "lepton2_muon_caloIso/F");
+    tree->Branch("lepton2_muon_CutBasedIdLoose", &lepton2_muon_CutBasedIdLoose, "lepton2_muon_CutBasedIdLoose/I");
+    tree->Branch("lepton2_muon_CutBasedIdMedium", &lepton2_muon_CutBasedIdMedium, "lepton2_muon_CutBasedIdMedium/I");
+    tree->Branch("lepton2_muon_CutBasedIdTight", &lepton2_muon_CutBasedIdTight, "lepton2_muon_CutBasedIdTight/I");
+    tree->Branch("lepton2_muon_CutBasedIdGlobalHighPt", &lepton2_muon_CutBasedIdGlobalHighPt, "lepton2_muon_CutBasedIdGlobalHighPt/I");
+    tree->Branch("lepton2_muon_CutBasedIdTrkHighPt", &lepton2_muon_CutBasedIdTrkHighPt, "lepton2_muon_CutBasedIdTrkHighPt/I");
+    tree->Branch("lepton2_muon_PFIsoLoose", &lepton2_muon_PFIsoLoose, "lepton2_muon_PFIsoLoose/I");
+    tree->Branch("lepton2_muon_PFIsoMedium", &lepton2_muon_PFIsoMedium, "lepton2_muon_PFIsoMedium/I");
+    tree->Branch("lepton2_muon_PFIsoTight", &lepton2_muon_PFIsoTight, "lepton2_muon_PFIsoTight/I");
+    tree->Branch("lepton2_muon_TkIsoLoose", &lepton2_muon_TkIsoLoose, "lepton2_muon_TkIsoLoose/I");
+    tree->Branch("lepton2_muon_MvaLoose", &lepton2_muon_MvaLoose, "lepton2_muon_MvaLoose/I");
+    tree->Branch("lepton2_muon_MvaMedium", &lepton2_muon_MvaMedium, "lepton2_muon_MvaMedium/I");
+    tree->Branch("lepton2_muon_MvaTight", &lepton2_muon_MvaTight, "lepton2_muon_MvaTight/I");
+    // Second tau lepton
+    if (UseTau) {
+        // Tau kinematic parameters
+        tree->Branch("lepton2_tau_m",&lepton2_tau_m,"lepton2_tau_m/D");
+        tree->Branch("lepton2_tau_dm",&lepton2_tau_dm,"lepton2_tau_dm/D");
+        // Raw discriminators
+        tree->Branch("lepton2_tau_absIso",&lepton2_tau_absIso,"lepton2_tau_absIso/D");
+        tree->Branch("lepton2_tau_againstElectronRaw",&lepton2_tau_againstElectronRaw,"lepton2_tau_againstElectronRaw/D");
+        tree->Branch("lepton2_tau_IsoMVArun2v1DBdR03oldDMwLTraw",&lepton2_tau_IsoMVArun2v1DBdR03oldDMwLTraw,"lepton2_tau_IsoMVArun2v1DBdR03oldDMwLTraw/D");
+        /*
+        tree->Branch("lepton2_tau_IsoMVArun2v1DBnewDMwLTraw",&lepton2_tau_IsoMVArun2v1DBnewDMwLTraw,"lepton2_tau_IsoMVArun2v1DBnewDMwLTraw/D");
+        tree->Branch("lepton2_tau_IsoMVArun2v1DBoldDMwLTraw",&lepton2_tau_IsoMVArun2v1DBoldDMwLTraw,"lepton2_tau_IsoMVArun2v1DBoldDMwLTraw/D");
+        tree->Branch("lepton2_tau_IsoMVArun2v1PWdR03oldDMwLTraw",&lepton2_tau_IsoMVArun2v1PWdR03oldDMwLTraw,"lepton2_tau_IsoMVArun2v1PWdR03oldDMwLTraw/D");
+        tree->Branch("lepton2_tau_IsoMVArun2v1PWnewDMwLTraw",&lepton2_tau_IsoMVArun2v1PWnewDMwLTraw,"lepton2_tau_IsoMVArun2v1PWnewDMwLTraw/D");
+        tree->Branch("lepton2_tau_IsoMVArun2v1PWoldDMwLTraw",&lepton2_tau_IsoMVArun2v1PWoldDMwLTraw,"lepton2_tau_IsoMVArun2v1PWoldDMwLTraw/D");
+        */
+
+        // Discriminators
+        tree->Branch("lepton2_tau_looseCombinedIso",&lepton2_tau_looseCombinedIso,"lepton2_tau_looseCombinedIso/I");
+        //tree->Branch("lepton2_tau_mediumCombinedIso",&lepton2_tau_mediumCombinedIso,"lepton2_tau_mediumCombinedIso/I");
+        tree->Branch("lepton2_tau_tightCombinedIso",&lepton2_tau_tightCombinedIso,"lepton2_tau_tightCombinedIso/I");
+        tree->Branch("lepton2_tau_looseMvaIso",&lepton2_tau_looseMvaIso,"lepton2_tau_looseMvaIso/I");
+        tree->Branch("lepton2_tau_mediumMvaIso",&lepton2_tau_mediumMvaIso,"lepton2_tau_mediumMvaIso/I");
+        tree->Branch("lepton2_tau_tightMvaIso",&lepton2_tau_tightMvaIso,"lepton2_tau_tightMvaIso/I");
+        tree->Branch("lepton2_tau_VtightMvaIso",&lepton2_tau_VtightMvaIso,"lepton2_tau_VtightMvaIso/I");
+        tree->Branch("lepton2_tau_VVtightMvaIso",&lepton2_tau_VVtightMvaIso,"lepton2_tau_VVtightMvaIso/I");
+        tree->Branch("lepton2_tau_tightMuonRejection",&lepton2_tau_tightMuonRejection,"lepton2_tau_tightMuonRejection/I");
+        tree->Branch("lepton2_tau_looseElectronRejection",&lepton2_tau_looseElectronRejection,"lepton2_tau_looseElectronRejection/I");
+        tree->Branch("lepton2_tau_mediumElectronRejection",&lepton2_tau_mediumElectronRejection,"lepton2_tau_mediumElectronRejection/I");
+        tree->Branch("lepton2_tau_tightElectronRejection",&lepton2_tau_tightElectronRejection,"lepton2_tau_tightElectronRejection/I");
+        tree->Branch("lepton2_tau_VtightElectronRejection",&lepton2_tau_VtightElectronRejection,"lepton2_tau_VtightElectronRejection/I");
+
+        // Deep 2017v2
+        if (DeepTau) {
+            tree->Branch("lepton2_tau_Deep2017v2ElectronRejection",&lepton2_tau_Deep2017v2ElectronRejection,"lepton2_tau_Deep2017v2ElectronRejection/D");
+            tree->Branch("lepton2_tau_Deep2017v2MuonRejection",&lepton2_tau_Deep2017v2MuonRejection,"lepton2_tau_Deep2017v2MuonRejection/D");
+            tree->Branch("lepton2_tau_Deep2017v2JetRejection",&lepton2_tau_Deep2017v2JetRejection,"lepton2_tau_Deep2017v2JetRejection/D");
+
+            tree->Branch("lepton2_tau_VVLooseDeepTau2017v2VSjet",&lepton2_tau_VVLooseDeepTau2017v2VSjet,"lepton2_tau_VVLooseDeepTau2017v2VSjet/I");
+            tree->Branch("lepton2_tau_VLooseDeepTau2017v2VSjet",&lepton2_tau_VLooseDeepTau2017v2VSjet,"lepton2_tau_VLooseDeepTau2017v2VSjet/I");
+            tree->Branch("lepton2_tau_LooseDeepTau2017v2VSjet",&lepton2_tau_LooseDeepTau2017v2VSjet,"lepton2_tau_LooseDeepTau2017v2VSjet/I");
+            tree->Branch("lepton2_tau_MediumDeepTau2017v2VSjet",&lepton2_tau_MediumDeepTau2017v2VSjet,"lepton2_tau_MediumDeepTau2017v2VSjet/I");
+            tree->Branch("lepton2_tau_TightDeepTau2017v2VSjet",&lepton2_tau_TightDeepTau2017v2VSjet,"lepton2_tau_TightDeepTau2017v2VSjet/I");
+            tree->Branch("lepton2_tau_VTightDeepTau2017v2VSjet",&lepton2_tau_VTightDeepTau2017v2VSjet,"lepton2_tau_VTightDeepTau2017v2VSjet/I");
+            tree->Branch("lepton2_tau_VVTightDeepTau2017v2VSjet",&lepton2_tau_VVTightDeepTau2017v2VSjet,"lepton2_tau_VVTightDeepTau2017v2VSjet/I");
+            tree->Branch("lepton2_tau_LooseDeepTau2017v2VSmu",&lepton2_tau_LooseDeepTau2017v2VSmu,"lepton2_tau_LooseDeepTau2017v2VSmu/I");
+            tree->Branch("lepton2_tau_MediumDeepTau2017v2VSmu",&lepton2_tau_MediumDeepTau2017v2VSmu,"lepton2_tau_MediumDeepTau2017v2VSmu/I");
+            tree->Branch("lepton2_tau_TightDeepTau2017v2VSmu",&lepton2_tau_TightDeepTau2017v2VSmu,"lepton2_tau_TightDeepTau2017v2VSmu/I");
+
+            tree->Branch("lepton2_tau_VVLooseDeepTau2017v2VSe",&lepton2_tau_VVLooseDeepTau2017v2VSe,"lepton2_tau_VVLooseDeepTau2017v2VSe/I");
+            tree->Branch("lepton2_tau_VLooseDeepTau2017v2VSe",&lepton2_tau_VLooseDeepTau2017v2VSe,"lepton2_tau_VLooseDeepTau2017v2VSe/I");
+            tree->Branch("lepton2_tau_LooseDeepTau2017v2VSe",&lepton2_tau_LooseDeepTau2017v2VSe,"lepton2_tau_LooseDeepTau2017v2VSe/I");
+            tree->Branch("lepton2_tau_MediumDeepTau2017v2VSe",&lepton2_tau_MediumDeepTau2017v2VSe,"lepton2_tau_MediumDeepTau2017v2VSe/I");
+            tree->Branch("lepton2_tau_TightDeepTau2017v2VSe",&lepton2_tau_TightDeepTau2017v2VSe,"lepton2_tau_TightDeepTau2017v2VSe/I");
+            tree->Branch("lepton2_tau_VTightDeepTau2017v2VSe",&lepton2_tau_VTightDeepTau2017v2VSe,"lepton2_tau_VTightDeepTau2017v2VSe/I");
+            tree->Branch("lepton2_tau_VVTightDeepTau2017v2VSe",&lepton2_tau_VVTightDeepTau2017v2VSe,"lepton2_tau_VVTightDeepTau2017v2VSe/I");
+        }
+    }
     /*
     tree->Branch("VetoLeptons", &VetoLeptons, "VetoLeptons/I");
     tree->Branch("VetoTaus", &VetoTaus, "VetoTaus/I");
     */
-    // electron
-    /*
-    tree->Branch("electron_pt", &electron_pt, "electron_pt/D");
-    tree->Branch("electron_E", &electron_E, "electron_E/D");
-    tree->Branch("electron_eta", &electron_eta, "electron_eta/D");
-    tree->Branch("electron_phi", &electron_phi, "electron_phi/D");
-    tree->Branch("electron_charge", &electron_charge, "electron_charge/I");
-    tree->Branch("electron_trackIso", &electron_trackIso, "electron_trackIso/F");
-    tree->Branch("electron_sumPuppiIso", &electron_sumPuppiIso, "electron_sumPuppiIso/F");
-    tree->Branch("electron_sumPuppiNoLeptonIso", &electron_sumPuppiNoLeptonIso, "electron_sumPuppiNoLeptonIso/F");
-    */
-    tree->Branch("electron_caloIso", &electron_caloIso, "electron_caloIso/F");
-    tree->Branch("electron_cutBasedID_loose", &electron_cutBasedID_loose, "electron_cutBasedID_loose/I");
-    tree->Branch("electron_cutBasedID_medium", &electron_cutBasedID_medium, "electron_cutBasedID_medium/I");
-    tree->Branch("electron_cutBasedID_tight", &electron_cutBasedID_tight, "electron_cutBasedID_tight/I");
-    tree->Branch("electron_mvaNoIsoID_loose", &electron_mvaNoIsoID_loose, "electron_mvaNoIsoID_loose/I");
-    tree->Branch("electron_mvaNoIsoID_wp80", &electron_mvaNoIsoID_wp80, "electron_mvaNoIsoID_wp80/I");
-    tree->Branch("electron_mvaNoIsoID_wp90", &electron_mvaNoIsoID_wp90, "electron_mvaNoIsoID_wp90/I");
-    // muon
-    /*
-    tree->Branch("muon_pt", &muon_pt, "muon_pt/D");
-    tree->Branch("muon_E", &muon_E, "muon_E/D");
-    tree->Branch("muon_eta", &muon_eta, "muon_eta/D");
-    tree->Branch("muon_phi", &muon_phi, "muon_phi/D");
-    tree->Branch("muon_charge", &muon_charge, "muon_charge/I");
-    tree->Branch("muon_trackIso", &muon_trackIso, "muon_trackIso/F");
-    tree->Branch("muon_sumPuppiIso", &muon_sumPuppiIso, "muon_sumPuppiIso/F");
-    tree->Branch("muon_sumPuppiNoLeptonIso", &muon_sumPuppiNoLeptonIso, "muon_sumPuppiNoLeptonIso/F");
-    */
-    tree->Branch("muon_caloIso", &muon_caloIso, "muon_caloIso/F");
-    tree->Branch("muon_CutBasedIdLoose", &muon_CutBasedIdLoose, "muon_CutBasedIdLoose/I");
-    tree->Branch("muon_CutBasedIdMedium", &muon_CutBasedIdMedium, "muon_CutBasedIdMedium/I");
-    tree->Branch("muon_CutBasedIdTight", &muon_CutBasedIdTight, "muon_CutBasedIdTight/I");
-    tree->Branch("muon_CutBasedIdGlobalHighPt", &muon_CutBasedIdGlobalHighPt, "muon_CutBasedIdGlobalHighPt/I");
-    tree->Branch("muon_CutBasedIdTrkHighPt", &muon_CutBasedIdTrkHighPt, "muon_CutBasedIdTrkHighPt/I");
-    tree->Branch("muon_PFIsoLoose", &muon_PFIsoLoose, "muon_PFIsoLoose/I");
-    tree->Branch("muon_PFIsoMedium", &muon_PFIsoMedium, "muon_PFIsoMedium/I");
-    tree->Branch("muon_PFIsoTight", &muon_PFIsoTight, "muon_PFIsoTight/I");
-    tree->Branch("muon_TkIsoLoose", &muon_TkIsoLoose, "muon_TkIsoLoose/I");
-    tree->Branch("muon_MvaLoose", &muon_MvaLoose, "muon_MvaLoose/I");
-    tree->Branch("muon_MvaMedium", &muon_MvaMedium, "muon_MvaMedium/I");
-    tree->Branch("muon_MvaTight", &muon_MvaTight, "muon_MvaTight/I");
-    // Second tau lepton
-    if (UseTau) {
-        // Tau kinematic parameters
-        tree->Branch("tau2_pt",&tau2_pt,"tau2_pt/D");
-        tree->Branch("tau2_eta",&tau2_eta,"tau2_eta/D");
-        tree->Branch("tau2_phi",&tau2_phi,"tau2_phi/D");
-        tree->Branch("tau2_q",&tau2_q,"tau2_q/D");
-        tree->Branch("tau2_m",&tau2_m,"tau2_m/D");
-        tree->Branch("tau2_dm",&tau2_dm,"tau2_dm/D");
-        tree->Branch("tau2_dz",&tau2_dz,"tau2_dz/D");
-        // Raw discriminators
-        tree->Branch("tau2_absIso",&tau2_absIso,"tau2_absIso/D");
-        tree->Branch("tau2_againstElectronRaw",&tau2_againstElectronRaw,"tau2_againstElectronRaw/D");
-        tree->Branch("tau2_IsoMVArun2v1DBdR03oldDMwLTraw",&tau2_IsoMVArun2v1DBdR03oldDMwLTraw,"tau2_IsoMVArun2v1DBdR03oldDMwLTraw/D");
-        /*
-        tree->Branch("tau2_IsoMVArun2v1DBnewDMwLTraw",&tau2_IsoMVArun2v1DBnewDMwLTraw,"tau2_IsoMVArun2v1DBnewDMwLTraw/D");
-        tree->Branch("tau2_IsoMVArun2v1DBoldDMwLTraw",&tau2_IsoMVArun2v1DBoldDMwLTraw,"tau2_IsoMVArun2v1DBoldDMwLTraw/D");
-        tree->Branch("tau2_IsoMVArun2v1PWdR03oldDMwLTraw",&tau2_IsoMVArun2v1PWdR03oldDMwLTraw,"tau2_IsoMVArun2v1PWdR03oldDMwLTraw/D");
-        tree->Branch("tau2_IsoMVArun2v1PWnewDMwLTraw",&tau2_IsoMVArun2v1PWnewDMwLTraw,"tau2_IsoMVArun2v1PWnewDMwLTraw/D");
-        tree->Branch("tau2_IsoMVArun2v1PWoldDMwLTraw",&tau2_IsoMVArun2v1PWoldDMwLTraw,"tau2_IsoMVArun2v1PWoldDMwLTraw/D");
-        */
-
-        // Discriminators
-        tree->Branch("tau2_looseCombinedIso",&tau2_looseCombinedIso,"tau2_looseCombinedIso/I");
-        //tree->Branch("tau2_mediumCombinedIso",&tau2_mediumCombinedIso,"tau2_mediumCombinedIso/I");
-        tree->Branch("tau2_tightCombinedIso",&tau2_tightCombinedIso,"tau2_tightCombinedIso/I");
-        tree->Branch("tau2_looseMvaIso",&tau2_looseMvaIso,"tau2_looseMvaIso/I");
-        tree->Branch("tau2_mediumMvaIso",&tau2_mediumMvaIso,"tau2_mediumMvaIso/I");
-        tree->Branch("tau2_tightMvaIso",&tau2_tightMvaIso,"tau2_tightMvaIso/I");
-        tree->Branch("tau2_VtightMvaIso",&tau2_VtightMvaIso,"tau2_VtightMvaIso/I");
-        tree->Branch("tau2_VVtightMvaIso",&tau2_VVtightMvaIso,"tau2_VVtightMvaIso/I");
-        tree->Branch("tau2_tightMuonRejection",&tau2_tightMuonRejection,"tau2_tightMuonRejection/I");
-        tree->Branch("tau2_looseElectronRejection",&tau2_looseElectronRejection,"tau2_looseElectronRejection/I");
-        tree->Branch("tau2_mediumElectronRejection",&tau2_mediumElectronRejection,"tau2_mediumElectronRejection/I");
-        tree->Branch("tau2_tightElectronRejection",&tau2_tightElectronRejection,"tau2_tightElectronRejection/I");
-        tree->Branch("tau2_VtightElectronRejection",&tau2_VtightElectronRejection,"tau2_VtightElectronRejection/I");
-
-        // Deep 2017v2
-        if (DeepTau) {
-            tree->Branch("tau2_Deep2017v2ElectronRejection",&tau2_Deep2017v2ElectronRejection,"tau2_Deep2017v2ElectronRejection/D");
-            tree->Branch("tau2_Deep2017v2MuonRejection",&tau2_Deep2017v2MuonRejection,"tau2_Deep2017v2MuonRejection/D");
-            tree->Branch("tau2_Deep2017v2JetRejection",&tau2_Deep2017v2JetRejection,"tau2_Deep2017v2JetRejection/D");
-
-            tree->Branch("tau2_VVLooseDeepTau2017v2VSjet",&tau2_VVLooseDeepTau2017v2VSjet,"tau2_VVLooseDeepTau2017v2VSjet/I");
-            tree->Branch("tau2_VLooseDeepTau2017v2VSjet",&tau2_VLooseDeepTau2017v2VSjet,"tau2_VLooseDeepTau2017v2VSjet/I");
-            tree->Branch("tau2_LooseDeepTau2017v2VSjet",&tau2_LooseDeepTau2017v2VSjet,"tau2_LooseDeepTau2017v2VSjet/I");
-            tree->Branch("tau2_MediumDeepTau2017v2VSjet",&tau2_MediumDeepTau2017v2VSjet,"tau2_MediumDeepTau2017v2VSjet/I");
-            tree->Branch("tau2_TightDeepTau2017v2VSjet",&tau2_TightDeepTau2017v2VSjet,"tau2_TightDeepTau2017v2VSjet/I");
-            tree->Branch("tau2_VTightDeepTau2017v2VSjet",&tau2_VTightDeepTau2017v2VSjet,"tau2_VTightDeepTau2017v2VSjet/I");
-            tree->Branch("tau2_VVTightDeepTau2017v2VSjet",&tau2_VVTightDeepTau2017v2VSjet,"tau2_VVTightDeepTau2017v2VSjet/I");
-            tree->Branch("tau2_LooseDeepTau2017v2VSmu",&tau2_LooseDeepTau2017v2VSmu,"tau2_LooseDeepTau2017v2VSmu/I");
-            tree->Branch("tau2_MediumDeepTau2017v2VSmu",&tau2_MediumDeepTau2017v2VSmu,"tau2_MediumDeepTau2017v2VSmu/I");
-            tree->Branch("tau2_TightDeepTau2017v2VSmu",&tau2_TightDeepTau2017v2VSmu,"tau2_TightDeepTau2017v2VSmu/I");
-
-            tree->Branch("tau2_VVLooseDeepTau2017v2VSe",&tau2_VVLooseDeepTau2017v2VSe,"tau2_VVLooseDeepTau2017v2VSe/I");
-            tree->Branch("tau2_VLooseDeepTau2017v2VSe",&tau2_VLooseDeepTau2017v2VSe,"tau2_VLooseDeepTau2017v2VSe/I");
-            tree->Branch("tau2_LooseDeepTau2017v2VSe",&tau2_LooseDeepTau2017v2VSe,"tau2_LooseDeepTau2017v2VSe/I");
-            tree->Branch("tau2_MediumDeepTau2017v2VSe",&tau2_MediumDeepTau2017v2VSe,"tau2_MediumDeepTau2017v2VSe/I");
-            tree->Branch("tau2_TightDeepTau2017v2VSe",&tau2_TightDeepTau2017v2VSe,"tau2_TightDeepTau2017v2VSe/I");
-            tree->Branch("tau2_VTightDeepTau2017v2VSe",&tau2_VTightDeepTau2017v2VSe,"tau2_VTightDeepTau2017v2VSe/I");
-            tree->Branch("tau2_VVTightDeepTau2017v2VSe",&tau2_VVTightDeepTau2017v2VSe,"tau2_VVTightDeepTau2017v2VSe/I");
-        }
-    }
     // Tau Jet
     tree->Branch("TauJet_pt", &TauJet_pt, "TauJet_pt/D");
     tree->Branch("TauJet_eta", &TauJet_eta, "TauJet_eta/D");
@@ -1686,7 +1721,7 @@ bool TTbarTauLepton::AddTau(const edm::Event& event) {
         //TauIdMap.insert(std::pair<int, std::pair<double, double>> (i, PairAbsIsoPt));
 
         cut((pv_position - tau.vertex()).R() < tauDzMax); // tau vertex displacement
-        std::cout << "Vertex displacement thr passed" << std::endl;
+        if (monitoringTau) std::cout << "Vertex displacement thr passed" << std::endl;
         if (monitoringTau) std::cout << "PV passed" << std::endl;
         if (monitoringTau) std::cout << "candidate passed cuts" << std::endl;
         TauIndexMap.erase(i);
@@ -2661,10 +2696,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
     Jet1_bprob = null;
     Jet1_bbprob = null;
     Jet1_hadronFlavour = null;
-    Jet1_SFreshaping = 1;
-    Jet1_SFloose = 1;
-    Jet1_SFmedium = 1;
-    Jet1_SFtight = 1;
 
     Jet2_pt   = null;
     Jet2_eta  = null;
@@ -2674,10 +2705,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
     Jet2_bprob = null;
     Jet2_bbprob = null;
     Jet2_hadronFlavour = null;
-    Jet2_SFreshaping = 1;
-    Jet2_SFloose = 1;
-    Jet2_SFmedium = 1;
-    Jet2_SFtight = 1;
 
     Jet3_pt   = null;
     Jet3_eta  = null;
@@ -2687,10 +2714,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
     Jet3_bprob = null;
     Jet3_bbprob = null;
     Jet3_hadronFlavour = null;
-    Jet3_SFreshaping = 1;
-    Jet3_SFloose = 1;
-    Jet3_SFmedium = 1;
-    Jet3_SFtight = 1;
 
     Jet4_pt   = null;
     Jet4_eta  = null;
@@ -2700,10 +2723,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
     Jet4_bprob = null;
     Jet4_bbprob = null;
     Jet4_hadronFlavour = null;
-    Jet4_SFreshaping = 1;
-    Jet4_SFloose = 1;
-    Jet4_SFmedium = 1;
-    Jet4_SFtight = 1;
 
     Jet5_pt   = null;
     Jet5_eta  = null;
@@ -2713,10 +2732,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
     Jet5_bprob = null;
     Jet5_bbprob = null;
     Jet5_hadronFlavour = null;
-    Jet5_SFreshaping = 1;
-    Jet5_SFloose = 1;
-    Jet5_SFmedium = 1;
-    Jet5_SFtight = 1;
 
     Jet6_pt   = null;
     Jet6_eta  = null;
@@ -2726,10 +2741,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
     Jet6_bprob = null;
     Jet6_bbprob = null;
     Jet6_hadronFlavour = null;
-    Jet6_SFreshaping = 1;
-    Jet6_SFloose = 1;
-    Jet6_SFmedium = 1;
-    Jet6_SFtight = 1;
 
     lepton1Jet_pt = null;
     lepton1Jet_eta = null;
@@ -2750,30 +2761,8 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
     int nLooseBJets = 0;
 
     // Btag calibration
-    BTagCalibration calib("csvv1", "DeepCSV_94XSF_V5_B_F.csv");
+    //BTagCalibration calib("csvv1", "/afs/cern.ch/user/a/aoskin/Tau_packeges/CMSSW_9_4_6/src/Tau/TreeMakerMiniAOD/test/TTBarTauLepton_only/DeepCSV_94XSF_V5_B_F.csv");
     // operating point, central sys type, other sys types
-    /*
-    BTagCalibrationReader reader(BTagEntry::OP_LOOSE, "central", {"up", "down"});
-    // calibration instance, btag flavour, measurement type = "comb" (need "ttbar"?)
-    reader.load(calib, BTagEntry::FLAV_B, "comb");
-    reader.load(calib, BTagEntry::FLAV_C, "comb");
-    reader.load(calib, BTagEntry::FLAV_UDSG, "comb");
-    // Same but with medium operating point
-    BTagCalibrationReader readerMediumOP(BTagEntry::OP_MEDIUM, "central", {"up", "down"});
-    readerMediumOP.load(calib, BTagEntry::FLAV_B, "comb");
-    readerMediumOP.load(calib, BTagEntry::FLAV_C, "comb");
-    readerMediumOP.load(calib, BTagEntry::FLAV_UDSG, "comb");
-    // Same but with tight operating point
-    BTagCalibrationReader readerTightOP(BTagEntry::OP_TIGHT, "central", {"up", "down"});
-    readerTightOP.load(calib, BTagEntry::FLAV_B, "comb");
-    readerTightOP.load(calib, BTagEntry::FLAV_C, "comb");
-    readerTightOP.load(calib, BTagEntry::FLAV_UDSG, "comb");
-    // btag distribution reshaping
-    BTagCalibrationReader readerReshaping(BTagEntry::OP_RESHAPING, "central", {"up_hfstats2", "down_hfstats2"});
-    readerReshaping.load(calib, BTagEntry::FLAV_B, "iterativefit");
-    readerReshaping.load(calib, BTagEntry::FLAV_C, "iterativefit");
-    readerReshaping.load(calib, BTagEntry::FLAV_UDSG, "iterativefit");
-    */
     
     // Tracks and vertices
     edm::Handle<pat::IsolatedTrackCollection> tracks;
@@ -2839,8 +2828,8 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
             // Exclude jets close to lepton 1
             if (lepton1_pt > 0) {
                 double deltaRLepton1 = sqrt(deltaR2(jet.eta(), jet.phi(), lepton1_eta, lepton1_phi));
-                //deltaRLepton1 = sqrt(deltaR2(jet.eta(), jet.phi(), electron_eta, electron_phi));
-                //deltaRLepton1 = sqrt(deltaR2(jet.eta(), jet.phi(), muon_eta, muon_phi));
+                //deltaRLepton1 = sqrt(deltaR2(jet.eta(), jet.phi(), lepton1_electron_eta, lepton1_electron_phi));
+                //deltaRLepton1 = sqrt(deltaR2(jet.eta(), jet.phi(), lepton1_muon_eta, lepton1_muon_phi));
                 if (deltaRLepton1 < 0.4 && deltaRLepton1 < deltaRLepton1JetMin) {
                     deltaRLepton1JetMin = deltaRLepton1;
                     if (monitoringJets) {
@@ -2910,7 +2899,7 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
                     (jet.chargedEmEnergyFraction() < 0.80)) {
                     // Fill vector of jets
                     nLooseBJets++;
-                    BJetCandidate BJet(jet, JetFromPV, calib);
+                    BJetCandidate BJet(jet, JetFromPV);
                     looseBJets.push_back(BJet);
                 }
             }
@@ -2984,12 +2973,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
         Jet1_bbprob = looseBJets[0].BBprob;
         Jet1_E      = looseBJets[0].FourMomentum.E();
         Jet1_hadronFlavour = looseBJets[0].HadronFlavour;
-        Jet1_SFreshaping = looseBJets[0].SFReshaping;
-        Jet1_SFreshaping_up = looseBJets[0].SFReshaping_up;
-        Jet1_SFreshaping_down = looseBJets[0].SFReshaping_down;
-        Jet1_SFloose = looseBJets[0].SFLoose;
-        Jet1_SFmedium = looseBJets[0].SFMedium;
-        Jet1_SFtight = looseBJets[0].SFTight;
 
         Jet2_pt     = looseBJets[1].Pt;
         Jet2_eta    = looseBJets[1].Eta;
@@ -2998,12 +2981,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
         Jet2_bbprob = looseBJets[1].BBprob;
         Jet2_E      = looseBJets[1].FourMomentum.E();
         Jet2_hadronFlavour = looseBJets[1].HadronFlavour;
-        Jet2_SFreshaping = looseBJets[1].SFReshaping;
-        Jet2_SFreshaping_up = looseBJets[1].SFReshaping_up;
-        Jet2_SFreshaping_down = looseBJets[1].SFReshaping_down;
-        Jet2_SFloose = looseBJets[1].SFLoose;
-        Jet2_SFmedium = looseBJets[1].SFMedium;
-        Jet2_SFtight = looseBJets[1].SFTight;
 
         Jet3_pt     = looseBJets[2].Pt;
         Jet3_eta    = looseBJets[2].Eta;
@@ -3012,12 +2989,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
         Jet3_bbprob = looseBJets[2].BBprob;
         Jet3_E      = looseBJets[2].FourMomentum.E();
         Jet3_hadronFlavour = looseBJets[2].HadronFlavour;
-        Jet3_SFreshaping = looseBJets[2].SFReshaping;
-        Jet3_SFreshaping_up = looseBJets[2].SFReshaping_up;
-        Jet3_SFreshaping_down = looseBJets[2].SFReshaping_down;
-        Jet3_SFloose = looseBJets[2].SFLoose;
-        Jet3_SFmedium = looseBJets[2].SFMedium;
-        Jet3_SFtight = looseBJets[2].SFTight;
 
         Jet4_pt     = looseBJets[3].Pt;
         Jet4_eta    = looseBJets[3].Eta;
@@ -3026,12 +2997,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
         Jet4_bbprob = looseBJets[3].BBprob;
         Jet4_E      = looseBJets[3].FourMomentum.E();
         Jet4_hadronFlavour = looseBJets[3].HadronFlavour;
-        Jet4_SFreshaping = looseBJets[3].SFReshaping;
-        Jet4_SFreshaping_up = looseBJets[3].SFReshaping_up;
-        Jet4_SFreshaping_down = looseBJets[3].SFReshaping_down;
-        Jet4_SFloose = looseBJets[3].SFLoose;
-        Jet4_SFmedium = looseBJets[3].SFMedium;
-        Jet4_SFtight = looseBJets[3].SFTight;
 
         Jet5_pt     = looseBJets[4].Pt;
         Jet5_eta    = looseBJets[4].Eta;
@@ -3040,12 +3005,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
         Jet5_bbprob = looseBJets[4].BBprob;
         Jet5_E      = looseBJets[4].FourMomentum.E();
         Jet5_hadronFlavour = looseBJets[4].HadronFlavour;
-        Jet5_SFreshaping = looseBJets[4].SFReshaping;
-        Jet5_SFreshaping_up = looseBJets[4].SFReshaping_up;
-        Jet5_SFreshaping_down = looseBJets[4].SFReshaping_down;
-        Jet5_SFloose = looseBJets[4].SFLoose;
-        Jet5_SFmedium = looseBJets[4].SFMedium;
-        Jet5_SFtight = looseBJets[4].SFTight;
 
         Jet6_pt     = looseBJets[5].Pt;
         Jet6_eta    = looseBJets[5].Eta;
@@ -3054,12 +3013,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
         Jet6_bbprob = looseBJets[5].BBprob;
         Jet6_E      = looseBJets[5].FourMomentum.E();
         Jet6_hadronFlavour = looseBJets[5].HadronFlavour;
-        Jet1_SFreshaping = looseBJets[5].SFReshaping;
-        Jet1_SFreshaping_up = looseBJets[5].SFReshaping_up;
-        Jet1_SFreshaping_down = looseBJets[5].SFReshaping_down;
-        Jet1_SFloose = looseBJets[5].SFLoose;
-        Jet1_SFmedium = looseBJets[5].SFMedium;
-        Jet1_SFtight = looseBJets[5].SFTight;
     } else if (looseBJets.size() > 4) {
         Jet1_pt     = looseBJets[0].Pt;
         Jet1_eta    = looseBJets[0].Eta;
@@ -3068,12 +3021,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
         Jet1_bbprob = looseBJets[0].BBprob;
         Jet1_E      = looseBJets[0].FourMomentum.E();
         Jet1_hadronFlavour = looseBJets[0].HadronFlavour;
-        Jet1_SFreshaping = looseBJets[0].SFReshaping;
-        Jet1_SFreshaping_up = looseBJets[0].SFReshaping_up;
-        Jet1_SFreshaping_down = looseBJets[0].SFReshaping_down;
-        Jet1_SFloose = looseBJets[0].SFLoose;
-        Jet1_SFmedium = looseBJets[0].SFMedium;
-        Jet1_SFtight = looseBJets[0].SFTight;
 
         Jet2_pt     = looseBJets[1].Pt;
         Jet2_eta    = looseBJets[1].Eta;
@@ -3082,12 +3029,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
         Jet2_bbprob = looseBJets[1].BBprob;
         Jet2_E      = looseBJets[1].FourMomentum.E();
         Jet2_hadronFlavour = looseBJets[1].HadronFlavour;
-        Jet2_SFreshaping = looseBJets[1].SFReshaping;
-        Jet2_SFreshaping_up = looseBJets[1].SFReshaping_up;
-        Jet2_SFreshaping_down = looseBJets[1].SFReshaping_down;
-        Jet2_SFloose = looseBJets[1].SFLoose;
-        Jet2_SFmedium = looseBJets[1].SFMedium;
-        Jet2_SFtight = looseBJets[1].SFTight;
 
         Jet3_pt     = looseBJets[2].Pt;
         Jet3_eta    = looseBJets[2].Eta;
@@ -3096,12 +3037,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
         Jet3_bbprob = looseBJets[2].BBprob;
         Jet3_E      = looseBJets[2].FourMomentum.E();
         Jet3_hadronFlavour = looseBJets[2].HadronFlavour;
-        Jet3_SFreshaping = looseBJets[2].SFReshaping;
-        Jet3_SFreshaping_up = looseBJets[2].SFReshaping_up;
-        Jet3_SFreshaping_down = looseBJets[2].SFReshaping_down;
-        Jet3_SFloose = looseBJets[2].SFLoose;
-        Jet3_SFmedium = looseBJets[2].SFMedium;
-        Jet3_SFtight = looseBJets[2].SFTight;
 
         Jet4_pt     = looseBJets[3].Pt;
         Jet4_eta    = looseBJets[3].Eta;
@@ -3110,12 +3045,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
         Jet4_bbprob = looseBJets[3].BBprob;
         Jet4_E      = looseBJets[3].FourMomentum.E();
         Jet4_hadronFlavour = looseBJets[3].HadronFlavour;
-        Jet4_SFreshaping = looseBJets[3].SFReshaping;
-        Jet4_SFreshaping_up = looseBJets[3].SFReshaping_up;
-        Jet4_SFreshaping_down = looseBJets[3].SFReshaping_down;
-        Jet4_SFloose = looseBJets[3].SFLoose;
-        Jet4_SFmedium = looseBJets[3].SFMedium;
-        Jet4_SFtight = looseBJets[3].SFTight;
 
         Jet5_pt     = looseBJets[4].Pt;
         Jet5_eta    = looseBJets[4].Eta;
@@ -3124,12 +3053,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
         Jet5_bbprob = looseBJets[4].BBprob;
         Jet5_E      = looseBJets[4].FourMomentum.E();
         Jet5_hadronFlavour = looseBJets[4].HadronFlavour;
-        Jet5_SFreshaping = looseBJets[4].SFReshaping;
-        Jet5_SFreshaping_up = looseBJets[4].SFReshaping_up;
-        Jet5_SFreshaping_down = looseBJets[4].SFReshaping_down;
-        Jet5_SFloose = looseBJets[4].SFLoose;
-        Jet5_SFmedium = looseBJets[4].SFMedium;
-        Jet5_SFtight = looseBJets[4].SFTight;
     } else if (looseBJets.size() > 3) {
         Jet1_pt     = looseBJets[0].Pt;
         Jet1_eta    = looseBJets[0].Eta;
@@ -3138,12 +3061,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
         Jet1_bbprob = looseBJets[0].BBprob;
         Jet1_E      = looseBJets[0].FourMomentum.E();
         Jet1_hadronFlavour = looseBJets[0].HadronFlavour;
-        Jet1_SFreshaping = looseBJets[0].SFReshaping;
-        Jet1_SFreshaping_up = looseBJets[0].SFReshaping_up;
-        Jet1_SFreshaping_down = looseBJets[0].SFReshaping_down;
-        Jet1_SFloose = looseBJets[0].SFLoose;
-        Jet1_SFmedium = looseBJets[0].SFMedium;
-        Jet1_SFtight = looseBJets[0].SFTight;
 
         Jet2_pt     = looseBJets[1].Pt;
         Jet2_eta    = looseBJets[1].Eta;
@@ -3152,12 +3069,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
         Jet2_bbprob = looseBJets[1].BBprob;
         Jet2_E      = looseBJets[1].FourMomentum.E();
         Jet2_hadronFlavour = looseBJets[1].HadronFlavour;
-        Jet2_SFreshaping = looseBJets[1].SFReshaping;
-        Jet2_SFreshaping_up = looseBJets[1].SFReshaping_up;
-        Jet2_SFreshaping_down = looseBJets[1].SFReshaping_down;
-        Jet2_SFloose = looseBJets[1].SFLoose;
-        Jet2_SFmedium = looseBJets[1].SFMedium;
-        Jet2_SFtight = looseBJets[1].SFTight;
 
         Jet3_pt     = looseBJets[2].Pt;
         Jet3_eta    = looseBJets[2].Eta;
@@ -3166,12 +3077,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
         Jet3_bbprob = looseBJets[2].BBprob;
         Jet3_E      = looseBJets[2].FourMomentum.E();
         Jet3_hadronFlavour = looseBJets[2].HadronFlavour;
-        Jet3_SFreshaping = looseBJets[2].SFReshaping;
-        Jet3_SFreshaping_up = looseBJets[2].SFReshaping_up;
-        Jet3_SFreshaping_down = looseBJets[2].SFReshaping_down;
-        Jet3_SFloose = looseBJets[2].SFLoose;
-        Jet3_SFmedium = looseBJets[2].SFMedium;
-        Jet3_SFtight = looseBJets[2].SFTight;
 
         Jet4_pt     = looseBJets[3].Pt;
         Jet4_eta    = looseBJets[3].Eta;
@@ -3180,12 +3085,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
         Jet4_bbprob = looseBJets[3].BBprob;
         Jet4_E      = looseBJets[3].FourMomentum.E();
         Jet4_hadronFlavour = looseBJets[3].HadronFlavour;
-        Jet4_SFreshaping = looseBJets[3].SFReshaping;
-        Jet4_SFreshaping_up = looseBJets[3].SFReshaping_up;
-        Jet4_SFreshaping_down = looseBJets[3].SFReshaping_down;
-        Jet4_SFloose = looseBJets[3].SFLoose;
-        Jet4_SFmedium = looseBJets[3].SFMedium;
-        Jet4_SFtight = looseBJets[3].SFTight;
     } else if (looseBJets.size() > 2) {
         Jet1_pt     = looseBJets[0].Pt;
         Jet1_eta    = looseBJets[0].Eta;
@@ -3194,12 +3093,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
         Jet1_bbprob = looseBJets[0].BBprob;
         Jet1_E      = looseBJets[0].FourMomentum.E();
         Jet1_hadronFlavour = looseBJets[0].HadronFlavour;
-        Jet1_SFreshaping = looseBJets[0].SFReshaping;
-        Jet1_SFreshaping_up = looseBJets[0].SFReshaping_up;
-        Jet1_SFreshaping_down = looseBJets[0].SFReshaping_down;
-        Jet1_SFloose = looseBJets[0].SFLoose;
-        Jet1_SFmedium = looseBJets[0].SFMedium;
-        Jet1_SFtight = looseBJets[0].SFTight;
 
         Jet2_pt     = looseBJets[1].Pt;
         Jet2_eta    = looseBJets[1].Eta;
@@ -3208,12 +3101,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
         Jet2_bbprob = looseBJets[1].BBprob;
         Jet2_E      = looseBJets[1].FourMomentum.E();
         Jet2_hadronFlavour = looseBJets[1].HadronFlavour;
-        Jet2_SFreshaping = looseBJets[1].SFReshaping;
-        Jet2_SFreshaping_up = looseBJets[1].SFReshaping_up;
-        Jet2_SFreshaping_down = looseBJets[1].SFReshaping_down;
-        Jet2_SFloose = looseBJets[1].SFLoose;
-        Jet2_SFmedium = looseBJets[1].SFMedium;
-        Jet2_SFtight = looseBJets[1].SFTight;
 
         Jet3_pt     = looseBJets[2].Pt;
         Jet3_eta    = looseBJets[2].Eta;
@@ -3222,12 +3109,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
         Jet3_bbprob = looseBJets[2].BBprob;
         Jet3_E      = looseBJets[2].FourMomentum.E();
         Jet3_hadronFlavour = looseBJets[2].HadronFlavour;
-        Jet3_SFreshaping = looseBJets[2].SFReshaping;
-        Jet3_SFreshaping_up = looseBJets[2].SFReshaping_up;
-        Jet3_SFreshaping_down = looseBJets[2].SFReshaping_down;
-        Jet3_SFloose = looseBJets[2].SFLoose;
-        Jet3_SFmedium = looseBJets[2].SFMedium;
-        Jet3_SFtight = looseBJets[2].SFTight;
     } else if (looseBJets.size() > 1) {
         Jet1_pt     = looseBJets[0].Pt;
         Jet1_eta    = looseBJets[0].Eta;
@@ -3236,12 +3117,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
         Jet1_bbprob = looseBJets[0].BBprob;
         Jet1_E      = looseBJets[0].FourMomentum.E();
         Jet1_hadronFlavour = looseBJets[0].HadronFlavour;
-        Jet1_SFreshaping = looseBJets[0].SFReshaping;
-        Jet1_SFreshaping_up = looseBJets[0].SFReshaping_up;
-        Jet1_SFreshaping_down = looseBJets[0].SFReshaping_down;
-        Jet1_SFloose = looseBJets[0].SFLoose;
-        Jet1_SFmedium = looseBJets[0].SFMedium;
-        Jet1_SFtight = looseBJets[0].SFTight;
 
         Jet2_pt     = looseBJets[1].Pt;
         Jet2_eta    = looseBJets[1].Eta;
@@ -3250,12 +3125,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
         Jet2_bbprob = looseBJets[1].BBprob;
         Jet2_E      = looseBJets[1].FourMomentum.E();
         Jet2_hadronFlavour = looseBJets[1].HadronFlavour;
-        Jet2_SFreshaping = looseBJets[1].SFReshaping;
-        Jet2_SFreshaping_up = looseBJets[1].SFReshaping_up;
-        Jet2_SFreshaping_down = looseBJets[1].SFReshaping_down;
-        Jet2_SFloose = looseBJets[1].SFLoose;
-        Jet2_SFmedium = looseBJets[1].SFMedium;
-        Jet2_SFtight = looseBJets[1].SFTight;
     } else if (looseBJets.size() > 0) {
         Jet1_pt     = looseBJets[0].Pt;
         Jet1_eta    = looseBJets[0].Eta;
@@ -3264,12 +3133,6 @@ bool TTbarTauLepton::JetPtSum (const edm::Event& event) {
         Jet1_bbprob = looseBJets[0].BBprob;
         Jet1_E      = looseBJets[0].FourMomentum.E();
         Jet1_hadronFlavour = looseBJets[0].HadronFlavour;
-        Jet1_SFreshaping = looseBJets[0].SFReshaping;
-        Jet1_SFreshaping_up = looseBJets[0].SFReshaping_up;
-        Jet1_SFreshaping_down = looseBJets[0].SFReshaping_down;
-        Jet1_SFloose = looseBJets[0].SFLoose;
-        Jet1_SFmedium = looseBJets[0].SFMedium;
-        Jet1_SFtight = looseBJets[0].SFTight;
     }
 
     if (monitoringJets) {
@@ -3300,69 +3163,100 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
     lepton1_sumPuppiIso = null;
     lepton1_sumPuppiNoLeptonIso = null;
 
-    electron_pt = null;
-    electron_eta = null;
-    electron_phi = null;
-    electron_E = null;
-    electron_charge = null;
-    electron_trackIso = null;
-    electron_caloIso = null;
-    electron_sumPuppiIso = null;
-    electron_sumPuppiNoLeptonIso = null;
-    electron_cutBasedID_loose    = null;
-    electron_cutBasedID_medium   = null;
-    electron_cutBasedID_tight    = null;
-    electron_mvaNoIsoID_loose    = null;
-    electron_mvaNoIsoID_wp80     = null;
-    electron_mvaNoIsoID_wp90     = null;
+    lepton1_electron_cutBasedID_loose    = null;
+    lepton1_electron_cutBasedID_medium   = null;
+    lepton1_electron_cutBasedID_tight    = null;
+    lepton1_electron_mvaNoIsoID_loose    = null;
+    lepton1_electron_mvaNoIsoID_wp80     = null;
+    lepton1_electron_mvaNoIsoID_wp90     = null;
 
-    muon_pt = null;
-    muon_eta = null;
-    muon_phi = null;
-    muon_E = null;
-    muon_charge = null;
-    muon_trackIso = null;
-    muon_sumPuppiIso = null;
-    muon_sumPuppiNoLeptonIso = null;
-    muon_caloIso = null;
-    muon_CutBasedIdLoose = null;
-    muon_CutBasedIdMedium = null;
-    muon_CutBasedIdTight = null;
-    muon_CutBasedIdGlobalHighPt = null;
-    muon_CutBasedIdTrkHighPt = null;
-    muon_PFIsoLoose = null;
-    muon_PFIsoMedium = null;
-    muon_PFIsoTight = null;
-    muon_TkIsoLoose = null;
-    muon_TkIsoTight = null;
-    muon_MvaLoose = null;
-    muon_MvaMedium = null;
-    muon_MvaTight = null;
+    lepton1_muon_CutBasedIdLoose = null;
+    lepton1_muon_CutBasedIdMedium = null;
+    lepton1_muon_CutBasedIdTight = null;
+    lepton1_muon_CutBasedIdGlobalHighPt = null;
+    lepton1_muon_CutBasedIdTrkHighPt = null;
+    lepton1_muon_PFIsoLoose = null;
+    lepton1_muon_PFIsoMedium = null;
+    lepton1_muon_PFIsoTight = null;
+    lepton1_muon_TkIsoLoose = null;
+    lepton1_muon_TkIsoTight = null;
+    lepton1_muon_MvaLoose = null;
+    lepton1_muon_MvaMedium = null;
+    lepton1_muon_MvaTight = null;
 
-    tau2_pt  = null;
-    tau2_eta = null;
-    tau2_phi = null;
-    tau2_dm  = null;
-    tau2_q   = null;
-    tau2_m   = null;
-    
-    tau2_absIso           = null;
-    tau2_looseCombinedIso = null;
-    tau2_tightCombinedIso = null;
-    tau2_looseMvaIso      = null;
-    tau2_mediumMvaIso     = null;
-    tau2_tightMvaIso      = null;
-    tau2_VtightMvaIso     = null;
-    tau2_VVtightMvaIso    = null;
+    lepton1_tau_dm  = null;
+    lepton1_tau_m   = null;
+    lepton1_tau_absIso           = null;
+    lepton1_tau_looseCombinedIso = null;
+    lepton1_tau_tightCombinedIso = null;
+    lepton1_tau_looseMvaIso      = null;
+    lepton1_tau_mediumMvaIso     = null;
+    lepton1_tau_tightMvaIso      = null;
+    lepton1_tau_VtightMvaIso     = null;
+    lepton1_tau_VVtightMvaIso    = null;
     // New Raw discriminators
-    tau2_againstElectronRaw            = null;
-    tau2_IsoMVArun2v1DBdR03oldDMwLTraw = null;
+    lepton1_tau_againstElectronRaw            = null;
+    lepton1_tau_IsoMVArun2v1DBdR03oldDMwLTraw = null;
     //
-    tau2_tightMuonRejection      = null;
-    tau2_looseElectronRejection  = null;
-    tau2_mediumElectronRejection = null;
-    tau2_tightElectronRejection  = null;
-    tau2_VtightElectronRejection = null;
+    lepton1_tau_tightMuonRejection      = null;
+    lepton1_tau_looseElectronRejection  = null;
+    lepton1_tau_mediumElectronRejection = null;
+    lepton1_tau_tightElectronRejection  = null;
+    lepton1_tau_VtightElectronRejection = null;
+
+    // lepton 2 parameters
+
+    lepton2_pt       = null;
+    lepton2_eta      = null;
+    lepton2_phi      = null;
+    lepton2_dz       = null;
+    lepton2_flavor   = null;
+    lepton2_charge   = null;
+    lepton2_E        = null;
+    lepton2_trackIso = null;
+    lepton2_sumPuppiIso = null;
+    lepton2_sumPuppiNoLeptonIso = null;
+
+    lepton2_electron_cutBasedID_loose    = null;
+    lepton2_electron_cutBasedID_medium   = null;
+    lepton2_electron_cutBasedID_tight    = null;
+    lepton2_electron_mvaNoIsoID_loose    = null;
+    lepton2_electron_mvaNoIsoID_wp80     = null;
+    lepton2_electron_mvaNoIsoID_wp90     = null;
+
+    lepton2_muon_CutBasedIdLoose = null;
+    lepton2_muon_CutBasedIdMedium = null;
+    lepton2_muon_CutBasedIdTight = null;
+    lepton2_muon_CutBasedIdGlobalHighPt = null;
+    lepton2_muon_CutBasedIdTrkHighPt = null;
+    lepton2_muon_PFIsoLoose = null;
+    lepton2_muon_PFIsoMedium = null;
+    lepton2_muon_PFIsoTight = null;
+    lepton2_muon_TkIsoLoose = null;
+    lepton2_muon_TkIsoTight = null;
+    lepton2_muon_MvaLoose = null;
+    lepton2_muon_MvaMedium = null;
+    lepton2_muon_MvaTight = null;
+
+    lepton2_tau_dm  = null;
+    lepton2_tau_m   = null;
+    lepton2_tau_absIso           = null;
+    lepton2_tau_looseCombinedIso = null;
+    lepton2_tau_tightCombinedIso = null;
+    lepton2_tau_looseMvaIso      = null;
+    lepton2_tau_mediumMvaIso     = null;
+    lepton2_tau_tightMvaIso      = null;
+    lepton2_tau_VtightMvaIso     = null;
+    lepton2_tau_VVtightMvaIso    = null;
+    // New Raw discriminators
+    lepton2_tau_againstElectronRaw            = null;
+    lepton2_tau_IsoMVArun2v1DBdR03oldDMwLTraw = null;
+    //
+    lepton2_tau_tightMuonRejection      = null;
+    lepton2_tau_looseElectronRejection  = null;
+    lepton2_tau_mediumElectronRejection = null;
+    lepton2_tau_tightElectronRejection  = null;
+    lepton2_tau_VtightElectronRejection = null;
 
     edm::Handle<pat::ElectronCollection> electrons;
     event.getByToken(ElectronCollectionToken_, electrons);
@@ -3471,50 +3365,6 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
                 //LeptonCandidateFound = true;
                 if (monitoringLeptons) std::cout << "Added to vector" << std::endl;
             }
-            //else {
-            /*
-            nLeptons++;
-            if (monitoringLeptons) std::cout << "Electron " << nLeptons << std::endl;
-            if (monitoringLeptons) std::cout << "Pt = " << electron.pt() << std::endl;
-            cut(electron.pt() > 15.);
-            double relIso = (electron.puppiChargedHadronIso() + electron.puppiNeutralHadronIso() + electron.puppiPhotonIso()) / electron.pt();
-            std::cout << "relIso = " << relIso << std::endl;
-            cut(relIso < 0.4);
-            // Discard events with electron with pt > 15 GeV
-            //if (NrequiredLeptons < 0) return false;
-            if (monitoringLeptons) std::cout << "Eta = " << electron.eta() << std::endl;
-            cut(abs(electron.eta()) < EtaMax);
-            if (monitoringLeptons) std::cout << "Cut based veto ID = " << electron.electronID("cutBasedElectronID-Fall17-94X-V1-veto") << std::endl;
-            cut(electron.electronID("cutBasedElectronID-Fall17-94X-V1-veto"));
-            //cut(electron.electronID("cutBasedElectronID-Fall17-94X-V1-tight"));
-            //
-            if (monitoringLeptons) std::cout << "Passed cuts" << std::endl;
-            double deltaRTau  = sqrt(deltaR2(tau_eta, tau_phi, electron.eta(), electron.phi()));
-            if (deltaRTau <= 0.3) {
-                if (monitoringLeptons) std::cout << "In Tau cone: dR = " << deltaRTau << std::endl;
-                return false;
-            }
-            if (deltaRTau > 0.3) {
-                bool SameLepton = false;
-                if(!LepCandidates.empty()) {
-                    for(unsigned ilep = 0; ilep < LepCandidates.size(); ilep++) {
-                        double LepdR = sqrt(deltaR2(electron.eta(), electron.phi(), LepCandidates[ilep].Eta, LepCandidates[ilep].Phi));
-                        if (LepdR < 0.4) {
-                            if (monitoringLeptons) {
-                                std::cout << "Same lepton with " << LepCandidates[ilep].Flavor << std::endl;
-                                std::cout << "LepdR2 = " << LepdR << std::endl;
-                                std::cout << "LepdR1 = " << TMath::Power(TMath::Power(electron.eta() - LepCandidates[ilep].Eta, 2) + TMath::Power(dphi(electron.phi(), LepCandidates[ilep].Phi), 2), 0.5) << std::endl;
-                            }
-                            SameLepton = true;
-                        }
-                    }
-                }
-                cut(!SameLepton);
-                VetoLeptons++;
-                if (monitoringLeptons) std::cout << "Veto lepton!" << std::endl;
-            }
-            */
-            //}
         }
     }
 
@@ -3585,51 +3435,6 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
                 if (monitoringLeptons) std::cout << "Added to vector" << std::endl;
                 //delete Lepton;
             }
-            //else {
-            /*
-            nLeptons++;
-            if (monitoringLeptons) std::cout << "Muon " << nLeptons << std::endl;
-            if (monitoringLeptons) std::cout << "Pt = " << muon.pt() << std::endl;
-            cut(muon.pt() > 15.);
-            double relIso = (muon.puppiChargedHadronIso() + muon.puppiNeutralHadronIso() + muon.puppiPhotonIso()) / muon.pt();
-            std::cout << "relIso = " << relIso << std::endl;
-            cut(relIso < 0.4);
-            // Discard events with muon with pt > 15 GeV
-            //if (NrequiredLeptons < 0) return false;
-            if (monitoringLeptons) std::cout << "Eta = " << muon.eta() << std::endl;
-            cut(abs(muon.eta()) < EtaMax);
-            cut(muon.passed(reco::Muon::CutBasedIdLoose));
-            cut(muon.isPFMuon());
-            cut(muon.isGlobalMuon());
-            //cut(muon.numberOfMatchedStations() > 1);
-            //cut(muon.passed(reco::Muon::PFIsoLoose)); // I_rel < 0.25 (particle flow)
-            if (monitoringLeptons) std::cout << "Passed cuts" << std::endl;
-            double deltaRTau  = sqrt(deltaR2(tau_eta, tau_phi, muon.eta(), muon.phi()));
-            if (deltaRTau <= 0.3) {
-                if (monitoringLeptons) std::cout << "In Tau cone: dR = " << deltaRTau << std::endl;
-                return false;
-            }
-            if (deltaRTau > 0.3) {
-                bool SameLepton = false;
-                if(!LepCandidates.empty()) {
-                    for(unsigned ilep = 0; ilep < LepCandidates.size(); ilep++) {
-                        double LepdR = sqrt(deltaR2(muon.eta(), muon.phi(), LepCandidates[ilep].Eta, LepCandidates[ilep].Phi));
-                        if (LepdR < 0.4) {
-                            if (monitoringLeptons) {
-                                std::cout << "Same lepton with " << LepCandidates[ilep].Flavor << std::endl;
-                                std::cout << "LepdR2 = " << LepdR << std::endl;
-                                std::cout << "LepdR1 = " << TMath::Power(TMath::Power(muon.eta() - LepCandidates[ilep].Eta, 2) + TMath::Power(dphi(muon.phi(), LepCandidates[ilep].Phi), 2), 0.5) << std::endl;
-                            }
-                            SameLepton = true;
-                        }
-                    }
-                }
-                cut(!SameLepton);
-                VetoLeptons++;
-                if (monitoringLeptons) std::cout << "Veto lepton!" << std::endl;
-            }
-            */
-            //}
         }
     }
 
@@ -3687,50 +3492,6 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
             LepCandidates.push_back(Lepton);
             TauCandidates.push_back(tau);
             if (monitoringLeptons) std::cout << "Added to vector" << std::endl;
-            //else {
-            /*
-                nLeptons++;
-                if (monitoringLeptons) {
-                    std::cout << "Tau " << nLeptons << std::endl;
-                    std::cout << "Pt = " << tau.pt() << std::endl;
-                    std::cout << "DM = " << tau.decayMode() << std::endl;
-                }
-                cut(tau.pt() > 20.);
-                //cut(tau.tauID("byVVLooseIsolationMVArun2v1DBoldDMwLT"));
-                cut(tau.tauID("byVLooseIsolationMVArun2v1DBoldDMwLT"));
-                cut(tau.tauID("againstElectronVLooseMVA6")); // at least loose Iso MVA
-                cut(tau.tauID("againstMuonLoose3")); // at least loose Iso MVA
-                // Discard events with muon with pt > 15 GeV
-                //if (NrequiredLeptons < 0) return false;
-                if (monitoringLeptons) std::cout << "Eta = " << tau.eta() << std::endl;
-                cut(abs(tau.eta()) < EtaMax);
-                if (monitoringLeptons) std::cout << "Passed cuts" << std::endl;
-                double deltaRTau  = sqrt(deltaR2(tau_eta, tau_phi, tau.eta(), tau.phi()));
-                if (deltaRTau <= 0.3) {
-                    if (monitoringLeptons) std::cout << "In Tau cone: dR = " << deltaRTau << std::endl;
-                    continue;
-                }
-                if (deltaRTau > 0.3) {
-                    bool SameLepton = false;
-                    if(!LepCandidates.empty()) {
-                        for(unsigned ilep = 0; ilep < LepCandidates.size(); ilep++) {
-                            double LepdR = sqrt(deltaR2(tau.eta(), tau.phi(), LepCandidates[ilep].Eta, LepCandidates[ilep].Phi));
-                            if (LepdR < 0.4) {
-                                if (monitoringLeptons) {
-                                    std::cout << "Same lepton with " << LepCandidates[ilep].Flavor << std::endl;
-                                    std::cout << "LepdR2 = " << LepdR << std::endl;
-                                    std::cout << "LepdR1 = " << TMath::Power(TMath::Power(tau.eta() - LepCandidates[ilep].Eta, 2) + TMath::Power(dphi(tau.phi(), LepCandidates[ilep].Phi), 2), 0.5) << std::endl;
-                                }
-                                SameLepton = true;
-                            }
-                        }
-                    }
-                    cut(!SameLepton);
-                    VetoTaus++;
-                    if (monitoringLeptons) std::cout << "Veto tau!" << std::endl;
-                }
-                */
-            //}
         }
     }
 
@@ -3763,6 +3524,18 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
         lepton1_trackIso = LepCandidates[0].trackIso;
         lepton1_sumPuppiIso = LepCandidates[0].puppiChargedHadronIso + LepCandidates[0].puppiNeutralHadronIso + LepCandidates[0].puppiPhotonIso;
         lepton1_sumPuppiNoLeptonIso = LepCandidates[0].puppiNoLeptonsChargedHadronIso + LepCandidates[0].puppiNoLeptonsNeutralHadronIso + LepCandidates[0].puppiNoLeptonsPhotonIso;
+        if (LepCandidates.size() > 1) {
+            lepton2_pt       = LepCandidates[1].Pt;
+            lepton2_eta      = LepCandidates[1].Eta;
+            lepton2_phi      = LepCandidates[1].Phi;
+            lepton2_dz       = LepCandidates[1].Dz;
+            lepton2_flavor   = LepCandidates[1].Flavor;
+            lepton2_charge   = LepCandidates[1].Charge;
+            lepton2_E        = LepCandidates[1].FourMomentum.E();
+            lepton2_trackIso = LepCandidates[1].trackIso;
+            lepton2_sumPuppiIso = LepCandidates[1].puppiChargedHadronIso + LepCandidates[1].puppiNeutralHadronIso + LepCandidates[1].puppiPhotonIso;
+            lepton2_sumPuppiNoLeptonIso = LepCandidates[1].puppiNoLeptonsChargedHadronIso + LepCandidates[1].puppiNoLeptonsNeutralHadronIso + LepCandidates[1].puppiNoLeptonsPhotonIso;
+        }
     }
 
     LepCandidates.clear();
@@ -3773,23 +3546,58 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
             printElectronCandidate(ElectronCandidates[0]);
             std::cout << "delta(Tau) = " << sqrt(deltaR2(tau_eta, tau_phi, ElectronCandidates[0].eta(), ElectronCandidates[0].phi())) << std::endl;
         }
-        electron_pt = ElectronCandidates[0].pt();
-        electron_eta = ElectronCandidates[0].eta();
-        electron_phi = ElectronCandidates[0].phi();
-        electron_E = ElectronCandidates[0].energy();
-        electron_charge = ElectronCandidates[0].charge();
-        electron_trackIso = ElectronCandidates[0].trackIso();
-        electron_caloIso = ElectronCandidates[0].caloIso();
-        electron_sumPuppiIso = ElectronCandidates[0].puppiChargedHadronIso() + ElectronCandidates[0].puppiNeutralHadronIso() + ElectronCandidates[0].puppiPhotonIso();
-        electron_sumPuppiNoLeptonIso = ElectronCandidates[0].puppiNoLeptonsChargedHadronIso() + ElectronCandidates[0].puppiNoLeptonsNeutralHadronIso() + ElectronCandidates[0].puppiNoLeptonsPhotonIso();
-        electron_cutBasedID_loose    = ElectronCandidates[0].electronID("cutBasedElectronID-Fall17-94X-V1-loose");
-        electron_cutBasedID_medium   = ElectronCandidates[0].electronID("cutBasedElectronID-Fall17-94X-V1-medium");
-        electron_cutBasedID_tight    = ElectronCandidates[0].electronID("cutBasedElectronID-Fall17-94X-V1-tight");
-        electron_mvaNoIsoID_loose    = ElectronCandidates[0].electronID("mvaEleID-Fall17-noIso-V1-wpLoose");
-        electron_mvaNoIsoID_wp80     = ElectronCandidates[0].electronID("mvaEleID-Fall17-noIso-V1-wp80");
-        electron_mvaNoIsoID_wp90     = ElectronCandidates[0].electronID("mvaEleID-Fall17-noIso-V1-wp90");
+        double lepton1dR = sqrt(deltaR2(ElectronCandidates[0].eta(), ElectronCandidates[0].phi(), lepton1_eta, lepton1_phi));
+        double lepton2dR = sqrt(deltaR2(ElectronCandidates[0].eta(), ElectronCandidates[0].phi(), lepton2_eta, lepton2_phi));
+        if ((lepton1dR < lepton2dR && lepton1dR < 0.1) || lepton2_pt < 0) {
+            if (monitoringLeptons) std::cout << "lepton 1 is electron 1" << std::endl;
+            lepton1_electron_cutBasedID_loose    = ElectronCandidates[0].electronID("cutBasedElectronID-Fall17-94X-V1-loose");
+            lepton1_electron_cutBasedID_medium   = ElectronCandidates[0].electronID("cutBasedElectronID-Fall17-94X-V1-medium");
+            lepton1_electron_cutBasedID_tight    = ElectronCandidates[0].electronID("cutBasedElectronID-Fall17-94X-V1-tight");
+            lepton1_electron_mvaNoIsoID_loose    = ElectronCandidates[0].electronID("mvaEleID-Fall17-noIso-V1-wpLoose");
+            lepton1_electron_mvaNoIsoID_wp80     = ElectronCandidates[0].electronID("mvaEleID-Fall17-noIso-V1-wp80");
+            lepton1_electron_mvaNoIsoID_wp90     = ElectronCandidates[0].electronID("mvaEleID-Fall17-noIso-V1-wp90");
+        } else if (lepton2dR < 0.1) {
+            if (monitoringLeptons) std::cout << "lepton 2 is electron 1" << std::endl;
+            lepton2_electron_cutBasedID_loose    = ElectronCandidates[0].electronID("cutBasedElectronID-Fall17-94X-V1-loose");
+            lepton2_electron_cutBasedID_medium   = ElectronCandidates[0].electronID("cutBasedElectronID-Fall17-94X-V1-medium");
+            lepton2_electron_cutBasedID_tight    = ElectronCandidates[0].electronID("cutBasedElectronID-Fall17-94X-V1-tight");
+            lepton2_electron_mvaNoIsoID_loose    = ElectronCandidates[0].electronID("mvaEleID-Fall17-noIso-V1-wpLoose");
+            lepton2_electron_mvaNoIsoID_wp80     = ElectronCandidates[0].electronID("mvaEleID-Fall17-noIso-V1-wp80");
+            lepton2_electron_mvaNoIsoID_wp90     = ElectronCandidates[0].electronID("mvaEleID-Fall17-noIso-V1-wp90");
+        }
         //
         LeptonFound = true;
+        if (ElectronCandidates.size() > 1) {
+            double lepton1dR1 = sqrt(deltaR2(ElectronCandidates[0].eta(), ElectronCandidates[0].phi(), lepton1_eta, lepton1_phi));
+            double lepton2dR1 = sqrt(deltaR2(ElectronCandidates[0].eta(), ElectronCandidates[0].phi(), lepton2_eta, lepton2_phi));
+            double lepton1dR2 = sqrt(deltaR2(ElectronCandidates[1].eta(), ElectronCandidates[1].phi(), lepton1_eta, lepton1_phi));
+            double lepton2dR2 = sqrt(deltaR2(ElectronCandidates[1].eta(), ElectronCandidates[1].phi(), lepton2_eta, lepton2_phi));
+            if (lepton1dR1 < lepton2dR1 && lepton1dR1 < 0.1) {
+                if (monitoringLeptons) std::cout << "lepton 1 is electron 1 (among 2)" << std::endl;
+                //
+                if (lepton2dR2 < 0.1) {
+                    if (monitoringLeptons) std::cout << "lepton 2 is electron 2 (among 2)" << std::endl;
+                    lepton2_electron_cutBasedID_loose    = ElectronCandidates[1].electronID("cutBasedElectronID-Fall17-94X-V1-loose");
+                    lepton2_electron_cutBasedID_medium   = ElectronCandidates[1].electronID("cutBasedElectronID-Fall17-94X-V1-medium");
+                    lepton2_electron_cutBasedID_tight    = ElectronCandidates[1].electronID("cutBasedElectronID-Fall17-94X-V1-tight");
+                    lepton2_electron_mvaNoIsoID_loose    = ElectronCandidates[1].electronID("mvaEleID-Fall17-noIso-V1-wpLoose");
+                    lepton2_electron_mvaNoIsoID_wp80     = ElectronCandidates[1].electronID("mvaEleID-Fall17-noIso-V1-wp80");
+                    lepton2_electron_mvaNoIsoID_wp90     = ElectronCandidates[1].electronID("mvaEleID-Fall17-noIso-V1-wp90");
+                }
+            } else if (lepton2dR1 < 0.1) {
+                if (monitoringLeptons) std::cout << "lepton 2 is electron 1 (among 2)" << std::endl;
+                //
+                if (lepton1dR2 < 0.1) {
+                    if (monitoringLeptons) std::cout << "lepton 1 is electron 2 (among 2)" << std::endl;
+                    lepton1_electron_cutBasedID_loose    = ElectronCandidates[1].electronID("cutBasedElectronID-Fall17-94X-V1-loose");
+                    lepton1_electron_cutBasedID_medium   = ElectronCandidates[1].electronID("cutBasedElectronID-Fall17-94X-V1-medium");
+                    lepton1_electron_cutBasedID_tight    = ElectronCandidates[1].electronID("cutBasedElectronID-Fall17-94X-V1-tight");
+                    lepton1_electron_mvaNoIsoID_loose    = ElectronCandidates[1].electronID("mvaEleID-Fall17-noIso-V1-wpLoose");
+                    lepton1_electron_mvaNoIsoID_wp80     = ElectronCandidates[1].electronID("mvaEleID-Fall17-noIso-V1-wp80");
+                    lepton1_electron_mvaNoIsoID_wp90     = ElectronCandidates[1].electronID("mvaEleID-Fall17-noIso-V1-wp90");
+                }
+            }
+        }
     }
     if (MuonCandidates.size() > 0) {
         SortMuons(MuonCandidates);
@@ -3797,28 +3605,84 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
             printMuonCandidate(MuonCandidates[0]);
             std::cout << "delta(Tau) = " << sqrt(deltaR2(tau_eta, tau_phi, MuonCandidates[0].eta(), MuonCandidates[0].phi())) << std::endl;
         }
-        muon_pt     = MuonCandidates[0].pt();
-        muon_eta    = MuonCandidates[0].eta();
-        muon_phi    = MuonCandidates[0].phi();
-        muon_E      = MuonCandidates[0].energy();
-        muon_charge = MuonCandidates[0].charge();
-        muon_trackIso            = MuonCandidates[0].trackIso();
-        muon_sumPuppiIso         = MuonCandidates[0].puppiChargedHadronIso() + MuonCandidates[0].puppiNeutralHadronIso() + MuonCandidates[0].puppiPhotonIso();
-        muon_sumPuppiNoLeptonIso = MuonCandidates[0].puppiNoLeptonsChargedHadronIso() + MuonCandidates[0].puppiNoLeptonsNeutralHadronIso() + MuonCandidates[0].puppiNoLeptonsPhotonIso();
-        muon_caloIso             = MuonCandidates[0].caloIso();
-        muon_CutBasedIdLoose = MuonCandidates[0].passed(reco::Muon::CutBasedIdLoose);
-        muon_CutBasedIdMedium = MuonCandidates[0].passed(reco::Muon::CutBasedIdMedium);
-        muon_CutBasedIdTight = MuonCandidates[0].passed(reco::Muon::CutBasedIdTight);
-        muon_CutBasedIdGlobalHighPt = MuonCandidates[0].passed(reco::Muon::CutBasedIdGlobalHighPt);
-        muon_CutBasedIdTrkHighPt = MuonCandidates[0].passed(reco::Muon::CutBasedIdTrkHighPt);
-        muon_PFIsoLoose = MuonCandidates[0].passed(reco::Muon::PFIsoLoose);
-        muon_PFIsoMedium = MuonCandidates[0].passed(reco::Muon::PFIsoMedium);
-        muon_PFIsoTight = MuonCandidates[0].passed(reco::Muon::PFIsoTight);
-        muon_TkIsoLoose = MuonCandidates[0].passed(reco::Muon::TkIsoLoose);
-        muon_TkIsoTight = MuonCandidates[0].passed(reco::Muon::TkIsoTight);
-        muon_MvaLoose = MuonCandidates[0].passed(reco::Muon::MvaLoose);
-        muon_MvaMedium = MuonCandidates[0].passed(reco::Muon::MvaMedium);
-        muon_MvaTight = MuonCandidates[0].passed(reco::Muon::MvaTight);
+        double lepton1dR = sqrt(deltaR2(MuonCandidates[0].eta(), MuonCandidates[0].phi(), lepton1_eta, lepton1_phi));
+        double lepton2dR = sqrt(deltaR2(MuonCandidates[0].eta(), MuonCandidates[0].phi(), lepton2_eta, lepton2_phi));
+        if ((lepton1dR < lepton2dR && lepton1dR < 0.1) || lepton2_pt < 0) {
+            if (monitoringLeptons) std::cout << "lepton 1 is muon 1" << std::endl;
+            lepton1_muon_CutBasedIdLoose = MuonCandidates[0].passed(reco::Muon::CutBasedIdLoose);
+            lepton1_muon_CutBasedIdMedium = MuonCandidates[0].passed(reco::Muon::CutBasedIdMedium);
+            lepton1_muon_CutBasedIdTight = MuonCandidates[0].passed(reco::Muon::CutBasedIdTight);
+            lepton1_muon_CutBasedIdGlobalHighPt = MuonCandidates[0].passed(reco::Muon::CutBasedIdGlobalHighPt);
+            lepton1_muon_CutBasedIdTrkHighPt = MuonCandidates[0].passed(reco::Muon::CutBasedIdTrkHighPt);
+            lepton1_muon_PFIsoLoose = MuonCandidates[0].passed(reco::Muon::PFIsoLoose);
+            lepton1_muon_PFIsoMedium = MuonCandidates[0].passed(reco::Muon::PFIsoMedium);
+            lepton1_muon_PFIsoTight = MuonCandidates[0].passed(reco::Muon::PFIsoTight);
+            lepton1_muon_TkIsoLoose = MuonCandidates[0].passed(reco::Muon::TkIsoLoose);
+            lepton1_muon_TkIsoTight = MuonCandidates[0].passed(reco::Muon::TkIsoTight);
+            lepton1_muon_MvaLoose = MuonCandidates[0].passed(reco::Muon::MvaLoose);
+            lepton1_muon_MvaMedium = MuonCandidates[0].passed(reco::Muon::MvaMedium);
+            lepton1_muon_MvaTight = MuonCandidates[0].passed(reco::Muon::MvaTight);
+        } else if (lepton2dR < 0.1) {
+            if (monitoringLeptons) std::cout << "lepton 2 is muon 1" << std::endl;
+            lepton2_muon_CutBasedIdLoose = MuonCandidates[0].passed(reco::Muon::CutBasedIdLoose);
+            lepton2_muon_CutBasedIdMedium = MuonCandidates[0].passed(reco::Muon::CutBasedIdMedium);
+            lepton2_muon_CutBasedIdTight = MuonCandidates[0].passed(reco::Muon::CutBasedIdTight);
+            lepton2_muon_CutBasedIdGlobalHighPt = MuonCandidates[0].passed(reco::Muon::CutBasedIdGlobalHighPt);
+            lepton2_muon_CutBasedIdTrkHighPt = MuonCandidates[0].passed(reco::Muon::CutBasedIdTrkHighPt);
+            lepton2_muon_PFIsoLoose = MuonCandidates[0].passed(reco::Muon::PFIsoLoose);
+            lepton2_muon_PFIsoMedium = MuonCandidates[0].passed(reco::Muon::PFIsoMedium);
+            lepton2_muon_PFIsoTight = MuonCandidates[0].passed(reco::Muon::PFIsoTight);
+            lepton2_muon_TkIsoLoose = MuonCandidates[0].passed(reco::Muon::TkIsoLoose);
+            lepton2_muon_TkIsoTight = MuonCandidates[0].passed(reco::Muon::TkIsoTight);
+            lepton2_muon_MvaLoose = MuonCandidates[0].passed(reco::Muon::MvaLoose);
+            lepton2_muon_MvaMedium = MuonCandidates[0].passed(reco::Muon::MvaMedium);
+            lepton2_muon_MvaTight = MuonCandidates[0].passed(reco::Muon::MvaTight);
+        }
+        if (MuonCandidates.size() > 1) {
+            double lepton1dR1 = sqrt(deltaR2(MuonCandidates[0].eta(), MuonCandidates[0].phi(), lepton1_eta, lepton1_phi));
+            double lepton2dR1 = sqrt(deltaR2(MuonCandidates[0].eta(), MuonCandidates[0].phi(), lepton2_eta, lepton2_phi));
+            double lepton1dR2 = sqrt(deltaR2(MuonCandidates[1].eta(), MuonCandidates[1].phi(), lepton1_eta, lepton1_phi));
+            double lepton2dR2 = sqrt(deltaR2(MuonCandidates[1].eta(), MuonCandidates[1].phi(), lepton2_eta, lepton2_phi));
+            if (lepton1dR1 < lepton2dR1 && lepton1dR1 < 0.1) {
+                if (monitoringLeptons) std::cout << "lepton 1 is muon 1 (among 2)" << std::endl;
+                //
+                if (lepton2dR2 < 0.1) {
+                    if (monitoringLeptons) std::cout << "lepton 2 is muon 2 (among 2)" << std::endl;
+                    lepton2_muon_CutBasedIdLoose = MuonCandidates[1].passed(reco::Muon::CutBasedIdLoose);
+                    lepton2_muon_CutBasedIdMedium = MuonCandidates[1].passed(reco::Muon::CutBasedIdMedium);
+                    lepton2_muon_CutBasedIdTight = MuonCandidates[1].passed(reco::Muon::CutBasedIdTight);
+                    lepton2_muon_CutBasedIdGlobalHighPt = MuonCandidates[1].passed(reco::Muon::CutBasedIdGlobalHighPt);
+                    lepton2_muon_CutBasedIdTrkHighPt = MuonCandidates[1].passed(reco::Muon::CutBasedIdTrkHighPt);
+                    lepton2_muon_PFIsoLoose = MuonCandidates[1].passed(reco::Muon::PFIsoLoose);
+                    lepton2_muon_PFIsoMedium = MuonCandidates[1].passed(reco::Muon::PFIsoMedium);
+                    lepton2_muon_PFIsoTight = MuonCandidates[1].passed(reco::Muon::PFIsoTight);
+                    lepton2_muon_TkIsoLoose = MuonCandidates[1].passed(reco::Muon::TkIsoLoose);
+                    lepton2_muon_TkIsoTight = MuonCandidates[1].passed(reco::Muon::TkIsoTight);
+                    lepton2_muon_MvaLoose = MuonCandidates[1].passed(reco::Muon::MvaLoose);
+                    lepton2_muon_MvaMedium = MuonCandidates[1].passed(reco::Muon::MvaMedium);
+                    lepton2_muon_MvaTight = MuonCandidates[1].passed(reco::Muon::MvaTight); 
+                }
+            } else if (lepton2dR1 < 0.1) {
+                if (monitoringLeptons) std::cout << "lepton 2 is muon 1 (among 2)" << std::endl;
+                //
+                if (lepton1dR2 < 0.1) {
+                    if (monitoringLeptons) std::cout << "lepton 1 is muon 2 (among 2)" << std::endl;
+                    lepton1_muon_CutBasedIdLoose = MuonCandidates[1].passed(reco::Muon::CutBasedIdLoose);
+                    lepton1_muon_CutBasedIdMedium = MuonCandidates[1].passed(reco::Muon::CutBasedIdMedium);
+                    lepton1_muon_CutBasedIdTight = MuonCandidates[1].passed(reco::Muon::CutBasedIdTight);
+                    lepton1_muon_CutBasedIdGlobalHighPt = MuonCandidates[1].passed(reco::Muon::CutBasedIdGlobalHighPt);
+                    lepton1_muon_CutBasedIdTrkHighPt = MuonCandidates[1].passed(reco::Muon::CutBasedIdTrkHighPt);
+                    lepton1_muon_PFIsoLoose = MuonCandidates[1].passed(reco::Muon::PFIsoLoose);
+                    lepton1_muon_PFIsoMedium = MuonCandidates[1].passed(reco::Muon::PFIsoMedium);
+                    lepton1_muon_PFIsoTight = MuonCandidates[1].passed(reco::Muon::PFIsoTight);
+                    lepton1_muon_TkIsoLoose = MuonCandidates[1].passed(reco::Muon::TkIsoLoose);
+                    lepton1_muon_TkIsoTight = MuonCandidates[1].passed(reco::Muon::TkIsoTight);
+                    lepton1_muon_MvaLoose = MuonCandidates[1].passed(reco::Muon::MvaLoose);
+                    lepton1_muon_MvaMedium = MuonCandidates[1].passed(reco::Muon::MvaMedium);
+                    lepton1_muon_MvaTight = MuonCandidates[1].passed(reco::Muon::MvaTight);
+                }
+            }
+        }
         //
         LeptonFound = true;
     }
@@ -3828,32 +3692,111 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
             TauMonitor (TauCandidates[0], DeepTau, pv_position);
             std::cout << "delta(Tau)   = " << sqrt(deltaR2(tau_eta, tau_phi, TauCandidates[0].eta(), TauCandidates[0].phi())) << std::endl;
         }
-        tau2_pt                     = TauCandidates[0].pt();
-        tau2_eta                    = TauCandidates[0].eta();
-        tau2_phi                    = TauCandidates[0].phi();
-        tau2_dm                     = TauCandidates[0].decayMode();
-        tau2_q                      = TauCandidates[0].charge();
-        tau2_m                      = TauCandidates[0].mass();
-        
-        tau2_absIso                  = TauCandidates[0].tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
-        tau2_looseCombinedIso        = TauCandidates[0].tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits");
-        tau2_tightCombinedIso        = TauCandidates[0].tauID("byTightCombinedIsolationDeltaBetaCorr3Hits");
-        tau2_looseMvaIso             = TauCandidates[0].tauID("byLooseIsolationMVArun2v1DBoldDMwLT"); // there are more possible discriminators 
-        tau2_mediumMvaIso            = TauCandidates[0].tauID("byMediumIsolationMVArun2v1DBoldDMwLT");
-        tau2_tightMvaIso             = TauCandidates[0].tauID("byTightIsolationMVArun2v1DBoldDMwLT");
-        tau2_VtightMvaIso            = TauCandidates[0].tauID("byVTightIsolationMVArun2v1DBoldDMwLT");
-        tau2_VVtightMvaIso           = TauCandidates[0].tauID("byVVTightIsolationMVArun2v1DBoldDMwLT");
-        // New Raw discriminators
-        tau2_againstElectronRaw            = TauCandidates[0].tauID("againstElectronMVA6Raw");
-        tau2_IsoMVArun2v1DBdR03oldDMwLTraw = TauCandidates[0].tauID("byIsolationMVArun2v1DBdR03oldDMwLTraw");
-        //
-        tau2_tightMuonRejection      = TauCandidates[0].tauID("againstMuonTight3");
-        tau2_looseElectronRejection  = TauCandidates[0].tauID("againstElectronLooseMVA6");
-        tau2_mediumElectronRejection = TauCandidates[0].tauID("againstElectronMediumMVA6");
-        tau2_tightElectronRejection  = TauCandidates[0].tauID("againstElectronTightMVA6");
-        tau2_VtightElectronRejection = TauCandidates[0].tauID("againstElectronVTightMVA6");
+        double lepton1dR = sqrt(deltaR2(MuonCandidates[0].eta(), MuonCandidates[0].phi(), lepton1_eta, lepton1_phi));
+        double lepton2dR = sqrt(deltaR2(MuonCandidates[0].eta(), MuonCandidates[0].phi(), lepton2_eta, lepton2_phi));
+        if ((lepton1dR < lepton2dR && lepton1dR < 0.1) || lepton2_pt < 0) {
+            if (monitoringLeptons) std::cout << "lepton 1 is tau 1" << std::endl;
+            lepton1_tau_dm                      = TauCandidates[0].decayMode();
+            lepton1_tau_m                       = TauCandidates[0].mass();
+            lepton1_tau_absIso                  = TauCandidates[0].tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
+            lepton1_tau_looseCombinedIso        = TauCandidates[0].tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits");
+            lepton1_tau_tightCombinedIso        = TauCandidates[0].tauID("byTightCombinedIsolationDeltaBetaCorr3Hits");
+            lepton1_tau_looseMvaIso             = TauCandidates[0].tauID("byLooseIsolationMVArun2v1DBoldDMwLT"); // there are more possible discriminators 
+            lepton1_tau_mediumMvaIso            = TauCandidates[0].tauID("byMediumIsolationMVArun2v1DBoldDMwLT");
+            lepton1_tau_tightMvaIso             = TauCandidates[0].tauID("byTightIsolationMVArun2v1DBoldDMwLT");
+            lepton1_tau_VtightMvaIso            = TauCandidates[0].tauID("byVTightIsolationMVArun2v1DBoldDMwLT");
+            lepton1_tau_VVtightMvaIso           = TauCandidates[0].tauID("byVVTightIsolationMVArun2v1DBoldDMwLT");
+            // New Raw discriminators
+            lepton1_tau_againstElectronRaw            = TauCandidates[0].tauID("againstElectronMVA6Raw");
+            lepton1_tau_IsoMVArun2v1DBdR03oldDMwLTraw = TauCandidates[0].tauID("byIsolationMVArun2v1DBdR03oldDMwLTraw");
+            //
+            lepton1_tau_tightMuonRejection      = TauCandidates[0].tauID("againstMuonTight3");
+            lepton1_tau_looseElectronRejection  = TauCandidates[0].tauID("againstElectronLooseMVA6");
+            lepton1_tau_mediumElectronRejection = TauCandidates[0].tauID("againstElectronMediumMVA6");
+            lepton1_tau_tightElectronRejection  = TauCandidates[0].tauID("againstElectronTightMVA6");
+            lepton1_tau_VtightElectronRejection = TauCandidates[0].tauID("againstElectronVTightMVA6");
+        } else if (lepton2dR < 0.1) {
+            if (monitoringLeptons) std::cout << "lepton 2 is tau 1" << std::endl;
+            lepton2_tau_dm                      = TauCandidates[0].decayMode();
+            lepton2_tau_m                       = TauCandidates[0].mass();
+            lepton2_tau_absIso                  = TauCandidates[0].tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
+            lepton2_tau_looseCombinedIso        = TauCandidates[0].tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits");
+            lepton2_tau_tightCombinedIso        = TauCandidates[0].tauID("byTightCombinedIsolationDeltaBetaCorr3Hits");
+            lepton2_tau_looseMvaIso             = TauCandidates[0].tauID("byLooseIsolationMVArun2v1DBoldDMwLT"); // there are more possible discriminators 
+            lepton2_tau_mediumMvaIso            = TauCandidates[0].tauID("byMediumIsolationMVArun2v1DBoldDMwLT");
+            lepton2_tau_tightMvaIso             = TauCandidates[0].tauID("byTightIsolationMVArun2v1DBoldDMwLT");
+            lepton2_tau_VtightMvaIso            = TauCandidates[0].tauID("byVTightIsolationMVArun2v1DBoldDMwLT");
+            lepton2_tau_VVtightMvaIso           = TauCandidates[0].tauID("byVVTightIsolationMVArun2v1DBoldDMwLT");
+            // New Raw discriminators
+            lepton2_tau_againstElectronRaw            = TauCandidates[0].tauID("againstElectronMVA6Raw");
+            lepton2_tau_IsoMVArun2v1DBdR03oldDMwLTraw = TauCandidates[0].tauID("byIsolationMVArun2v1DBdR03oldDMwLTraw");
+            //
+            lepton2_tau_tightMuonRejection      = TauCandidates[0].tauID("againstMuonTight3");
+            lepton2_tau_looseElectronRejection  = TauCandidates[0].tauID("againstElectronLooseMVA6");
+            lepton2_tau_mediumElectronRejection = TauCandidates[0].tauID("againstElectronMediumMVA6");
+            lepton2_tau_tightElectronRejection  = TauCandidates[0].tauID("againstElectronTightMVA6");
+            lepton2_tau_VtightElectronRejection = TauCandidates[0].tauID("againstElectronVTightMVA6");
+        }
         LeptonFound = true;
+        if (TauCandidates.size() > 1) {
+            double lepton1dR1 = sqrt(deltaR2(TauCandidates[0].eta(), TauCandidates[0].phi(), lepton1_eta, lepton1_phi));
+            double lepton2dR1 = sqrt(deltaR2(TauCandidates[0].eta(), TauCandidates[0].phi(), lepton2_eta, lepton2_phi));
+            double lepton1dR2 = sqrt(deltaR2(TauCandidates[1].eta(), TauCandidates[1].phi(), lepton1_eta, lepton1_phi));
+            double lepton2dR2 = sqrt(deltaR2(TauCandidates[1].eta(), TauCandidates[1].phi(), lepton2_eta, lepton2_phi));
+            if (lepton1dR1 < lepton2dR1 && lepton1dR1 < 0.1) {
+                if (monitoringLeptons) std::cout << "lepton 1 is tau 1 (among 2)" << std::endl;
+                //
+                if (lepton2dR2 < 0.1) {
+                    if (monitoringLeptons) std::cout << "lepton 2 is tau 2 (among 2)" << std::endl;
+                    lepton2_tau_dm                      = TauCandidates[1].decayMode();
+                    lepton2_tau_m                       = TauCandidates[1].mass();
+                    lepton2_tau_absIso                  = TauCandidates[1].tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
+                    lepton2_tau_looseCombinedIso        = TauCandidates[1].tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits");
+                    lepton2_tau_tightCombinedIso        = TauCandidates[1].tauID("byTightCombinedIsolationDeltaBetaCorr3Hits");
+                    lepton2_tau_looseMvaIso             = TauCandidates[1].tauID("byLooseIsolationMVArun2v1DBoldDMwLT"); // there are more possible discriminators 
+                    lepton2_tau_mediumMvaIso            = TauCandidates[1].tauID("byMediumIsolationMVArun2v1DBoldDMwLT");
+                    lepton2_tau_tightMvaIso             = TauCandidates[1].tauID("byTightIsolationMVArun2v1DBoldDMwLT");
+                    lepton2_tau_VtightMvaIso            = TauCandidates[1].tauID("byVTightIsolationMVArun2v1DBoldDMwLT");
+                    lepton2_tau_VVtightMvaIso           = TauCandidates[1].tauID("byVVTightIsolationMVArun2v1DBoldDMwLT");
+                    // New Raw discriminators
+                    lepton2_tau_againstElectronRaw            = TauCandidates[1].tauID("againstElectronMVA6Raw");
+                    lepton2_tau_IsoMVArun2v1DBdR03oldDMwLTraw = TauCandidates[1].tauID("byIsolationMVArun2v1DBdR03oldDMwLTraw");
+                    //
+                    lepton2_tau_tightMuonRejection      = TauCandidates[1].tauID("againstMuonTight3");
+                    lepton2_tau_looseElectronRejection  = TauCandidates[1].tauID("againstElectronLooseMVA6");
+                    lepton2_tau_mediumElectronRejection = TauCandidates[1].tauID("againstElectronMediumMVA6");
+                    lepton2_tau_tightElectronRejection  = TauCandidates[1].tauID("againstElectronTightMVA6");
+                    lepton2_tau_VtightElectronRejection = TauCandidates[1].tauID("againstElectronVTightMVA6");
+                }
+            } else if (lepton2dR1 < 0.1) {
+                if (monitoringLeptons) std::cout << "lepton 2 is tau 1 (among 2)" << std::endl;
+                //
+                if (lepton1dR2 < 0.1) {
+                    if (monitoringLeptons) std::cout << "lepton 1 is tau 2 (among 2)" << std::endl;
+                    lepton1_tau_dm                      = TauCandidates[1].decayMode();
+                    lepton1_tau_m                       = TauCandidates[1].mass();
+                    lepton1_tau_absIso                  = TauCandidates[1].tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
+                    lepton1_tau_looseCombinedIso        = TauCandidates[1].tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits");
+                    lepton1_tau_tightCombinedIso        = TauCandidates[1].tauID("byTightCombinedIsolationDeltaBetaCorr3Hits");
+                    lepton1_tau_looseMvaIso             = TauCandidates[1].tauID("byLooseIsolationMVArun2v1DBoldDMwLT"); // there are more possible discriminators 
+                    lepton1_tau_mediumMvaIso            = TauCandidates[1].tauID("byMediumIsolationMVArun2v1DBoldDMwLT");
+                    lepton1_tau_tightMvaIso             = TauCandidates[1].tauID("byTightIsolationMVArun2v1DBoldDMwLT");
+                    lepton1_tau_VtightMvaIso            = TauCandidates[1].tauID("byVTightIsolationMVArun2v1DBoldDMwLT");
+                    lepton1_tau_VVtightMvaIso           = TauCandidates[1].tauID("byVVTightIsolationMVArun2v1DBoldDMwLT");
+                    // New Raw discriminators
+                    lepton1_tau_againstElectronRaw            = TauCandidates[1].tauID("againstElectronMVA6Raw");
+                    lepton1_tau_IsoMVArun2v1DBdR03oldDMwLTraw = TauCandidates[1].tauID("byIsolationMVArun2v1DBdR03oldDMwLTraw");
+                    //
+                    lepton1_tau_tightMuonRejection      = TauCandidates[1].tauID("againstMuonTight3");
+                    lepton1_tau_looseElectronRejection  = TauCandidates[1].tauID("againstElectronLooseMVA6");
+                    lepton1_tau_mediumElectronRejection = TauCandidates[1].tauID("againstElectronMediumMVA6");
+                    lepton1_tau_tightElectronRejection  = TauCandidates[1].tauID("againstElectronTightMVA6");
+                    lepton1_tau_VtightElectronRejection = TauCandidates[1].tauID("againstElectronVTightMVA6");
+                }
+            }
+        }
     }
+//    }
 
     if (LeptonRequired) {
         return (LeptonFound);
@@ -3904,7 +3847,6 @@ void TTbarTauLepton::AddWT(const edm::Event& iEvent) {
         WThplus   = null;
         TauSpinnerMother = null;
     }
-
 };
 
 void TTbarTauLepton::AddWTData(const edm::Event& iEvent) {
