@@ -3584,9 +3584,10 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
                 }
             }
             if (monitoringLeptons) {
-                std::cout << "Cut based loose ID = " << electron.electronID("cutBasedElectronID-Fall17-94X-V1-loose") << std::endl;
+                std::cout << "Cut based loose ID = " << electron.electronID("cutBasedElectronID-Spring15-25ns-V1-standalone-loose") << std::endl;
             }
-            cut(electron.electronID("cutBasedElectronID-Fall17-94X-V1-loose")); // loose for a start (MVA id is also availible)
+            // cutBasedElectronID-Spring15-25ns-V1-standalone-veto
+            cut(electron.electronID("cutBasedElectronID-Spring15-25ns-V1-standalone-loose")); // loose for a start (MVA id is also availible)
             //
             if (monitoringLeptons) {
                 std::cout << "Passed cuts" << std::endl;
@@ -3804,20 +3805,20 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
         double lepton2dR = sqrt(deltaR2(ElectronCandidates[0].eta(), ElectronCandidates[0].phi(), lepton2_eta, lepton2_phi));
         if ((lepton1dR < lepton2dR && lepton1dR < 0.1) || lepton2_pt < 0) {
             if (monitoringLeptons) std::cout << "lepton 1 is electron 1" << std::endl;
-            lepton1_electron_cutBasedID_loose    = ElectronCandidates[0].electronID("cutBasedElectronID-Fall17-94X-V1-loose");
-            lepton1_electron_cutBasedID_medium   = ElectronCandidates[0].electronID("cutBasedElectronID-Fall17-94X-V1-medium");
-            lepton1_electron_cutBasedID_tight    = ElectronCandidates[0].electronID("cutBasedElectronID-Fall17-94X-V1-tight");
-            lepton1_electron_mvaNoIsoID_loose    = ElectronCandidates[0].electronID("mvaEleID-Fall17-noIso-V1-wpLoose");
-            lepton1_electron_mvaNoIsoID_wp80     = ElectronCandidates[0].electronID("mvaEleID-Fall17-noIso-V1-wp80");
-            lepton1_electron_mvaNoIsoID_wp90     = ElectronCandidates[0].electronID("mvaEleID-Fall17-noIso-V1-wp90");
+            lepton1_electron_cutBasedID_loose    = ElectronCandidates[0].electronID("cutBasedElectronID-Spring15-25ns-V1-standalone-loose");
+            lepton1_electron_cutBasedID_medium   = ElectronCandidates[0].electronID("cutBasedElectronID-Spring15-25ns-V1-standalone-medium");
+            lepton1_electron_cutBasedID_tight    = ElectronCandidates[0].electronID("cutBasedElectronID-Spring15-25ns-V1-standalone-tight");
+            lepton1_electron_mvaNoIsoID_loose    = ElectronCandidates[0].electronID("mvaEleID-Spring15-25ns-nonTrig-V1-wpLoose");
+            lepton1_electron_mvaNoIsoID_wp80     = ElectronCandidates[0].electronID("mvaEleID-Spring15-25ns-nonTrig-V1-wp80");
+            lepton1_electron_mvaNoIsoID_wp90     = ElectronCandidates[0].electronID("mvaEleID-Spring15-25ns-nonTrig-V1-wp90");
         } else if (lepton2dR < 0.1) {
             if (monitoringLeptons) std::cout << "lepton 2 is electron 1" << std::endl;
-            lepton2_electron_cutBasedID_loose    = ElectronCandidates[0].electronID("cutBasedElectronID-Fall17-94X-V1-loose");
-            lepton2_electron_cutBasedID_medium   = ElectronCandidates[0].electronID("cutBasedElectronID-Fall17-94X-V1-medium");
-            lepton2_electron_cutBasedID_tight    = ElectronCandidates[0].electronID("cutBasedElectronID-Fall17-94X-V1-tight");
-            lepton2_electron_mvaNoIsoID_loose    = ElectronCandidates[0].electronID("mvaEleID-Fall17-noIso-V1-wpLoose");
-            lepton2_electron_mvaNoIsoID_wp80     = ElectronCandidates[0].electronID("mvaEleID-Fall17-noIso-V1-wp80");
-            lepton2_electron_mvaNoIsoID_wp90     = ElectronCandidates[0].electronID("mvaEleID-Fall17-noIso-V1-wp90");
+            lepton2_electron_cutBasedID_loose    = ElectronCandidates[0].electronID("cutBasedElectronID-Spring15-25ns-V1-standalone-loose");
+            lepton2_electron_cutBasedID_medium   = ElectronCandidates[0].electronID("cutBasedElectronID-Spring15-25ns-V1-standalone-medium");
+            lepton2_electron_cutBasedID_tight    = ElectronCandidates[0].electronID("cutBasedElectronID-Spring15-25ns-V1-standalone-tight");
+            lepton2_electron_mvaNoIsoID_loose    = ElectronCandidates[0].electronID("mvaEleID-Spring15-25ns-nonTrig-V1-wpLoose");
+            lepton2_electron_mvaNoIsoID_wp80     = ElectronCandidates[0].electronID("mvaEleID-Spring15-25ns-nonTrig-V1-wp80");
+            lepton2_electron_mvaNoIsoID_wp90     = ElectronCandidates[0].electronID("mvaEleID-Spring15-25ns-nonTrig-V1-wp90");
         }
         //
         LeptonFound = true;
@@ -3831,24 +3832,24 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
                 //
                 if (lepton2dR2 < 0.1) {
                     if (monitoringLeptons) std::cout << "lepton 2 is electron 2 (among 2)" << std::endl;
-                    lepton2_electron_cutBasedID_loose    = ElectronCandidates[1].electronID("cutBasedElectronID-Fall17-94X-V1-loose");
-                    lepton2_electron_cutBasedID_medium   = ElectronCandidates[1].electronID("cutBasedElectronID-Fall17-94X-V1-medium");
-                    lepton2_electron_cutBasedID_tight    = ElectronCandidates[1].electronID("cutBasedElectronID-Fall17-94X-V1-tight");
-                    lepton2_electron_mvaNoIsoID_loose    = ElectronCandidates[1].electronID("mvaEleID-Fall17-noIso-V1-wpLoose");
-                    lepton2_electron_mvaNoIsoID_wp80     = ElectronCandidates[1].electronID("mvaEleID-Fall17-noIso-V1-wp80");
-                    lepton2_electron_mvaNoIsoID_wp90     = ElectronCandidates[1].electronID("mvaEleID-Fall17-noIso-V1-wp90");
+                    lepton2_electron_cutBasedID_loose    = ElectronCandidates[1].electronID("cutBasedElectronID-Spring15-25ns-V1-standalone-loose");
+                    lepton2_electron_cutBasedID_medium   = ElectronCandidates[1].electronID("cutBasedElectronID-Spring15-25ns-V1-standalone-medium");
+                    lepton2_electron_cutBasedID_tight    = ElectronCandidates[1].electronID("cutBasedElectronID-Spring15-25ns-V1-standalone-tight");
+                    lepton2_electron_mvaNoIsoID_loose    = ElectronCandidates[1].electronID("mvaEleID-Spring15-25ns-nonTrig-V1-wpLoose");
+                    lepton2_electron_mvaNoIsoID_wp80     = ElectronCandidates[1].electronID("mvaEleID-Spring15-25ns-nonTrig-V1-wp80");
+                    lepton2_electron_mvaNoIsoID_wp90     = ElectronCandidates[1].electronID("mvaEleID-Spring15-25ns-nonTrig-V1-wp90");
                 }
             } else if (lepton2dR1 < 0.1) {
                 if (monitoringLeptons) std::cout << "lepton 2 is electron 1 (among 2)" << std::endl;
                 //
                 if (lepton1dR2 < 0.1) {
                     if (monitoringLeptons) std::cout << "lepton 1 is electron 2 (among 2)" << std::endl;
-                    lepton1_electron_cutBasedID_loose    = ElectronCandidates[1].electronID("cutBasedElectronID-Fall17-94X-V1-loose");
-                    lepton1_electron_cutBasedID_medium   = ElectronCandidates[1].electronID("cutBasedElectronID-Fall17-94X-V1-medium");
-                    lepton1_electron_cutBasedID_tight    = ElectronCandidates[1].electronID("cutBasedElectronID-Fall17-94X-V1-tight");
-                    lepton1_electron_mvaNoIsoID_loose    = ElectronCandidates[1].electronID("mvaEleID-Fall17-noIso-V1-wpLoose");
-                    lepton1_electron_mvaNoIsoID_wp80     = ElectronCandidates[1].electronID("mvaEleID-Fall17-noIso-V1-wp80");
-                    lepton1_electron_mvaNoIsoID_wp90     = ElectronCandidates[1].electronID("mvaEleID-Fall17-noIso-V1-wp90");
+                    lepton1_electron_cutBasedID_loose    = ElectronCandidates[1].electronID("cutBasedElectronID-Spring15-25ns-V1-standalone-loose");
+                    lepton1_electron_cutBasedID_medium   = ElectronCandidates[1].electronID("cutBasedElectronID-Spring15-25ns-V1-standalone-medium");
+                    lepton1_electron_cutBasedID_tight    = ElectronCandidates[1].electronID("cutBasedElectronID-Spring15-25ns-V1-standalone-tight");
+                    lepton1_electron_mvaNoIsoID_loose    = ElectronCandidates[1].electronID("mvaEleID-Spring15-25ns-nonTrig-V1-wpLoose");
+                    lepton1_electron_mvaNoIsoID_wp80     = ElectronCandidates[1].electronID("mvaEleID-Spring15-25ns-nonTrig-V1-wp80");
+                    lepton1_electron_mvaNoIsoID_wp90     = ElectronCandidates[1].electronID("mvaEleID-Spring15-25ns-nonTrig-V1-wp90");
                 }
             }
         }
