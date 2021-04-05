@@ -16,7 +16,7 @@ process.GlobalTag.globaltag='94X_mc2017_realistic_v14'
 
 
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(200) )
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
@@ -58,9 +58,9 @@ process.TTbarTauLepton = cms.EDAnalyzer("TTbarTauLepton",
     monitoringHLT     = cms.bool(False),
     monitoringTau     = cms.bool(False),
     monitoringGen     = cms.bool(False),
-    monitoringJets    = cms.bool(True),
-    monitoringBJets   = cms.bool(True),
-    monitoringLeptons = cms.bool(True),
+    monitoringJets    = cms.bool(False),
+    monitoringBJets   = cms.bool(False),
+    monitoringLeptons = cms.bool(False),
     monitoringMET     = cms.bool(False),
     isMC = cms.bool(True),
     #fullMC = cms.bool(False),
@@ -108,6 +108,8 @@ process.TTbarTauLepton = cms.EDAnalyzer("TTbarTauLepton",
     prescales      = cms.InputTag('patTrigger', '', 'PAT'),
     prescalesL1min = cms.InputTag('patTrigger', 'l1min', 'PAT'),
     prescalesL1max = cms.InputTag('patTrigger', 'l1max', 'PAT'),
+    # pileup info
+    PileupInfo = cms.InputTag('slimmedAddPileupInfo'),
     # for 2016 data
     #Triggerobjects = cms.InputTag('slimmedPatTrigger', '', 'DQM'),
     #prescales      = cms.InputTag('patTrigger', '', 'DQM'),
