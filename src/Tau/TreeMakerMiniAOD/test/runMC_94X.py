@@ -51,12 +51,25 @@ process.source = cms.Source("PoolSource",
 #process.pfMVAMEt.srcPFCandidates = cms.InputTag("packedPFCandidates")
 #process.pfMVAMEt.srcVertices = cms.InputTag("offlineSlimmedPrimaryVertices")
 
+updatedTauName = "slimmedTausNewID" #name of pat::Tau collection with new tau-Id
+import RecoTauTag.RecoTau.tools.runTauIdMVA as tauIdConfig
+tauIdEmbedder = tauIdConfig.TauIDEmbedder(process, cms, debug = False,
+    updatedTauName = updatedTauName,
+    toKeep = [ "MVADM_2017_v1" ]) #other tauIDs can be added in
+tauIdEmbedder.runTauID()
+# Path and EndPath definitions
+# Was not commented
+#process.p = cms.Path(
+#    process.rerunMvaIsolationSequence *
+#    getattr(process,updatedTauName)
+#)
+
 # TreeMakder for miniAOD
 
 process.TTbarTauLepton = cms.EDAnalyzer("TTbarTauLepton",
     monitoring        = cms.bool(True),
     monitoringHLT     = cms.bool(False),
-    monitoringTau     = cms.bool(False),
+    monitoringTau     = cms.bool(True),
     monitoringGen     = cms.bool(False),
     monitoringJets    = cms.bool(False),
     monitoringBJets   = cms.bool(False),
@@ -87,7 +100,8 @@ process.TTbarTauLepton = cms.EDAnalyzer("TTbarTauLepton",
     #requiredLeptonPDGID = cms.int32(13),
     UseTau = cms.bool(False),
     ####
-    tauCollection = cms.string("slimmedTaus"),
+    #tauCollection = cms.string("slimmedTaus"),
+    tauCollection = cms.string("slimmedTausNewID"),
     muonCollection = cms.string("slimmedMuons"),
     electronCollection = cms.string("slimmedElectrons"),
     jetCollection = cms.string("slimmedJets"),
@@ -250,4 +264,4 @@ process.TFileService = cms.Service("TFileService",
   fileName = cms.string('MC_TTo2L2Nu.root')
 )
 
-process.p = cms.Path(process.TTbarTauLepton)
+process.p = cms.Path(process.rerunMvaIsolationSequence * getattr(process,updatedTauName) * process.TTbarTauLepton)

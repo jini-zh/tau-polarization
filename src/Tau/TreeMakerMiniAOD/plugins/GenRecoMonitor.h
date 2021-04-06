@@ -32,7 +32,7 @@
 #include "DataFormats/JetReco/interface/CaloJetCollection.h"
 #include "DataFormats/CaloTowers/interface/CaloTowerCollection.h"
 
-#include "Tau/TauAnalyzer/plugins/MySimpleParticle.h"
+#include "Tau/TreeMakerMiniAOD/plugins/MySimpleParticle.h"
 
 #include <cstdio>
 #include <iostream>

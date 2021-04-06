@@ -249,6 +249,15 @@ private:
     double tau_m;
     double tau_dz;
 
+    // New tau DM IDs
+    int tau_MVADM2017_v1;
+    float tau_MVADM2017_v1_DM0raw;
+    float tau_MVADM2017_v1_DM1raw;
+    float tau_MVADM2017_v1_DM2raw;
+    float tau_MVADM2017_v1_DM10raw;
+    float tau_MVADM2017_v1_DM11raw;
+    float tau_MVADM2017_v1_DMOtherraw;
+
     // tau SV
     int tau_hasSV;
     double tau_SVdR;
@@ -1950,6 +1959,10 @@ bool TTbarTauLepton::AddTau(const edm::Event& event) {
             << "Ele = " << tau.tauID("againstElectronVLooseMVA6") << ", "
             << "Mu = " << tau.tauID("againstMuonLoose3") << ", "
             << "dZ = " << (pv_position - tau.vertex()).R() << std::endl;
+            std::cout << "DM       = " << tau.tauID("MVADM2017v1") << std::endl;
+            std::cout << "DM 0 raw = " << tau.tauID("MVADM2017v1DM0raw") << std::endl;
+            std::cout << "DM 1 raw = " << tau.tauID("MVADM2017v1DM1raw") << std::endl;
+            std::cout << "DM 2 raw = " << tau.tauID("MVADM2017v1DM2raw") << std::endl;
         }
         cut(tau.pt() > tauPtMin); // tau transverse momentum
         if (monitoringTau) std::cout << "Pt thr passed" << std::endl;
@@ -2124,6 +2137,15 @@ bool TTbarTauLepton::AddTau(const edm::Event& event) {
     tau_dz                     = (pv_position - tau.vertex()).R();
     tau_q                      = tau.charge();
     tau_m                      = tau.mass();
+
+    // New DMs
+    tau_MVADM2017_v1            = tau.tauID("MVADM2017v1");
+    tau_MVADM2017_v1_DM0raw     = tau.tauID("MVADM2017v1DM0raw");
+    tau_MVADM2017_v1_DM1raw     = tau.tauID("MVADM2017v1DM1raw");
+    tau_MVADM2017_v1_DM2raw     = tau.tauID("MVADM2017v1DM2raw");
+    tau_MVADM2017_v1_DM10raw    = tau.tauID("MVADM2017v1DM10raw");
+    tau_MVADM2017_v1_DM11raw    = tau.tauID("MVADM2017v1DM11raw");
+    tau_MVADM2017_v1_DMOtherraw = tau.tauID("MVADM2017v1DMotherraw");
     
     //if (monitoring) std::cout << "Selected tau discriminator (" << index << ") = " << tau.tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits") << std::endl;
     tau_absIso                  = tau.tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
