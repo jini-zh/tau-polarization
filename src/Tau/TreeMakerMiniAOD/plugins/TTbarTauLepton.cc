@@ -1120,12 +1120,12 @@ void TTbarTauLepton::beginJob() {
     tree->Branch("decayModeFindingNewDMs",&decayModeFindingNewDMs,"decayModeFindingNewDMs/I");
     tree->Branch("decayModeFinding",&decayModeFinding,"decayModeFinding/I");
     tree->Branch("tau_MVADM2017_v1",&tau_MVADM2017_v1,"tau_MVADM2017_v1/I");
-    tree->Branch("tau_MVADM2017_v1_DM0raw",&tau_MVADM2017_v1_DM0raw,"tau_MVADM2017_v1_DM0raw/D");
-    tree->Branch("tau_MVADM2017_v1_DM1raw",&tau_MVADM2017_v1_DM1raw,"tau_MVADM2017_v1_DM1raw/D");
-    tree->Branch("tau_MVADM2017_v1_DM2raw",&tau_MVADM2017_v1_DM2raw,"tau_MVADM2017_v1_DM2raw/D");
-    tree->Branch("tau_MVADM2017_v1_DM10raw",&tau_MVADM2017_v1_DM10raw,"tau_MVADM2017_v1_DM10raw/D");
-    tree->Branch("tau_MVADM2017_v1_DM11raw",&tau_MVADM2017_v1_DM11raw,"tau_MVADM2017_v1_DM11raw/D");
-    tree->Branch("tau_MVADM2017_v1_DMOtherraw",&tau_MVADM2017_v1_DMOtherraw,"tau_MVADM2017_v1_DMOtherraw/D");
+    tree->Branch("tau_MVADM2017_v1_DM0raw",&tau_MVADM2017_v1_DM0raw,"tau_MVADM2017_v1_DM0raw/F");
+    tree->Branch("tau_MVADM2017_v1_DM1raw",&tau_MVADM2017_v1_DM1raw,"tau_MVADM2017_v1_DM1raw/F");
+    tree->Branch("tau_MVADM2017_v1_DM2raw",&tau_MVADM2017_v1_DM2raw,"tau_MVADM2017_v1_DM2raw/F");
+    tree->Branch("tau_MVADM2017_v1_DM10raw",&tau_MVADM2017_v1_DM10raw,"tau_MVADM2017_v1_DM10raw/F");
+    tree->Branch("tau_MVADM2017_v1_DM11raw",&tau_MVADM2017_v1_DM11raw,"tau_MVADM2017_v1_DM11raw/F");
+    tree->Branch("tau_MVADM2017_v1_DMOtherraw",&tau_MVADM2017_v1_DMOtherraw,"tau_MVADM2017_v1_DMOtherraw/F");
 
     // Raw discriminators
     tree->Branch("tau_absIso",&tau_absIso,"tau_absIso/D");
