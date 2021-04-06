@@ -250,7 +250,7 @@ private:
     double tau_dz;
 
     // New tau DM IDs
-    int tau_MVADM2017_v1;
+    int   tau_MVADM2017_v1;
     float tau_MVADM2017_v1_DM0raw;
     float tau_MVADM2017_v1_DM1raw;
     float tau_MVADM2017_v1_DM2raw;
@@ -1115,9 +1115,17 @@ void TTbarTauLepton::beginJob() {
     tree->Branch("tau_q",&tau_q,"tau_q/D");
     tree->Branch("tau_m",&tau_m,"tau_m/D");
     tree->Branch("tau_dm",&tau_dm,"tau_dm/D");
-    tree->Branch("decayModeFindingNewDMs",&decayModeFindingNewDMs,"decayModeFindingNewDMs/D");
-    tree->Branch("decayModeFinding",&decayModeFinding,"decayModeFinding/D");
     tree->Branch("tau_dz",&tau_dz,"tau_dz/D");
+
+    tree->Branch("decayModeFindingNewDMs",&decayModeFindingNewDMs,"decayModeFindingNewDMs/I");
+    tree->Branch("decayModeFinding",&decayModeFinding,"decayModeFinding/I");
+    tree->Branch("tau_MVADM2017_v1",&tau_MVADM2017_v1,"tau_MVADM2017_v1/I");
+    tree->Branch("tau_MVADM2017_v1_DM0raw",&tau_MVADM2017_v1_DM0raw,"tau_MVADM2017_v1_DM0raw/D");
+    tree->Branch("tau_MVADM2017_v1_DM1raw",&tau_MVADM2017_v1_DM1raw,"tau_MVADM2017_v1_DM1raw/D");
+    tree->Branch("tau_MVADM2017_v1_DM2raw",&tau_MVADM2017_v1_DM2raw,"tau_MVADM2017_v1_DM2raw/D");
+    tree->Branch("tau_MVADM2017_v1_DM10raw",&tau_MVADM2017_v1_DM10raw,"tau_MVADM2017_v1_DM10raw/D");
+    tree->Branch("tau_MVADM2017_v1_DM11raw",&tau_MVADM2017_v1_DM11raw,"tau_MVADM2017_v1_DM11raw/D");
+    tree->Branch("tau_MVADM2017_v1_DMOtherraw",&tau_MVADM2017_v1_DMOtherraw,"tau_MVADM2017_v1_DMOtherraw/D");
 
     // Raw discriminators
     tree->Branch("tau_absIso",&tau_absIso,"tau_absIso/D");
@@ -1289,6 +1297,8 @@ void TTbarTauLepton::beginJob() {
         tree->Branch("SumNu_eta",&SumNu_eta,"SumNu_eta/D");
         tree->Branch("SumNu_phi",&SumNu_phi,"SumNu_phi/D");
         tree->Branch("SumNu_energy",&SumNu_energy,"SumNu_energy/D");
+        //
+        tree->Branch("PU_weight",&PU_weight,"PU_weight/D");
     }
     // PuppiJets
     tree->Branch("nLooseBtagedPuppiJets", &nLooseBtagedPuppiJets, "nLooseBtagedPuppiJets/I");
@@ -1619,7 +1629,6 @@ void TTbarTauLepton::beginJob() {
     tree->Branch("triggerPrescaleL1min",&triggerPrescaleL1min,"triggerPrescaleL1min/I");
     tree->Branch("triggerPrescaleL1max",&triggerPrescaleL1max,"triggerPrescaleL1max/I");
     //tree->Branch("WTisValid", &WTisValid, "WTisValid/D");
-    tree->Branch("PU_weight",&PU_weight,"PU_weight/D");
     // add more branches
     
     allTauPt = FS->make<TH1F>("allTauPt","allTauPt",300,0,300);
@@ -1669,7 +1678,12 @@ TTbarTauLepton::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup 
 
 void TTbarTauLepton::GetPuMCWeight (const edm::Event& iEvent) {
 
-    edm::Handle<std::vector< PileupSummaryInfo > >  PupInfo;
+    if (!isMC) {
+        if (monitoring) std::cout << "This is not MC file" << std::endl; 
+        return;
+    }
+
+    edm::Handle<std::vector<PileupSummaryInfo>> PupInfo;
     //event.getByLabel(edm::InputTag("addPileupInfo"), PupInfo);
     iEvent.getByToken(tok_PuInfo, PupInfo);
     std::vector<PileupSummaryInfo>::const_iterator PVI;
