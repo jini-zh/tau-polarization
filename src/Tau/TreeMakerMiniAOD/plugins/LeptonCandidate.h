@@ -229,7 +229,7 @@ void SortTaus(std::vector<pat::Tau>& items) {
   } while (swapped != false);
 }
 
-void printElectronCandidate(pat::Electron &electron) {
+void printElectronCandidate(pat::Electron &electron, bool PrivateMC) {
     std::cout << "Electron parameters" << std::endl
     << "pt     = " << electron.pt() << std::endl
     << "eta    = " << electron.eta() << std::endl
@@ -244,23 +244,34 @@ void printElectronCandidate(pat::Electron &electron) {
     << "puppiNoLeptonsChargedHadronIso = " << electron.puppiNoLeptonsChargedHadronIso() << std::endl
     << "puppiNoLeptonsNeutralHadronIso = " << electron.puppiNoLeptonsNeutralHadronIso() << std::endl
     << "puppiNoLeptonsPhotonIso        = " << electron.puppiNoLeptonsPhotonIso() << std::endl
-    << "trackIso                       = " << electron.trackIso() << std::endl
-    << "cutBasedElectronID-Fall17-94X-V1-loose  = " << electron.electronID("cutBasedElectronID-Fall17-94X-V1-loose") << std::endl
-    << "cutBasedElectronID-Fall17-94X-V1-medium = " << electron.electronID("cutBasedElectronID-Fall17-94X-V1-medium") << std::endl
-    << "cutBasedElectronID-Fall17-94X-V1-tight  = " << electron.electronID("cutBasedElectronID-Fall17-94X-V1-tight") << std::endl
-    << "cutBasedElectronID-Fall17-94X-V1-veto   = " << electron.electronID("cutBasedElectronID-Fall17-94X-V1-veto") << std::endl
-    << "mvaEleID-Fall17-iso-V1-wp80      = " << electron.electronID("mvaEleID-Fall17-iso-V1-wp80") << std::endl
-    << "mvaEleID-Fall17-iso-V1-wp90      = " << electron.electronID("mvaEleID-Fall17-iso-V1-wp90") << std::endl
-    << "mvaEleID-Fall17-iso-V1-wpLoose   = " << electron.electronID("mvaEleID-Fall17-iso-V1-wpLoose") << std::endl
-    //<< "mvaEleID-Fall17-iso-V2-wp80      = " << electron.electronID("mvaEleID-Fall17-iso-V2-wp80") << std::endl
-    //<< "mvaEleID-Fall17-iso-V2-wp90      = " << electron.electronID("mvaEleID-Fall17-iso-V2-wp90") << std::endl
-    //<< "mvaEleID-Fall17-iso-V2-wpLoose   = " << electron.electronID("mvaEleID-Fall17-iso-V2-wpLoose") << std::endl
-    << "mvaEleID-Fall17-noIso-V1-wp80    = " << electron.electronID("mvaEleID-Fall17-noIso-V1-wp80") << std::endl
-    << "mvaEleID-Fall17-noIso-V1-wp90    = " << electron.electronID("mvaEleID-Fall17-noIso-V1-wp90") << std::endl
-    << "mvaEleID-Fall17-noIso-V1-wpLoose = " << electron.electronID("mvaEleID-Fall17-noIso-V1-wpLoose") << std::endl;
-    //<< "mvaEleID-Fall17-noIso-V2-wp80    = " << electron.electronID("mvaEleID-Fall17-noIso-V2-wp80") << std::endl
-    //<< "mvaEleID-Fall17-noIso-V2-wp90    = " << electron.electronID("mvaEleID-Fall17-noIso-V2-wp90") << std::endl;
-    //<< "mvaEleID-Fall17-noIso-V2-wpLoose = " << electron.electronID("mvaEleID-Fall17-noIso-V2-wpLoose") << std::endl;
+    << "trackIso                       = " << electron.trackIso() << std::endl;
+    if (PrivateMC) {
+        std::cout << "cutBasedElectronID-Spring15-25ns-V1-standalone-loose  = " << electron.electronID("cutBasedElectronID-Spring15-25ns-V1-standalone-loose") << std::endl;
+        std::cout << "cutBasedElectronID-Spring15-25ns-V1-standalone-medium = " << electron.electronID("cutBasedElectronID-Spring15-25ns-V1-standalone-medium") << std::endl;
+        std::cout << "cutBasedElectronID-Spring15-25ns-V1-standalone-tight  = " << electron.electronID("cutBasedElectronID-Spring15-25ns-V1-standalone-tight") << std::endl;
+        std::cout << "mvaEleID-Spring15-25ns-nonTrig-V1-wpLoose = " << electron.electronID("mvaEleID-Spring15-25ns-nonTrig-V1-wpLoose") << std::endl;
+        std::cout << "mvaEleID-Spring15-25ns-nonTrig-V1-wp80    = " << electron.electronID("mvaEleID-Spring15-25ns-nonTrig-V1-wp80") << std::endl;
+        std::cout << "mvaEleID-Spring15-25ns-nonTrig-V1-wp90    = " << electron.electronID("mvaEleID-Spring15-25ns-nonTrig-V1-wp90") << std::endl;
+    } else {
+        std::cout << "cutBasedElectronID-Fall17-94X-V1-loose  = " << electron.electronID("cutBasedElectronID-Fall17-94X-V1-loose") << std::endl
+        << "cutBasedElectronID-Fall17-94X-V1-medium = " << electron.electronID("cutBasedElectronID-Fall17-94X-V1-medium") << std::endl
+        << "cutBasedElectronID-Fall17-94X-V1-tight  = " << electron.electronID("cutBasedElectronID-Fall17-94X-V1-tight") << std::endl
+        << "cutBasedElectronID-Fall17-94X-V1-veto   = " << electron.electronID("cutBasedElectronID-Fall17-94X-V1-veto") << std::endl
+        << "mvaEleID-Fall17-iso-V1-wp80      = " << electron.electronID("mvaEleID-Fall17-iso-V1-wp80") << std::endl
+        << "mvaEleID-Fall17-iso-V1-wp90      = " << electron.electronID("mvaEleID-Fall17-iso-V1-wp90") << std::endl
+        << "mvaEleID-Fall17-iso-V1-wpLoose   = " << electron.electronID("mvaEleID-Fall17-iso-V1-wpLoose") << std::endl
+        //<< "mvaEleID-Fall17-iso-V2-wp80      = " << electron.electronID("mvaEleID-Fall17-iso-V2-wp80") << std::endl
+        //<< "mvaEleID-Fall17-iso-V2-wp90      = " << electron.electronID("mvaEleID-Fall17-iso-V2-wp90") << std::endl
+        //<< "mvaEleID-Fall17-iso-V2-wpLoose   = " << electron.electronID("mvaEleID-Fall17-iso-V2-wpLoose") << std::endl
+        << "mvaEleID-Fall17-noIso-V1-wp80    = " << electron.electronID("mvaEleID-Fall17-noIso-V1-wp80") << std::endl
+        << "mvaEleID-Fall17-noIso-V1-wp90    = " << electron.electronID("mvaEleID-Fall17-noIso-V1-wp90") << std::endl
+        << "mvaEleID-Fall17-noIso-V1-wpLoose = " << electron.electronID("mvaEleID-Fall17-noIso-V1-wpLoose") << std::endl;
+        //<< "mvaEleID-Fall17-noIso-V2-wp80    = " << electron.electronID("mvaEleID-Fall17-noIso-V2-wp80") << std::endl
+        //<< "mvaEleID-Fall17-noIso-V2-wp90    = " << electron.electronID("mvaEleID-Fall17-noIso-V2-wp90") << std::endl;
+        //<< "mvaEleID-Fall17-noIso-V2-wpLoose = " << electron.electronID("mvaEleID-Fall17-noIso-V2-wpLoose") << std::endl;
+    }
+    std::cout << "ecalTrkEnergyPostCorr    = " << electron.userFloat("ecalTrkEnergyPostCorr") << std::endl
+    << "ecalTrkEnergyErrPostCorr = " << electron.userFloat("ecalTrkEnergyErrPostCorr") << std::endl;
 }
 
 void printMuonCandidate(pat::Muon &muon) {

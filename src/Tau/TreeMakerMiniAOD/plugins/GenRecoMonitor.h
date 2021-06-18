@@ -25,12 +25,12 @@
 #include "DataFormats/HcalRecHit/interface/HcalRecHitCollections.h"
 #include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
 
-
 #include "DataFormats/FEDRawData/interface/FEDRawDataCollection.h"
 #include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
 #include "DataFormats/METReco/interface/CaloMETCollection.h"
 #include "DataFormats/JetReco/interface/CaloJetCollection.h"
 #include "DataFormats/CaloTowers/interface/CaloTowerCollection.h"
+#include "DataFormats/JetReco/interface/GenJet.h"
 
 #include "Tau/TreeMakerMiniAOD/plugins/MySimpleParticle.h"
 
@@ -52,10 +52,13 @@ class GenRecoMonitor {
 public:
 
     const reco::GenParticle *genParticle = nullptr;
+    const reco::GenJet *genJet = nullptr;
     int    recoPdgId;
+    int    recoHadronFlavour;
     double recoPt;
     double recoEta;
     double recoPhi;
+    double recoE;
     double deltaR;
     double null = -10;
     //const math::XYZPoint pv_position;
@@ -95,11 +98,18 @@ public:
         genParticle = static_cast<const reco::GenParticle*>(&genparticle);
         //std::cout << "casted" << std::endl;
     };
+    // for genjets
+    GenRecoMonitor(const reco::GenJet &genjet, int recojetHadronFlavour, double recojetPt, double recojetEta, double recojetPhi, double recojetE)
+        : genJet(&genjet), recoHadronFlavour(recojetHadronFlavour), recoPt(recojetPt), recoEta(recojetEta), recoPhi(recojetPhi), recoE(recojetE)
+    {
+        deltaR = TMath::Sqrt( sqr(dphi(genJet->phi(), recoPhi)) + sqr(genJet->eta() - recoEta) );
+    };
     void PrintParameters();
     void PrintDaughters();
     void PrintMothers();
     void PrintComp(bool mothers, bool daughters);
     void PrintGen(bool mothers, bool daughters);
+    void PrintCompJets();
     virtual ~GenRecoMonitor();
 
 };
@@ -139,8 +149,24 @@ void GenRecoMonitor::PrintComp(bool mothers, bool daughters) {
     std::cout << "status           = " << genParticle->status() << std::endl;
     std::cout << "Pt Gen (Reco)    = " << genParticle->pt() << " (" << recoPt << ")" << std::endl;
     std::cout << "delta R  = " << deltaR << std::endl;
+    std::cout << "isDirectPromptTauDecayProduct = " << genParticle->statusFlags().isDirectPromptTauDecayProduct() << std::endl;
+    std::cout << "isPrompt = " << genParticle->statusFlags().isPrompt() << std::endl;
+    std::cout << "isDecayedLeptonHadron = " << genParticle->statusFlags().isDecayedLeptonHadron() << std::endl;
+    std::cout << "isTauDecayProduct = " << genParticle->statusFlags().isTauDecayProduct() << std::endl;
+    std::cout << "isPromptTauDecayProduct = " << genParticle->statusFlags().isPromptTauDecayProduct() << std::endl;
+    std::cout << "isDirectTauDecayProduct = " << genParticle->statusFlags().isDirectTauDecayProduct() << std::endl;
+    std::cout << "isDirectPromptTauDecayProduct = " << genParticle->statusFlags().isDirectPromptTauDecayProduct() << std::endl;
+    std::cout << "isDirectHadronDecayProduct = " << genParticle->statusFlags().isDirectHadronDecayProduct() << std::endl;
     if (mothers) PrintMothers();
     if (daughters) PrintDaughters();
+};
+
+void GenRecoMonitor::PrintCompJets() {
+    std::cout << "pdgId Gen (Reco)  = " << genJet->pdgId() << " (" << recoHadronFlavour << ")" << std::endl;
+    //std::cout << "status           = " << genJet->status() << std::endl;
+    std::cout << "Pt Gen (Reco)     = " << genJet->pt() << " (" << recoPt << ")" << std::endl;
+    std::cout << "Energy Gen (Reco) = " << genJet->energy() << " (" << recoE << ")" << std::endl;
+    std::cout << "delta R           = " << deltaR << std::endl;
 };
 
 void GenRecoMonitor::PrintGen(bool mothers, bool daughters) {
