@@ -270,8 +270,6 @@ void printElectronCandidate(pat::Electron &electron, bool PrivateMC) {
         //<< "mvaEleID-Fall17-noIso-V2-wp90    = " << electron.electronID("mvaEleID-Fall17-noIso-V2-wp90") << std::endl;
         //<< "mvaEleID-Fall17-noIso-V2-wpLoose = " << electron.electronID("mvaEleID-Fall17-noIso-V2-wpLoose") << std::endl;
     }
-    std::cout << "ecalTrkEnergyPostCorr    = " << electron.userFloat("ecalTrkEnergyPostCorr") << std::endl
-    << "ecalTrkEnergyErrPostCorr = " << electron.userFloat("ecalTrkEnergyErrPostCorr") << std::endl;
 }
 
 void printMuonCandidate(pat::Muon &muon) {
