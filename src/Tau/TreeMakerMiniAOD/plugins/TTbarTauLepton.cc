@@ -2120,14 +2120,6 @@ bool TTbarTauLepton::TriggerOK (const edm::Event& iEvent) {
                 }
             }
         }
-        /*
-        for ( unsigned int iHLT=0; iHLT<triggerResults->size(); iHLT++ ) {
-            int hlt    = triggerResults->accept(iHLT);
-            if (nJetHTTriggers < 1) {
-                if (hlt > 0) std::cout << triggerNames_[iHLT] << std::endl;
-            }
-        }
-        */
     }
 
     int requiredTrigPrescale = 9999999;
@@ -2141,14 +2133,6 @@ bool TTbarTauLepton::TriggerOK (const edm::Event& iEvent) {
             requiredTrigIndex = l;
             requiredTrigName = trigNameVec[l];
         }
-        /*
-        if (monitoringHLT) {
-            std::cout << "###################" << std::endl;
-            std::cout << "current Index    = " << l << std::endl;
-            std::cout << "current Name     = " << trigNameVec[l] << std::endl;
-            std::cout << "current Prescale = " << trigPrescaleVec[l] << std::endl;
-        }
-        */
     }
 
     if (requiredTrigIndex > -1) {
@@ -2163,7 +2147,13 @@ bool TTbarTauLepton::TriggerOK (const edm::Event& iEvent) {
         << "triggerPrescaleL1max = " << triggerPrescaleL1max << std::endl
         << "triggerPrescaleL1min = " << triggerPrescaleL1min << std::endl;
     }
-    return true;
+
+    if ( TriggerBit1 > 0 || TriggerBit2 > 0 || TriggerBit3 > 0 || TriggerBit4 > 0 || 
+        TriggerBit5 > 0 || TriggerBit6 > 0 || TriggerBit7 > 0 ) {
+        triggerOK = true;
+    }
+
+    return triggerOK;
 };
 
 //-----------------------------------------------------------------------------------------
@@ -2256,19 +2246,15 @@ bool TTbarTauLepton::AddTau(const edm::Event& event) {
         if (monitoringTau) std::cout << "Index map pair inserted" << std::endl;
 
         if (index < taus->size()) {
-            /*
-            double discriminator = (*taus)[i].tauID("byIsolationMVArun2v1DBdR03oldDMwLTraw");
-            double maxDiscriminator = (*taus)[index].tauID("byIsolationMVArun2v1DBdR03oldDMwLTraw");
+            //double iso = (*taus)[i].tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
+            //double minIso = (*taus)[index].tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
+            // Replace old abs Iso i.e. sum of ptinside cone wich shoul be minimized with
+            // MVA Iso which is raw discriminator and should be maximized
+            double iso = (*taus)[i].tauID("byIsolationMVArun2v1DBdR03oldDMwLTraw");
+            double maxIso = (*taus)[index].tauID("byIsolationMVArun2v1DBdR03oldDMwLTraw");
             cut(
-                  discriminator > maxDiscriminator
-                  || discriminator == maxDiscriminator && tau.pt() > (*taus)[index].pt()
-            )
-            */
-            double iso = (*taus)[i].tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
-            double minIso = (*taus)[index].tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
-            cut(
-                  iso < minIso
-                  || iso == minIso && tau.pt() > (*taus)[index].pt()
+                  iso > maxIso
+                  || iso == maxIso && tau.pt() > (*taus)[index].pt()
             )
         }
 
