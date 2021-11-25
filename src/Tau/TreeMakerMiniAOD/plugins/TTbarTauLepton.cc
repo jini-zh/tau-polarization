@@ -126,6 +126,8 @@
 #include "Tau/TreeMakerMiniAOD/plugins/BJetCandidate.h"
 #include "Tau/TreeMakerMiniAOD/plugins/LeptonCandidate.h"
 #include "Tau/TreeMakerMiniAOD/plugins/GenRecoMonitor.h"
+#include "Tau/TreeMakerMiniAOD/plugins/PU_distributions.h"
+#include "Tau/TreeMakerMiniAOD/plugins/TriggerMatching.h"
 //#include "Tau/TreeMakerMiniAOD/plugins/PiZeroReconstructor.h"
 //#include "Tau/TauAnalyzer/plugins/MySimpleParticle.h"
 
@@ -148,15 +150,6 @@ void SortGenTaus(std::vector <reco::GenParticle> &items) {
       }
     }
   } while (swapped != false);
-}
-
-std::string decimal_to_binary_string(UInt_t n) {
-    std::string result = "";
-    do {
-        result = (std::to_string(n % 2)) + result;
-        n = n / 2;
-    } while (n > 0);
-    return result;
 }
 
 //
@@ -231,6 +224,7 @@ private:
     std::vector<std::string>  trigNames5;
     std::vector<std::string>  trigNames6;
     std::vector<std::string>  trigNames7;
+    std::vector<std::string>  trigNamesSelected;
     // trigger prescales
     edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> tok_triggerObjects;
     // //edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> tok_triggerObjects_unpacked;
@@ -354,7 +348,7 @@ private:
     int tau_VtightElectronRejection;
     int decayModeFindingNewDMs;
     int decayModeFinding;
-    int tau_TriggerMatched;
+    //int tau_TriggerMatched;
 
     // Tau decay products
     double piChar_pt;
@@ -648,7 +642,7 @@ private:
     int    lepton1_tau_mediumElectronRejection;
     int    lepton1_tau_tightElectronRejection;
     int    lepton1_tau_VtightElectronRejection;
-    int    lepton1_TriggerMatched;
+    //int    lepton1_TriggerMatched;
     // lepton 2
     double lepton2_pt;
     double lepton2_eta;
@@ -743,7 +737,7 @@ private:
     int    lepton2_tau_mediumElectronRejection;
     int    lepton2_tau_tightElectronRejection;
     int    lepton2_tau_VtightElectronRejection;
-    int    lepton2_TriggerMatched;
+    //int    lepton2_TriggerMatched;
     //
     int    nLeptonCandidates;
     int    VetoLeptons;
@@ -785,13 +779,19 @@ private:
     UInt_t TriggerBit5;
     UInt_t TriggerBit6;
     UInt_t TriggerBit7;
+    UInt_t TriggerBit_selected;
 
-    UInt_t TriggerMatch1; // 32 bit
-    UInt_t TriggerMatch2;
-    UInt_t TriggerMatch3;
-    UInt_t TriggerMatch4;
-    UInt_t TriggerMatch5;
-    
+    UInt_t tau_TriggerMatch1; // 32 bit
+    UInt_t tau_TriggerMatch3;
+    UInt_t tau_TriggerMatch5;
+    UInt_t lepton1_TriggerMatch1;
+    UInt_t lepton1_TriggerMatch2;
+    UInt_t lepton1_TriggerMatch3;
+    UInt_t lepton1_TriggerMatch4;
+    UInt_t lepton1_TriggerMatch5;
+    UInt_t tau_TriggerMatch_selected;
+    UInt_t lepton1_TriggerMatch_selected;
+
     math::XYZPoint pv_position;
     math::XYZPoint SV_position;
 
@@ -845,213 +845,9 @@ private:
     std::vector< float > DataPileUp;
 
     double PU_weight;
+    double PU_weight_oneProng;
     int    nPUv;
     float  Tnpv;
-
-    float MC_pileip_f [100] = {
-        3.39597497605e-05,
-        6.63688402133e-06,
-        1.39533611284e-05,
-        3.64963078209e-05,
-        6.00872171664e-05,
-        9.33932578027e-05,
-        0.000120591524486,
-        0.000128694546198,
-        0.000361697233219,
-        0.000361796847553,
-        0.000702474896113,
-        0.00133766053707,
-        0.00237817050805,
-        0.00389825605651,
-        0.00594546732588,
-        0.00856825906255,
-        0.0116627396044,
-        0.0148793350787,
-        0.0179897368379,
-        0.0208723871946,
-        0.0232564170641,
-        0.0249826433945,
-        0.0262245860346,
-        0.0272704617569,
-        0.0283301107549,
-        0.0294006137386,
-        0.0303026836965,
-        0.0309692426278,
-        0.0308818046328,
-        0.0310566806228,
-        0.0309692426278,
-        0.0310566806228,
-        0.0310566806228,
-        0.0310566806228,
-        0.0307696426944,
-        0.0300103336052,
-        0.0288355370103,
-        0.0273233309106,
-        0.0264343533951,
-        0.0255453758796,
-        0.0235877272306,
-        0.0215627588047,
-        0.0195825559393,
-        0.0177296309658,
-        0.0160560731931,
-        0.0146022004183,
-        0.0134080690078,
-        0.0129586991411,
-        0.0125093292745,
-        0.0124360740539,
-        0.0123547104433,
-        0.0123953922486,
-        0.0124360740539,
-        0.0124360740539,
-        0.0123547104433,
-        0.0124360740539,
-        0.0123387597772,
-        0.0122414455005,
-        0.011705203844,
-        0.0108187105305,
-        0.00963985508986,
-        0.00827210065136,
-        0.00683770076341,
-        0.00545237697118,
-        0.00420456901556,
-        0.00367513566191,
-        0.00314570230825,
-        0.0022917978982,
-        0.00163221454973,
-        0.00114065309494,
-        0.000784838366118,
-        0.000533204105387,
-        0.000358474034915,
-        0.000238881117601,
-        0.0001984254989,
-        0.000157969880198,
-        0.00010375646169,
-        6.77366175538e-05,
-        4.39850477645e-05,
-        2.84298066026e-05,
-        1.83041729561e-05,
-        1.17473542058e-05,
-        7.51982735129e-06,
-        6.16160108867e-06,
-        4.80337482605e-06,
-        3.06235473369e-06,
-        1.94863396999e-06,
-        1.23726800704e-06,
-        7.83538083774e-07,
-        4.94602064224e-07,
-        3.10989480331e-07,
-        1.94628487765e-07,
-        1.57888581037e-07,
-        1.2114867431e-07,
-        7.49518929908e-08,
-        4.6060444984e-08,
-        2.81008884326e-08,
-        1.70121486128e-08,
-        1.02159894812e-08
-       };
-
-       float Data_pileip_f [100] = {
-        0, 
-        258796, 
-        1.08435e+06, 
-        2.01193e+06, 
-        3.77861e+06, 
-        4.05589e+06, 
-        5.87787e+06, 
-        6.4516e+06, 
-        6.83344e+06, 
-        9.25297e+06, 
-        2.18232e+07, 
-        4.37034e+07, 
-        8.26532e+07, 
-        1.31504e+08, 
-        1.8857e+08, 
-        2.66488e+08, 
-        3.75273e+08, 
-        5.23538e+08, 
-        6.97846e+08, 
-        8.71196e+08, 
-        1.03119e+09, 
-        1.17166e+09, 
-        1.28526e+09, 
-        1.37223e+09, 
-        1.43978e+09, 
-        1.49774e+09, 
-        1.55262e+09, 
-        1.59972e+09, 
-        1.62931e+09, 
-        1.63492e+09, 
-        1.61469e+09, 
-        1.57114e+09, 
-        1.50879e+09, 
-        1.43073e+09, 
-        1.33931e+09, 
-        1.23908e+09, 
-        1.13676e+09, 
-        1.03828e+09, 
-        9.47166e+08, 
-        8.657e+08, 
-        7.96707e+08, 
-        7.43839e+08, 
-        7.10458e+08, 
-        6.98228e+08, 
-        7.06139e+08, 
-        7.29876e+08, 
-        7.61635e+08, 
-        7.90699e+08, 
-        8.05265e+08, 
-        7.95322e+08, 
-        7.55363e+08, 
-        6.8604e+08, 
-        5.94397e+08, 
-        4.9105e+08, 
-        3.8729e+08, 
-        2.92423e+08, 
-        2.12189e+08, 
-        1.48643e+08, 
-        1.01017e+08, 
-        6.69271e+07, 
-        4.34303e+07, 
-        2.77229e+07, 
-        1.74762e+07, 
-        1.09192e+07, 
-        6.78555e+06, 
-        4.20834e+06, 
-        2.61362e+06, 
-        1.63076e+06, 
-        1.02515e+06, 
-        650709, 
-        417555, 
-        270919, 
-        177583, 
-        117412, 
-        78141.3, 
-        52235.7, 
-        34999.9, 
-        23462.5, 
-        15711.1, 
-        10495.3, 
-        6986.61, 
-        4630.6, 
-        3053.36, 
-        2001.73, 
-        1303.98, 
-        843.625, 
-        541.805, 
-        345.281, 
-        218.261, 
-        136.808, 
-        85.0054, 
-        52.3447, 
-        31.9367, 
-        19.3024, 
-        11.5548, 
-        6.84977, 
-        4.02065, 
-        2.33655, 
-        1.34421, 
-        0.76548,
-       };
 
 };
 
@@ -1118,6 +914,7 @@ TTbarTauLepton::TTbarTauLepton(const edm::ParameterSet& iConfig) {
     trigNames5                        = iConfig.getParameter<std::vector<std::string>>("Triggers5");
     trigNames6                        = iConfig.getParameter<std::vector<std::string>>("Triggers6");
     trigNames7                        = iConfig.getParameter<std::vector<std::string>>("Triggers7");
+    trigNamesSelected                 = iConfig.getParameter<std::vector<std::string>>("SelectedTriggers");
     std::string PackedCandidateCollection = iConfig.getParameter<std::string>("PackedCandidateCollection");
     
     TauCollectionToken_         = consumes<pat::TauCollection>(edm::InputTag(tauCollection));
@@ -1155,8 +952,8 @@ TTbarTauLepton::TTbarTauLepton(const edm::ParameterSet& iConfig) {
     tok_PuInfo = consumes<std::vector<PileupSummaryInfo>>(iConfig.getParameter<edm::InputTag>("PileupInfo"));
 
     for( int i=0; i<100; ++i) {
-        MCPileUp.push_back(MC_pileip_f[i]);
-        DataPileUp.push_back(Data_pileip_f[i]);
+        MCPileUp.push_back(MC_pileip_f1[i]);
+        DataPileUp.push_back(Data_pileip_f1[i]);
     }
     LumiWeights_ = edm::LumiReWeighting(MCPileUp, DataPileUp);
 
@@ -1200,7 +997,6 @@ void TTbarTauLepton::analyze(const edm::Event& event, const edm::EventSetup&) {
         return;
     }
     // Find the most isolated Tau
-    bool tauFound;
     if (!AddTau(event)) {
         nTau1++;
         if (monitoring) std::cout << "Tau" << std::endl;
@@ -1317,7 +1113,7 @@ void TTbarTauLepton::beginJob() {
     tree->Branch("tau_tightElectronRejection",&tau_tightElectronRejection,"tau_tightElectronRejection/I");
     tree->Branch("tau_VtightElectronRejection",&tau_VtightElectronRejection,"tau_VtightElectronRejection/I");
     //
-    tree->Branch("tau_TriggerMatched",&tau_TriggerMatched,"tau_TriggerMatched/I");
+    //tree->Branch("tau_TriggerMatched",&tau_TriggerMatched,"tau_TriggerMatched/I");
 
     // Deep 2017v2
     if (DeepTau) {
@@ -1530,6 +1326,7 @@ void TTbarTauLepton::beginJob() {
         tree->Branch("SumNu_energy",&SumNu_energy,"SumNu_energy/D");
         //
         tree->Branch("PU_weight",&PU_weight,"PU_weight/D");
+        tree->Branch("PU_weight_oneProng",&PU_weight_oneProng,"PU_weight_oneProng/D");
         tree->Branch("Tnpv",&Tnpv,"Tnpv/F");
         tree->Branch("nPUv",&nPUv,"nPUv/I");
     }
@@ -1649,7 +1446,7 @@ void TTbarTauLepton::beginJob() {
     tree->Branch("lepton1_muon_MvaTight", &lepton1_muon_MvaTight, "lepton1_muon_MvaTight/I");
     tree->Branch("lepton1_muon_trackerLayersWithMeasurement", &lepton1_muon_trackerLayersWithMeasurement, "lepton1_muon_trackerLayersWithMeasurement/I");
     //
-    tree->Branch("lepton1_TriggerMatched",&lepton1_TriggerMatched,"lepton1_TriggerMatched/I");
+    //tree->Branch("lepton1_TriggerMatched",&lepton1_TriggerMatched,"lepton1_TriggerMatched/I");
     // Second tau lepton
     if (UseTau) {
         // Tau kinematic parameters
@@ -1812,7 +1609,7 @@ void TTbarTauLepton::beginJob() {
         tree->Branch("lepton2_tau_mediumElectronRejection",&lepton2_tau_mediumElectronRejection,"lepton2_tau_mediumElectronRejection/I");
         tree->Branch("lepton2_tau_tightElectronRejection",&lepton2_tau_tightElectronRejection,"lepton2_tau_tightElectronRejection/I");
         tree->Branch("lepton2_tau_VtightElectronRejection",&lepton2_tau_VtightElectronRejection,"lepton2_tau_VtightElectronRejection/I");
-        tree->Branch("lepton2_TriggerMatched",&lepton2_TriggerMatched,"lepton2_TriggerMatched/I");
+        //tree->Branch("lepton2_TriggerMatched",&lepton2_TriggerMatched,"lepton2_TriggerMatched/I");
 
         // Deep 2017v2
         if (DeepTau) {
@@ -1905,12 +1702,18 @@ void TTbarTauLepton::beginJob() {
     tree->Branch("TriggerBit5", &TriggerBit5, "TriggerBit5/i");
     tree->Branch("TriggerBit6", &TriggerBit6, "TriggerBit6/i");
     tree->Branch("TriggerBit7", &TriggerBit7, "TriggerBit7/i");
+    tree->Branch("TriggerBit_selected", &TriggerBit_selected, "TriggerBit_selected/i");
     //
-    tree->Branch("TriggerMatch1", &TriggerMatch1, "TriggerMatch1/i");
-    tree->Branch("TriggerMatch2", &TriggerMatch2, "TriggerMatch2/i");
-    tree->Branch("TriggerMatch3", &TriggerMatch3, "TriggerMatch3/i");
-    tree->Branch("TriggerMatch4", &TriggerMatch4, "TriggerMatch4/i");
-    tree->Branch("TriggerMatch5", &TriggerMatch5, "TriggerMatch5/i");
+    tree->Branch("tau_TriggerMatch1", &tau_TriggerMatch1, "tau_TriggerMatch1/i");
+    tree->Branch("tau_TriggerMatch3", &tau_TriggerMatch3, "tau_TriggerMatch3/i");
+    tree->Branch("tau_TriggerMatch5", &tau_TriggerMatch5, "tau_TriggerMatch5/i");
+    tree->Branch("lepton1_TriggerMatch1", &lepton1_TriggerMatch1, "lepton1_TriggerMatch1/i");
+    tree->Branch("lepton1_TriggerMatch2", &lepton1_TriggerMatch2, "lepton1_TriggerMatch2/i");
+    tree->Branch("lepton1_TriggerMatch3", &lepton1_TriggerMatch3, "lepton1_TriggerMatch3/i");
+    tree->Branch("lepton1_TriggerMatch4", &lepton1_TriggerMatch4, "lepton1_TriggerMatch4/i");
+    tree->Branch("lepton1_TriggerMatch5", &lepton1_TriggerMatch5, "lepton1_TriggerMatch5/i");
+    tree->Branch("tau_TriggerMatch_selected", &tau_TriggerMatch_selected, "tau_TriggerMatch_selected/i");
+    tree->Branch("lepton1_TriggerMatch_selected", &lepton1_TriggerMatch_selected, "lepton1_TriggerMatch_selected/i");
     //
     tree->Branch("resultTriggerWeight",&resultTriggerWeight,"resultTriggerWeight/I");
     tree->Branch("triggerPrescaleHLT",&triggerPrescaleHLT,"triggerPrescaleHLT/I");
@@ -1969,7 +1772,7 @@ TTbarTauLepton::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup 
 void TTbarTauLepton::GetPuMCWeight (const edm::Event& iEvent) {
 
     if (!isMC) {
-        if (monitoring) std::cout << "This is not MC file" << std::endl; 
+        if (monitoringGen) std::cout << "This is not MC file" << std::endl; 
         return;
     }
 
@@ -1991,11 +1794,14 @@ void TTbarTauLepton::GetPuMCWeight (const edm::Event& iEvent) {
         }
     }
     double MyWeight = LumiWeights_.weight( Tnpv );
+    double MyWeight_oneProng = LumiWeights_.weight( nPUv );
     PU_weight = MyWeight;
+    PU_weight_oneProng = MyWeight_oneProng;
     if (monitoring) {
         std::cout << "True number of interactions = " << Tnpv << std::endl;
         std::cout << "number of interactions      = " << nPUv << std::endl;
         std::cout << "PU_weight = " << MyWeight << std::endl;
+        std::cout << "PU_weight_oneProng = " << MyWeight_oneProng << std::endl;
     }
 };
 
@@ -2003,14 +1809,22 @@ void TTbarTauLepton::GetPuMCWeight (const edm::Event& iEvent) {
 
 void TTbarTauLepton::TriggerMatching (const edm::Event& iEvent) {
 
-    tau_TriggerMatched = null;
-    lepton1_TriggerMatched = null;
-    lepton2_TriggerMatched = null;
-    TriggerMatch1 = 0;
-    TriggerMatch2 = 0;
-    TriggerMatch3 = 0;
-    TriggerMatch4 = 0;
-    TriggerMatch5 = 0;
+    //tau_TriggerMatched = null;
+    //lepton1_TriggerMatched = null;
+    ///lepton2_TriggerMatched = null;
+    tau_TriggerMatch1 = 0;
+    tau_TriggerMatch3 = 0;
+    tau_TriggerMatch5 = 0;
+    lepton1_TriggerMatch1 = 0;
+    lepton1_TriggerMatch2 = 0;
+    lepton1_TriggerMatch3 = 0;
+    lepton1_TriggerMatch4 = 0;
+    lepton1_TriggerMatch5 = 0;
+    tau_TriggerMatch_selected = 0;
+    lepton1_TriggerMatch_selected = 0;
+    // temporary hardcoded
+    bool monitoringHLTmatching = false;
+
 
     edm::Handle<pat::TriggerObjectStandAloneCollection> triggerObjects;
     iEvent.getByToken(tok_triggerObjects, triggerObjects);
@@ -2018,91 +1832,86 @@ void TTbarTauLepton::TriggerMatching (const edm::Event& iEvent) {
     edm::Handle<edm::TriggerResults> triggerResults;
     iEvent.getByToken(tok_trigRes, triggerResults);
     const edm::TriggerNames & triggerNames = iEvent.triggerNames(*triggerResults);
-    const std::vector<std::string> & triggerNames_ = triggerNames.triggerNames();
+    //const std::vector<std::string> & triggerNames_ = triggerNames.triggerNames();
 
-    if (monitoring) std::cout << "Number of trigger objects = " << triggerObjects->size() << std::endl;
+    if (monitoringHLTmatching) std::cout << "Number of trigger objects = " << triggerObjects->size() << std::endl;
 
-    for (size_t i = 0; i < triggerObjects->size(); ++i) {
-        if (monitoring) std::cout << "Trigger object # " << i << std::endl;
-        pat::TriggerObjectStandAlone patTriggerObjectStandAloneUnpacked(triggerObjects->at(i));
-        auto& TriggerObject_i = (*triggerObjects)[i];
-        patTriggerObjectStandAloneUnpacked.unpackPathNames(triggerNames);
-        //int hlt    = triggerResults->accept(iHLT);
-        double taudR = sqrt(deltaR2(tau_eta, tau_phi, TriggerObject_i.eta(), TriggerObject_i.phi()));
-        double lepton1dR = sqrt(deltaR2(lepton1_eta, lepton1_phi, TriggerObject_i.eta(), TriggerObject_i.phi()));
-        double lepton2dR = 100;
-        if (lepton2_pt > 0) {
-            lepton2dR = sqrt(deltaR2(lepton2_eta, lepton2_phi, TriggerObject_i.eta(), TriggerObject_i.phi()));
-        }
-        if ((taudR < 0.1) && TriggerObject_i.pt() > 15) {
-            if (patTriggerObjectStandAloneUnpacked.pathNames().size() > 0) {
-                for(unsigned name_i = 0; name_i < patTriggerObjectStandAloneUnpacked.pathNames().size(); name_i++) {
-                    for (unsigned int trigger_i=0; trigger_i<trigNames1.size(); ++trigger_i) {
-                        if (patTriggerObjectStandAloneUnpacked.pathNames()[name_i].find(trigNames1[trigger_i].c_str())!= std::string::npos ) {
-                            int i_signed = trigger_i;
-                            UInt_t thisTrigger = TMath::Power(2, i_signed);
-                            std::cout << "this Trigger  = " << decimal_to_binary_string(TMath::Power(2, i_signed)) <<
-                            " (" << TMath::Power(2, i_signed) << ")" << std::endl;
-                            std::cout << "current Match = " << decimal_to_binary_string(TriggerMatch1) <<
-                            " (" << TriggerMatch1 << ")" << std::endl;
-                            UInt_t LogicAndResult = thisTrigger & TriggerMatch1;
-                            std::cout << "result of &   = " << decimal_to_binary_string(LogicAndResult) <<
-                            " (" << LogicAndResult << ")" << std::endl;
-                            if (LogicAndResult == 0) {
-                                std::cout << "Trigger added" << std::endl;
-                                TriggerMatch1 = TriggerMatch1 + TMath::Power(2, i_signed);
-                            } else {
-                                continue;
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    if (monitoringHLTmatching) std::cout << "### Tau trigger matching with Single Muon 1" << std::endl;
+    tau_TriggerMatch1 = TriggerMatchingFunc(triggerObjects, triggerResults, triggerNames,
+                                            tau_pt, tau_eta, tau_phi,
+                                            trigNames1, monitoringHLTmatching);
+    if (monitoringHLTmatching) std::cout << "### Tau trigger matching with Single Electron 1" << std::endl;
+    tau_TriggerMatch3 = TriggerMatchingFunc(triggerObjects, triggerResults, triggerNames,
+                                            tau_pt, tau_eta, tau_phi,
+                                            trigNames3 , monitoringHLTmatching);
+    if (monitoringHLTmatching) std::cout << "### Tau trigger matching with Tau" << std::endl;
+    tau_TriggerMatch5 = TriggerMatchingFunc(triggerObjects, triggerResults, triggerNames,
+                                            tau_pt, tau_eta, tau_phi,
+                                            trigNames5, monitoringHLTmatching);
+    if (monitoringHLTmatching) std::cout << "### Lepton 1 trigger matching with Single Muon 1" << std::endl;
+    lepton1_TriggerMatch1 = TriggerMatchingFunc(triggerObjects, triggerResults, triggerNames,
+                                                lepton1_pt, lepton1_eta, lepton1_phi,
+                                                trigNames1, monitoringHLTmatching);
+    if (monitoringHLTmatching) std::cout << "### Lepton 1 trigger matching with Single Muon 2" << std::endl;
+    lepton1_TriggerMatch2 = TriggerMatchingFunc(triggerObjects, triggerResults, triggerNames,
+                                                lepton1_pt, lepton1_eta, lepton1_phi,
+                                                trigNames2, monitoringHLTmatching);
+    if (monitoringHLTmatching) std::cout << "### Lepton 1 trigger matching with Single Electron 1" << std::endl;
+    lepton1_TriggerMatch3 = TriggerMatchingFunc(triggerObjects, triggerResults, triggerNames,
+                                                lepton1_pt, lepton1_eta, lepton1_phi,
+                                                trigNames3, monitoringHLTmatching);
+    if (monitoringHLTmatching) std::cout << "### Lepton 1 trigger matching with Single Electron 2" << std::endl;
+    lepton1_TriggerMatch4 = TriggerMatchingFunc(triggerObjects, triggerResults, triggerNames,
+                                                lepton1_pt, lepton1_eta, lepton1_phi,
+                                                trigNames4, monitoringHLTmatching);
+    if (monitoringHLTmatching) std::cout << "### Lepton 1 trigger matching with Tau" << std::endl;
+    lepton1_TriggerMatch5 = TriggerMatchingFunc(triggerObjects, triggerResults, triggerNames,
+                                                lepton1_pt, lepton1_eta, lepton1_phi,
+                                                trigNames5, monitoringHLTmatching);
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    if (monitoring) std::cout << "###### Tau trigger matching with all selected triggers" << std::endl;
+    tau_TriggerMatch_selected = TriggerMatchingFunc(triggerObjects, triggerResults, triggerNames,
+                                            tau_pt, tau_eta, tau_phi,
+                                            trigNamesSelected, monitoring);
+    if (monitoring) std::cout << "###### Lepton 1 trigger matching with all selected triggers" << std::endl;
+    lepton1_TriggerMatch_selected = TriggerMatchingFunc(triggerObjects, triggerResults, triggerNames,
+                                                lepton1_pt, lepton1_eta, lepton1_phi,
+                                                trigNamesSelected, monitoring);
 
-        if (monitoring) {
-            if ((taudR < 0.1 || lepton1dR < 0.1 || lepton2dR < 0.1) && TriggerObject_i.pt() > 15) {
-                if (patTriggerObjectStandAloneUnpacked.pathNames().size() > 0) {
-                    for(unsigned name_i = 0; name_i < patTriggerObjectStandAloneUnpacked.pathNames().size(); name_i++) {
-                        std::cout << patTriggerObjectStandAloneUnpacked.pathNames()[name_i];
-                        // This part is not needed because it seems like 'hltpassed' is always 1 for trigger objects
-                        /*
-                        for ( unsigned int iHLT=0; iHLT<triggerResults->size(); iHLT++ ) {
-                            int hltpassed = triggerResults->accept(iHLT);
-                            if ( triggerNames_[iHLT].find(patTriggerObjectStandAloneUnpacked.pathNames()[name_i].c_str())!= std::string::npos ) {
-                                std::cout << " (" << hltpassed << ")";
-                            }
-                        }
-                        */
-                        std::cout << ", ";
-                    }
-                }
-                std::cout << std::endl;
-                std::cout << "HLT (Reco) particle parameters:" << std::endl;
-                if (taudR < 0.1) { 
-                    std::cout << "pdgID = " << TriggerObject_i.pdgId() << "(15)" << std::endl;
-                    std::cout << "pt  = " << TriggerObject_i.pt() << "(" << tau_pt << ")" << std::endl;
-                    std::cout << "eta = " << TriggerObject_i.eta() << "(" << tau_eta << ")"  << std::endl;
-                    std::cout << "phi = " << TriggerObject_i.phi() << "(" << tau_phi << ")"  << std::endl;
-                }
-                if (lepton1dR < 0.1) { 
-                    std::cout << "pdgID = " << TriggerObject_i.pdgId() << "(" << lepton1_flavor << ")" << std::endl;
-                    std::cout << "pt  = " << TriggerObject_i.pt() << "(" << lepton1_pt << ")" << std::endl;
-                    std::cout << "eta = " << TriggerObject_i.eta() << "(" << lepton1_eta << ")"  << std::endl;
-                    std::cout << "phi = " << TriggerObject_i.phi() << "(" << lepton1_phi << ")"  << std::endl;
-                }
-                if (lepton2dR < 0.1) {
-                    std::cout << "pdgID = " << TriggerObject_i.pdgId() << "(" << lepton2_flavor << ")" << std::endl;
-                    std::cout << "pt  = " << TriggerObject_i.pt() << "(" << lepton2_pt << ")" << std::endl;
-                    std::cout << "eta = " << TriggerObject_i.eta() << "(" << lepton2_eta << ")"  << std::endl;
-                    std::cout << "phi = " << TriggerObject_i.phi() << "(" << lepton2_phi << ")"  << std::endl;
-                }
-            }
-        }
-    } 
+    if (monitoring) {
+        std::cout << "Single Muon 1 (" << TriggerBit1 << ")" << std::endl <<
+        "all triggers " << decimal_to_binary_string(TriggerBit1) << std::endl <<
+        "Tau matching " << decimal_to_binary_string(tau_TriggerMatch1) << std::endl <<
+        "Lep matching " << decimal_to_binary_string(lepton1_TriggerMatch1) << std::endl;
 
-    std::cout << "Single Muon 1 (" << TriggerBit1 << ")" << std::endl <<
-    decimal_to_binary_string(TriggerBit1) << std::endl;
+        std::cout << "Single Muon 2 (" << TriggerBit2 << ")" << std::endl <<
+        "all triggers " << decimal_to_binary_string(TriggerBit2) << std::endl <<
+        "Lep matching " << decimal_to_binary_string(lepton1_TriggerMatch2) << std::endl;
+
+        std::cout << "Single Electron 1 (" << TriggerBit3 << ")" << std::endl <<
+        "all triggers " << decimal_to_binary_string(TriggerBit3) << std::endl <<
+        "Tau matching " << decimal_to_binary_string(tau_TriggerMatch3) << std::endl <<
+        "Lep matching " << decimal_to_binary_string(lepton1_TriggerMatch3) << std::endl;
+
+        std::cout << "Single Electron 2 (" << TriggerBit4 << ")" << std::endl <<
+        "all triggers " << decimal_to_binary_string(TriggerBit4) << std::endl <<
+        "Lep matching " << decimal_to_binary_string(lepton1_TriggerMatch4) << std::endl;
+
+        std::cout << "Tau (" << TriggerBit5 << ")" << std::endl <<
+        "all triggers " << decimal_to_binary_string(TriggerBit5) << std::endl <<
+        "Tau matching " << decimal_to_binary_string(tau_TriggerMatch5) << std::endl <<
+        "Lep matching " << decimal_to_binary_string(lepton1_TriggerMatch5) << std::endl;
+
+        std::cout << "MET 1 (" << TriggerBit6 << ")" << std::endl <<
+        "all triggers " << decimal_to_binary_string(TriggerBit6) << std::endl;
+        std::cout << "MET 2 (" << TriggerBit7 << ")" << std::endl <<
+        "all triggers " << decimal_to_binary_string(TriggerBit7) << std::endl;
+        ///////////////////////////////////////////////////////////////////////////////////
+        std::cout << "Selected (" << TriggerBit_selected << ")" << std::endl <<
+        "all triggers " << decimal_to_binary_string(TriggerBit_selected) << std::endl <<
+        "Tau matching " << decimal_to_binary_string(tau_TriggerMatch_selected) << std::endl <<
+        "Lep matching " << decimal_to_binary_string(lepton1_TriggerMatch_selected) << std::endl;
+    }
 
 };
 
@@ -2133,8 +1942,7 @@ bool TTbarTauLepton::TriggerOK (const edm::Event& iEvent) {
     std::vector<int> trigL1minPsVec;
     std::vector<int> trigL1maxPsVec;
     std::vector<int> trigPrescaleVec;
-    int finalPrescale = 0;
-
+    
     bool triggerOK = false;
     nTargetTrigger1 = 0;
     nTargetTrigger2 = 0;
@@ -2146,6 +1954,7 @@ bool TTbarTauLepton::TriggerOK (const edm::Event& iEvent) {
     TriggerBit5 = 0;
     TriggerBit6 = 0;
     TriggerBit7 = 0;
+    TriggerBit_selected = 0;
     /////////////////////////////TriggerResults////////////////////////////////////
     if (triggerResults.isValid()) {
         const edm::TriggerNames & triggerNames = iEvent.triggerNames(*triggerResults);
@@ -2218,14 +2027,6 @@ bool TTbarTauLepton::TriggerOK (const edm::Event& iEvent) {
                 if (!printed) {
                     std::cout << iHLT << " (" << triggerResults->accept(iHLT) << ") " << triggerNames_[iHLT] << std::endl;
                 }
-            }
-            if (hlt > 0 && monitoringHLT) {
-                /*
-                std::cout << "Name    = " << trigName << std::endl;
-                std::cout << "ps      = " << ps << std::endl;
-                std::cout << "psL1min = " << psL1min << std::endl;
-                std::cout << "psL1max = " << psL1max << std::endl;
-                */
             }
             if ( hlt > 0 ) {
                 // Write prescale weights to corresponding vectors
@@ -2303,16 +2104,16 @@ bool TTbarTauLepton::TriggerOK (const edm::Event& iEvent) {
                         if (monitoringHLT) std::cout << "Trigger " << triggerNames_[iHLT] << std::endl;
                     }
                 }
+                // Count selected triggers only
+                for ( unsigned int i=0; i<trigNamesSelected.size(); ++i ) {
+                    if ( triggerNames_[iHLT].find(trigNamesSelected[i].c_str())!= std::string::npos ) {
+                        int i_signed = i;
+                        TriggerBit_selected = TriggerBit_selected + TMath::Power(2, i_signed);
+                        if (monitoringHLT) std::cout << "Trigger " << triggerNames_[iHLT] << std::endl;
+                    }
+                }
             }
         }
-        /*
-        for ( unsigned int iHLT=0; iHLT<triggerResults->size(); iHLT++ ) {
-            int hlt    = triggerResults->accept(iHLT);
-            if (nJetHTTriggers < 1) {
-                if (hlt > 0) std::cout << triggerNames_[iHLT] << std::endl;
-            }
-        }
-        */
     }
 
     int requiredTrigPrescale = 9999999;
@@ -2326,30 +2127,6 @@ bool TTbarTauLepton::TriggerOK (const edm::Event& iEvent) {
             requiredTrigIndex = l;
             requiredTrigName = trigNameVec[l];
         }
-        /*
-        if (monitoringHLT) {
-            std::cout << "###################" << std::endl;
-            std::cout << "current Index    = " << l << std::endl;
-            std::cout << "current Name     = " << trigNameVec[l] << std::endl;
-            std::cout << "current Prescale = " << trigPrescaleVec[l] << std::endl;
-        }
-        */
-    }
-    if (monitoringHLT) {
-        std::cout << "Single Muon 1 (" << TriggerBit1 << ")" << std::endl <<
-        decimal_to_binary_string(TriggerBit1) << std::endl;
-        std::cout << "Single Muon 2 (" << TriggerBit2 << ")" << std::endl <<
-        decimal_to_binary_string(TriggerBit2) << std::endl;
-        std::cout << "Single Electron 1 (" << TriggerBit3 << ")" << std::endl <<
-        decimal_to_binary_string(TriggerBit3) << std::endl;
-        std::cout << "Single Electron 2 (" << TriggerBit4 << ")" << std::endl <<
-        decimal_to_binary_string(TriggerBit4) << std::endl;
-        std::cout << "Tau (" << TriggerBit5 << ")" << std::endl <<
-        decimal_to_binary_string(TriggerBit5) << std::endl;
-        std::cout << "MET 1 (" << TriggerBit6 << ")" << std::endl <<
-        decimal_to_binary_string(TriggerBit6) << std::endl;
-        std::cout << "MET 2 (" << TriggerBit7 << ")" << std::endl <<
-        decimal_to_binary_string(TriggerBit7) << std::endl;
     }
 
     if (requiredTrigIndex > -1) {
@@ -2364,7 +2141,13 @@ bool TTbarTauLepton::TriggerOK (const edm::Event& iEvent) {
         << "triggerPrescaleL1max = " << triggerPrescaleL1max << std::endl
         << "triggerPrescaleL1min = " << triggerPrescaleL1min << std::endl;
     }
-    return true;
+
+    if ( TriggerBit1 > 0 || TriggerBit2 > 0 || TriggerBit3 > 0 || TriggerBit4 > 0 || 
+        TriggerBit5 > 0 || TriggerBit6 > 0 || TriggerBit7 > 0 ) {
+        triggerOK = true;
+    }
+
+    return triggerOK;
 };
 
 //-----------------------------------------------------------------------------------------
@@ -2457,19 +2240,15 @@ bool TTbarTauLepton::AddTau(const edm::Event& event) {
         if (monitoringTau) std::cout << "Index map pair inserted" << std::endl;
 
         if (index < taus->size()) {
-            /*
-            double discriminator = (*taus)[i].tauID("byIsolationMVArun2v1DBdR03oldDMwLTraw");
-            double maxDiscriminator = (*taus)[index].tauID("byIsolationMVArun2v1DBdR03oldDMwLTraw");
+            //double iso = (*taus)[i].tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
+            //double minIso = (*taus)[index].tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
+            // Replace old abs Iso i.e. sum of ptinside cone wich shoul be minimized with
+            // MVA Iso which is raw discriminator and should be maximized
+            double iso = (*taus)[i].tauID("byIsolationMVArun2v1DBdR03oldDMwLTraw");
+            double maxIso = (*taus)[index].tauID("byIsolationMVArun2v1DBdR03oldDMwLTraw");
             cut(
-                  discriminator > maxDiscriminator
-                  || discriminator == maxDiscriminator && tau.pt() > (*taus)[index].pt()
-            )
-            */
-            double iso = (*taus)[i].tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
-            double minIso = (*taus)[index].tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
-            cut(
-                  iso < minIso
-                  || iso == minIso && tau.pt() > (*taus)[index].pt()
+                  iso > maxIso
+                  || iso == maxIso && tau.pt() > (*taus)[index].pt()
             )
         }
 
@@ -2926,7 +2705,7 @@ void TTbarTauLepton::FindGenTau(const edm::Event& event) {
     gentau_vis_energy = null;
 
     if (!isMC) {
-        if (monitoring) std::cout << "This is not MC file" << std::endl; 
+        if (monitoringGen) std::cout << "This is not MC file" << std::endl; 
         return;
     }
 
@@ -4382,11 +4161,6 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
     lepton2_tau_piChar_q   = null;
     lepton2_tau_piChar_m   = null;
 
-    edm::Handle<edm::TriggerResults> triggerResults;
-    event.getByToken(tok_trigRes, triggerResults);
-    const edm::TriggerNames & triggerNames = event.triggerNames(*triggerResults);
-    const std::vector<std::string> & triggerNames_ = triggerNames.triggerNames();
-
     edm::Handle<pat::ElectronCollection> electrons;
     event.getByToken(ElectronCollectionToken_, electrons);
     //if (!electrons.isValid()) return false;
@@ -4442,31 +4216,6 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
             cut(abs(electron.eta()) < EtaMax);
             if (monitoringLeptons) {
                 std::cout << "relIso = " << (electron.puppiChargedHadronIso() + electron.puppiNeutralHadronIso() + electron.puppiPhotonIso()) / electron.pt() << std::endl;
-                /*
-                std::cout << "List of matched triggers" << std::endl;
-                for ( unsigned int iHLT=0; iHLT<triggerResults->size(); iHLT++ ) {
-                    for ( unsigned int i=0; i<trigNames3.size(); ++i ) {
-                        if ( triggerNames_[iHLT].find(trigNames3[i].c_str())!= std::string::npos ) {
-                            std::cout << "check trigger: " << triggerNames_[iHLT] << std::endl;
-                            if (electron.triggerObjectMatchByPath(triggerNames_[iHLT]) != nullptr) {
-                                std::cout << "~~~Fired!~~~" << std::endl; 
-                            } else {
-                                std::cout << "------------" << std::endl;
-                            }
-                        }
-                    }
-                    for ( unsigned int i=0; i<trigNames4.size(); ++i ) {
-                        if ( triggerNames_[iHLT].find(trigNames4[i].c_str())!= std::string::npos ) {
-                            std::cout << "check trigger: " << triggerNames_[iHLT] << std::endl;
-                            if (electron.triggerObjectMatchByPath(triggerNames_[iHLT]) != nullptr) {
-                                std::cout << "~~~Fired!~~~" << std::endl; 
-                            } else {
-                                std::cout << "------------" << std::endl;
-                            }
-                        }
-                    }
-                }
-                */
             }
             reco::TrackRef trackRef;
             trackRef = electron.track();
@@ -4563,9 +4312,31 @@ bool TTbarTauLepton::AddLepton (const edm::Event& event) {
                 //cut(trackRef->found() > 5);  // more than 5 hits in inner tracker
             }
             //cut(muon.passed(reco::Muon::PFIsoLoose)); // I_rel < 0.25 (particle flow)
+            /*
             if (monitoringLeptons) {
+                std::string star = "*";
                 std::cout << "Passed cuts" << std::endl;
+                // Iterate over Selected triggers names
+                std::cout << "Start trigger matching with SingleMuon1 (n = " << trigNames1.size() << ")" << std::endl;
+                for (auto iter_name = trigNames1.begin(); iter_name != trigNames1.end(); iter_name++) {
+                    std::cout << (*iter_name) + star << " - ";
+                    if (muon.triggerObjectMatchByPath(((*iter_name)+star)) != nullptr) {
+                        std::cout << "matched" << std::endl;
+                    } else {
+                        std::cout << "nope" << std::endl;
+                    }
+                }
+                std::cout << "Start trigger matching with SingleMuon2 (n = " << trigNames2.size() << ")" << std::endl;
+                for (auto iter_name = trigNames2.begin(); iter_name != trigNames2.end(); iter_name++) {
+                    std::cout << (*iter_name) + star << " - ";
+                    if (muon.triggerObjectMatchByPath(((*iter_name)+star)) != nullptr) {
+                        std::cout << "matched" << std::endl;
+                    } else {
+                        std::cout << "nope" << std::endl;
+                    }
+                }
             }
+            */
             double deltaRTau  = sqrt(deltaR2(tau_eta, tau_phi, muon.eta(), muon.phi()));
             if (deltaRTau <= 0.3) {
                 if (monitoringLeptons) std::cout << "In Tau cone: dR = " << deltaRTau << std::endl;

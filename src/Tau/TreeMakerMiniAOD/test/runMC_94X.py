@@ -18,7 +18,7 @@ process.GlobalTag.globaltag='94X_mc2017_realistic_v14'
 
 
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(20) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
@@ -84,7 +84,7 @@ process.TTbarTauLepton = cms.EDAnalyzer("TTbarTauLepton",
     monitoringGen     = cms.bool(False),
     monitoringJets    = cms.bool(False),
     monitoringBJets   = cms.bool(False),
-    monitoringLeptons = cms.bool(False),
+    monitoringLeptons = cms.bool(True),
     monitoringMET     = cms.bool(False),
     isMC = cms.bool(True),
     privateMC_v1 = cms.bool(False),
@@ -239,6 +239,7 @@ process.TTbarTauLepton = cms.EDAnalyzer("TTbarTauLepton",
         "HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v",
         "HLT_Ele8_CaloIdM_TrackIdM_PFJet30_v",
     ),
+    # Tau
     Triggers5 = cms.vstring(
         "HLT_DoubleLooseChargedIsoPFTau35_Trk1_TightID_eta2p1_Reg_v",
         "HLT_DoubleLooseChargedIsoPFTau35_Trk1_eta2p1_Reg_v",
@@ -334,12 +335,54 @@ process.TTbarTauLepton = cms.EDAnalyzer("TTbarTauLepton",
         "HLT_TripleJet110_35_35_Mjj650_PFMET120_v",
         "HLT_TripleJet110_35_35_Mjj650_PFMET130_v",
     ), 
+    SelectedTriggers = cms.vstring(
+        "HLT_IsoMu20_eta2p1_LooseChargedIsoPFTau27_eta2p1_CrossL1_v",
+        "HLT_IsoMu20_eta2p1_LooseChargedIsoPFTau27_eta2p1_TightID_CrossL1_v",
+        "HLT_IsoMu20_eta2p1_MediumChargedIsoPFTau27_eta2p1_CrossL1_v",
+        "HLT_IsoMu20_eta2p1_MediumChargedIsoPFTau27_eta2p1_TightID_CrossL1_v",
+        "HLT_IsoMu20_eta2p1_TightChargedIsoPFTau27_eta2p1_CrossL1_v",
+        "HLT_IsoMu20_eta2p1_TightChargedIsoPFTau27_eta2p1_TightID_CrossL1_v",
+        "HLT_IsoMu24_eta2p1_LooseChargedIsoPFTau35_Trk1_TightID_eta2p1_Reg_CrossL1_v",
+        "HLT_IsoMu24_eta2p1_LooseChargedIsoPFTau35_Trk1_eta2p1_Reg_CrossL1_v",
+        "HLT_IsoMu24_eta2p1_MediumChargedIsoPFTau35_Trk1_TightID_eta2p1_Reg_CrossL1_v",
+        "HLT_IsoMu24_eta2p1_MediumChargedIsoPFTau35_Trk1_eta2p1_Reg_CrossL1_v",
+        "HLT_IsoMu24_eta2p1_TightChargedIsoPFTau35_Trk1_TightID_eta2p1_Reg_CrossL1_v",
+        "HLT_IsoMu24_eta2p1_TightChargedIsoPFTau35_Trk1_eta2p1_Reg_CrossL1_v",
+        "HLT_IsoMu24_v",
+        "HLT_IsoMu27_v",
+        "HLT_IsoMu30_v",
+        "HLT_Ele24_eta2p1_WPTight_Gsf_LooseChargedIsoPFTau30_eta2p1_CrossL1_v",
+        "HLT_Ele24_eta2p1_WPTight_Gsf_LooseChargedIsoPFTau30_eta2p1_TightID_CrossL1_v",
+        "HLT_Ele24_eta2p1_WPTight_Gsf_MediumChargedIsoPFTau30_eta2p1_CrossL1_v",
+        "HLT_Ele24_eta2p1_WPTight_Gsf_MediumChargedIsoPFTau30_eta2p1_TightID_CrossL1_v",
+        "HLT_Ele24_eta2p1_WPTight_Gsf_TightChargedIsoPFTau30_eta2p1_CrossL1_v",
+        "HLT_Ele24_eta2p1_WPTight_Gsf_TightChargedIsoPFTau30_eta2p1_TightID_CrossL1_v",
+        "HLT_Ele27_WPTight_Gsf_v",
+        "HLT_Ele32_WPTight_Gsf_v",
+        "HLT_Ele35_WPTight_Gsf_v",
+        "HLT_Ele38_WPTight_Gsf_v",
+        "HLT_Ele40_WPTight_Gsf_v",
+        #"HLT_DoubleMediumChargedIsoPFTau35_Trk1_TightID_eta2p1_Reg_v",
+        #"HLT_DoubleMediumChargedIsoPFTau35_Trk1_eta2p1_Reg_v",
+        #"HLT_DoubleMediumChargedIsoPFTau40_Trk1_TightID_eta2p1_Reg_v",
+        #"HLT_DoubleMediumChargedIsoPFTau40_Trk1_eta2p1_Reg_v",
+        #"HLT_DoubleTightChargedIsoPFTau35_Trk1_TightID_eta2p1_Reg_v",
+        #"HLT_DoubleTightChargedIsoPFTau35_Trk1_eta2p1_Reg_v",
+        #"HLT_DoubleTightChargedIsoPFTau40_Trk1_TightID_eta2p1_Reg_v",
+        #"HLT_DoubleTightChargedIsoPFTau40_Trk1_eta2p1_Reg_v",
+        "HLT_IsoMu27_LooseChargedIsoPFTau20_SingleL1_v",
+        "HLT_IsoMu27_MediumChargedIsoPFTau20_SingleL1_v",
+        "HLT_IsoMu27_TightChargedIsoPFTau20_SingleL1_v",
+        #"HLT_VBF_DoubleLooseChargedIsoPFTau20_Trk1_eta2p1_Reg_v",
+        #"HLT_VBF_DoubleMediumChargedIsoPFTau20_Trk1_eta2p1_Reg_v",
+        #"HLT_VBF_DoubleTightChargedIsoPFTau20_Trk1_eta2p1_Reg_v",
+    ),
 )
 
 #process.load('Tau.TreeMaker.treeMaker_Data-MET_cfi')
 
 process.TFileService = cms.Service("TFileService",
-  fileName = cms.string('MC_TTo2L2Nu_test.root')
+  fileName = cms.string('MC_ttbar_94X.root')
 )
 
 process.p = cms.Path(process.rerunMvaIsolationSequence * getattr(process,updatedTauName) * process.egammaPostRecoSeq * process.TTbarTauLepton)
