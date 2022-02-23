@@ -59,18 +59,18 @@ void TauMonitor (const pat::Tau &tau, bool DeepTau, const math::XYZPoint &pv_pos
     //byCombinedIsolationDeltaBetaCorrRaw3Hits
     << "byCombinedIsolationDeltaBetaCorrRaw3Hits = " << tau.tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits") << std::endl
     << "chargedIsoPtSum                          = " << tau.tauID("chargedIsoPtSum") << std::endl;
-    if (DeepTau) {
-        std::cout << "byDeepTau2017v2VSeraw                    = " << tau.tauID("byDeepTau2017v2VSeraw") << std::endl
-        << "byDeepTau2017v2VSmuraw                   = " << tau.tauID("byDeepTau2017v2VSmuraw") << std::endl
-        << "byDeepTau2017v2VSjetraw                  = " << tau.tauID("byDeepTau2017v2VSjetraw") << std::endl
-        << "byLooseDeepTau2017v2VSe                  = " << tau.tauID("byLooseDeepTau2017v2VSe") << std::endl
-        << "byLooseDeepTau2017v2VSmu                 = " << tau.tauID("byLooseDeepTau2017v2VSmu") << std::endl
-        << "byLooseDeepTau2017v2VSjet                = " << tau.tauID("byLooseDeepTau2017v2VSjet") << std::endl
+    //if (DeepTau) {
+        std::cout << "byDeepTau2017v2p1VSeraw                    = " << tau.tauID("byDeepTau2017v2p1VSeraw") << std::endl
+        << "byDeepTau2017v2p1VSmuraw                   = " << tau.tauID("byDeepTau2017v2p1VSmuraw") << std::endl
+        << "byDeepTau2017v2p1VSjetraw                  = " << tau.tauID("byDeepTau2017v2p1VSjetraw") << std::endl
+        << "byLooseDeepTau2017v2p1VSe                  = " << tau.tauID("byLooseDeepTau2017v2p1VSe") << std::endl
+        << "byLooseDeepTau2017v2p1VSmu                 = " << tau.tauID("byLooseDeepTau2017v2p1VSmu") << std::endl
+        << "byLooseDeepTau2017v2p1VSjet                = " << tau.tauID("byLooseDeepTau2017v2p1VSjet") << std::endl
         // temp
-        << "byVLooseDeepTau2017v2VSmu      = " << tau.tauID("byVLooseDeepTau2017v2VSmu") << std::endl
-        << "byVVVLooseDeepTau2017v2VSe     = " << tau.tauID("byVVVLooseDeepTau2017v2VSe") << std::endl
-        << "byVVVLooseDeepTau2017v2VSjet   = " << tau.tauID("byVVVLooseDeepTau2017v2VSjet") << std::endl;
-    } else {
+        << "byVLooseDeepTau2017v2p1VSmu      = " << tau.tauID("byVLooseDeepTau2017v2p1VSmu") << std::endl
+        << "byVVVLooseDeepTau2017v2p1VSe     = " << tau.tauID("byVVVLooseDeepTau2017v2p1VSe") << std::endl
+        << "byVVVLooseDeepTau2017v2p1VSjet   = " << tau.tauID("byVVVLooseDeepTau2017v2p1VSjet") << std::endl;
+    //} else {
         std::cout << "byIsolationMVArun2v1DBnewDMwLTraw        = " << tau.tauID("byIsolationMVArun2v1DBnewDMwLTraw") << std::endl
         << "byIsolationMVArun2v1PWnewDMwLTraw        = " << tau.tauID("byIsolationMVArun2v1PWnewDMwLTraw") << std::endl
         << "byIsolationMVArun2v1DBdR03oldDMwLTraw    = " << tau.tauID("byIsolationMVArun2v1DBdR03oldDMwLTraw") << std::endl
@@ -82,7 +82,7 @@ void TauMonitor (const pat::Tau &tau, bool DeepTau, const math::XYZPoint &pv_pos
         << "byVLooseIsolationMVArun2v1DBoldDMwLT = " << tau.tauID("byVLooseIsolationMVArun2v1DBoldDMwLT") << std::endl
         << "againstElectronVLooseMVA6             = " << tau.tauID("againstElectronVLooseMVA6") << std::endl
         << "againstMuonLoose3                     = " << tau.tauID("againstMuonLoose3") << std::endl;
-    }
+    //}
     //std::cout << "SV pos   = (" << tau.secondaryVertexPos().x() << ", " << tau.secondaryVertexPos().y() << ", " << tau.secondaryVertexPos().z() << ")" << std::endl;
     //std::cout << "dz(SV, PV) = " << (tau.secondaryVertexPos() - pv_position).R() << std::endl;
     if (tau.hasSecondaryVertex()) {

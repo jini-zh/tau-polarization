@@ -229,7 +229,7 @@ void SortTaus(std::vector<pat::Tau>& items) {
   } while (swapped != false);
 }
 
-void printElectronCandidate(pat::Electron &electron) {
+void printElectronCandidate(pat::Electron &electron, bool PrivateMC) {
     std::cout << "Electron parameters" << std::endl
     << "pt     = " << electron.pt() << std::endl
     << "eta    = " << electron.eta() << std::endl
@@ -244,23 +244,67 @@ void printElectronCandidate(pat::Electron &electron) {
     << "puppiNoLeptonsChargedHadronIso = " << electron.puppiNoLeptonsChargedHadronIso() << std::endl
     << "puppiNoLeptonsNeutralHadronIso = " << electron.puppiNoLeptonsNeutralHadronIso() << std::endl
     << "puppiNoLeptonsPhotonIso        = " << electron.puppiNoLeptonsPhotonIso() << std::endl
-    << "trackIso                       = " << electron.trackIso() << std::endl
-    << "cutBasedElectronID-Fall17-94X-V1-loose  = " << electron.electronID("cutBasedElectronID-Fall17-94X-V1-loose") << std::endl
-    << "cutBasedElectronID-Fall17-94X-V1-medium = " << electron.electronID("cutBasedElectronID-Fall17-94X-V1-medium") << std::endl
-    << "cutBasedElectronID-Fall17-94X-V1-tight  = " << electron.electronID("cutBasedElectronID-Fall17-94X-V1-tight") << std::endl
-    << "cutBasedElectronID-Fall17-94X-V1-veto   = " << electron.electronID("cutBasedElectronID-Fall17-94X-V1-veto") << std::endl
-    << "mvaEleID-Fall17-iso-V1-wp80      = " << electron.electronID("mvaEleID-Fall17-iso-V1-wp80") << std::endl
-    << "mvaEleID-Fall17-iso-V1-wp90      = " << electron.electronID("mvaEleID-Fall17-iso-V1-wp90") << std::endl
-    << "mvaEleID-Fall17-iso-V1-wpLoose   = " << electron.electronID("mvaEleID-Fall17-iso-V1-wpLoose") << std::endl
-    //<< "mvaEleID-Fall17-iso-V2-wp80      = " << electron.electronID("mvaEleID-Fall17-iso-V2-wp80") << std::endl
-    //<< "mvaEleID-Fall17-iso-V2-wp90      = " << electron.electronID("mvaEleID-Fall17-iso-V2-wp90") << std::endl
-    //<< "mvaEleID-Fall17-iso-V2-wpLoose   = " << electron.electronID("mvaEleID-Fall17-iso-V2-wpLoose") << std::endl
-    << "mvaEleID-Fall17-noIso-V1-wp80    = " << electron.electronID("mvaEleID-Fall17-noIso-V1-wp80") << std::endl
-    << "mvaEleID-Fall17-noIso-V1-wp90    = " << electron.electronID("mvaEleID-Fall17-noIso-V1-wp90") << std::endl
-    << "mvaEleID-Fall17-noIso-V1-wpLoose = " << electron.electronID("mvaEleID-Fall17-noIso-V1-wpLoose") << std::endl;
-    //<< "mvaEleID-Fall17-noIso-V2-wp80    = " << electron.electronID("mvaEleID-Fall17-noIso-V2-wp80") << std::endl
-    //<< "mvaEleID-Fall17-noIso-V2-wp90    = " << electron.electronID("mvaEleID-Fall17-noIso-V2-wp90") << std::endl;
-    //<< "mvaEleID-Fall17-noIso-V2-wpLoose = " << electron.electronID("mvaEleID-Fall17-noIso-V2-wpLoose") << std::endl;
+    << "trackIso                       = " << electron.trackIso() << std::endl;
+    if (PrivateMC) {
+        std::cout << "cutBasedElectronID-Spring15-25ns-V1-standalone-loose  = " << electron.electronID("cutBasedElectronID-Spring15-25ns-V1-standalone-loose") << std::endl;
+        std::cout << "cutBasedElectronID-Spring15-25ns-V1-standalone-medium = " << electron.electronID("cutBasedElectronID-Spring15-25ns-V1-standalone-medium") << std::endl;
+        std::cout << "cutBasedElectronID-Spring15-25ns-V1-standalone-tight  = " << electron.electronID("cutBasedElectronID-Spring15-25ns-V1-standalone-tight") << std::endl;
+        std::cout << "mvaEleID-Spring15-25ns-nonTrig-V1-wpLoose = " << electron.electronID("mvaEleID-Spring15-25ns-nonTrig-V1-wpLoose") << std::endl;
+        std::cout << "mvaEleID-Spring15-25ns-nonTrig-V1-wp80    = " << electron.electronID("mvaEleID-Spring15-25ns-nonTrig-V1-wp80") << std::endl;
+        std::cout << "mvaEleID-Spring15-25ns-nonTrig-V1-wp90    = " << electron.electronID("mvaEleID-Spring15-25ns-nonTrig-V1-wp90") << std::endl;
+    } else {
+        std::cout << "cutBasedElectronID-Fall17-94X-V2-loose  = " << electron.electronID("cutBasedElectronID-Fall17-94X-V2-loose") << std::endl
+        << "cutBasedElectronID-Fall17-94X-V2-medium = " << electron.electronID("cutBasedElectronID-Fall17-94X-V2-medium") << std::endl
+        << "cutBasedElectronID-Fall17-94X-V2-tight  = " << electron.electronID("cutBasedElectronID-Fall17-94X-V2-tight") << std::endl
+        << "cutBasedElectronID-Fall17-94X-V2-veto   = " << electron.electronID("cutBasedElectronID-Fall17-94X-V2-veto") << std::endl
+        << "mvaEleID-Fall17-iso-V1-wp80      = " << electron.electronID("mvaEleID-Fall17-iso-V1-wp80") << std::endl
+        << "mvaEleID-Fall17-iso-V1-wp90      = " << electron.electronID("mvaEleID-Fall17-iso-V1-wp90") << std::endl
+        << "mvaEleID-Fall17-iso-V1-wpLoose   = " << electron.electronID("mvaEleID-Fall17-iso-V1-wpLoose") << std::endl
+        << "mvaEleID-Fall17-iso-V2-wp80      = " << electron.electronID("mvaEleID-Fall17-iso-V2-wp80") << std::endl
+        << "mvaEleID-Fall17-iso-V2-wp90      = " << electron.electronID("mvaEleID-Fall17-iso-V2-wp90") << std::endl
+        << "mvaEleID-Fall17-iso-V2-wpLoose   = " << electron.electronID("mvaEleID-Fall17-iso-V2-wpLoose") << std::endl
+        << "mvaEleID-Fall17-noIso-V1-wp80    = " << electron.electronID("mvaEleID-Fall17-noIso-V1-wp80") << std::endl
+        << "mvaEleID-Fall17-noIso-V1-wp90    = " << electron.electronID("mvaEleID-Fall17-noIso-V1-wp90") << std::endl
+        << "mvaEleID-Fall17-noIso-V1-wpLoose = " << electron.electronID("mvaEleID-Fall17-noIso-V1-wpLoose") << std::endl
+        << "mvaEleID-Fall17-noIso-V2-wp80    = " << electron.electronID("mvaEleID-Fall17-noIso-V2-wp80") << std::endl
+        << "mvaEleID-Fall17-noIso-V2-wp90    = " << electron.electronID("mvaEleID-Fall17-noIso-V2-wp90") << std::endl
+        << "mvaEleID-Fall17-noIso-V2-wpLoose = " << electron.electronID("mvaEleID-Fall17-noIso-V2-wpLoose") << std::endl;
+    }
+    // Variables from Electron correction
+    //std::cout << "ecalEnergyTrkPostCorr     = " << electron.userFloat("ecalEnergyTrkPostCorr") << std::endl
+    std::cout << "ecalEnergyPreCorr         = " << electron.userFloat("ecalEnergyPreCorr") << std::endl //ecalEnergy before scale & smearing corrections
+    << "ecalEnergyErrPreCorr      = " << electron.userFloat("ecalEnergyErrPreCorr") << std::endl // resolution estimate on the ecalEnergy before scale & smearing corrections
+    << "ecalEnergyPostCorr        = " << electron.userFloat("ecalEnergyPostCorr") << std::endl //   ecalEnergy of electron after scale & smearing corrections
+    << "ecalEnergyErrPostCorr     = " << electron.userFloat("ecalEnergyErrPostCorr") << std::endl //resolution estimate on the ecalEnergy after scale & smearing corrections
+    << "ecalTrkEnergyPreCorr      = " << electron.userFloat("ecalTrkEnergyPreCorr") << std::endl // ECAL-Trk combined electron energy before scale & smearing corrections
+    << "ecalTrkEnergyErrPreCorr   = " << electron.userFloat("ecalTrkEnergyErrPreCorr") << std::endl //  resolution estimate of the ECAL-Trk combined electron energy before scale & smearing corrections
+    << "ecalTrkEnergyPostCorr     = " << electron.userFloat("ecalTrkEnergyPostCorr") << std::endl //ECAL-Trk combined electron energy after scale & smearing corrections
+    << "ecalTrkEnergyErrPostCorr  = " << electron.userFloat("ecalTrkEnergyErrPostCorr") << std::endl // resolution estimate of the ECAL-Trk combined electron energy after scale & smearing corrections
+    << "energyScaleValue          = " << electron.userFloat("energyScaleValue") << std::endl // value of the scale correction, MC ignores this value and takes 1
+    << "energySigmaValue          = " << electron.userFloat("energySigmaValue") << std::endl // value of the resolution correction
+    << "energySmearNrSigma        = " << electron.userFloat("energySmearNrSigma") << std::endl //   a Gaussian random number to smear by (deterministic based on supercluster), data ignores this value and takes 0
+    << "energyScaleUp             = " << electron.userFloat("energyScaleUp") << std::endl //energy with the ecal energy scale shifted 1 sigma up (adding gain/stat/syst in quadrature)
+    << "energyScaleDown           = " << electron.userFloat("energyScaleDown") << std::endl //  energy with the ecal energy scale shifted 1 sigma down (adding gain/stat/syst in quadrature)
+    << "energyScaleStatUp         = " << electron.userFloat("energyScaleStatUp") << std::endl //energy with the ecal energy scale shifted 1 sigma(stat) up
+    << "energyScaleStatDown       = " << electron.userFloat("energyScaleStatDown") << std::endl //  energy with the ecal energy scale shifted 1 sigma(stat) down
+    << "energyScaleSystUp         = " << electron.userFloat("energyScaleSystUp") << std::endl //energy with the ecal energy scale shifted 1 sigma(syst) up
+    << "energyScaleSystDown       = " << electron.userFloat("energyScaleSystDown") << std::endl //  energy with the ecal energy scale shifted 1 sigma(syst) down
+    << "energyScaleGainUp         = " << electron.userFloat("energyScaleGainUp") << std::endl //energy with the ecal energy scale shifted 1 sigma(gain) up
+    << "energyScaleGainDown       = " << electron.userFloat("energyScaleGainDown") << std::endl //  energy with the ecal energy scale shifted 1 sigma(gain) down
+    << "energyScaleEtUp           = " << electron.userFloat("energyScaleEtUp") << std::endl //  2016 legacy only: adhoc error derived from closure vs Et
+    << "energyScaleEtDown         = " << electron.userFloat("energyScaleEtDown") << std::endl //2016 legacy only: adhoc error dervied from closure vs Et
+    << "energySigmaUp             = " << electron.userFloat("energySigmaUp") << std::endl //energy with the ecal energy smearing value shifted 1 sigma up
+    << "energySigmaDown           = " << electron.userFloat("energySigmaDown") << std::endl //  energy with the ecal energy smearing value shifted 1 sigma down
+    << "energySigmaPhiUp          = " << electron.userFloat("energySigmaPhiUp") << std::endl // energy with the ecal energy smearing value shifted 1 sigma(phi) up
+    << "energySigmaPhiDown        = " << electron.userFloat("energySigmaPhiDown") << std::endl //   energy with the ecal energy smearing value shifted 1 sigma(phi) down
+    << "energySigmaRhoUp          = " << electron.userFloat("energySigmaRhoUp") << std::endl // energy with the ecal energy smearing value shifted 1 sigma(rho) up
+    << "energySigmaRhoDown        = " << electron.userFloat("energySigmaRhoDown") << std::endl //   energy with the ecal energy smearing value shifted 1 sigma(rho) down 
+    << "ElectronMVAEstimatorRun2Fall17IsoV1Values              = " << electron.userFloat("ElectronMVAEstimatorRun2Fall17IsoV1Values") << std::endl
+    << "ElectronMVAEstimatorRun2Fall17IsoV2Values              = " << electron.userFloat("ElectronMVAEstimatorRun2Fall17IsoV2Values") << std::endl
+    << "ElectronMVAEstimatorRun2Fall17NoIsoV1Values            = " << electron.userFloat("ElectronMVAEstimatorRun2Fall17NoIsoV1Values") << std::endl
+    << "ElectronMVAEstimatorRun2Fall17NoIsoV2Values            = " << electron.userFloat("ElectronMVAEstimatorRun2Fall17NoIsoV2Values") << std::endl
+    << "ElectronMVAEstimatorRun2Spring16GeneralPurposeV1Values = " << electron.userFloat("ElectronMVAEstimatorRun2Spring16GeneralPurposeV1Values") << std::endl;
+
 }
 
 void printMuonCandidate(pat::Muon &muon) {
